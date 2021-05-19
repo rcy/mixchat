@@ -38,7 +38,7 @@ app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 })
 
-async function liquidsoap(command, host = '127.0.0.1', port = 1234) {
+async function liquidsoap(command, host = '172.17.0.1', port = 1234) {
   const client = new net.Socket();
 
   return new Promise((resolve, reject) => {
