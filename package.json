@@ -13,5 +13,8 @@
     "express": "^4.17.1",
     "irc": "^0.5.2",
     "youtube-dl-exec": "^1.2.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
   }
 }
