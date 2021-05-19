@@ -73,11 +73,11 @@ async function download(id) {
     // noCheckCertificate: true,
     // preferFreeFormats: true,
     youtubeSkipDashManifest: true,
-    output: '/tmp/%(id)s.%(ext)s',
+    output: '/media/%(id)s.%(ext)s',
     //    referer: 'https://example.com',
   })
   console.log(output)
-  return `/tmp/${id}.ogg`
+  return `/media/${id}.ogg`
 }
 
 const client = new irc.Client('irc.freenode.net', 'djfullmoon', {

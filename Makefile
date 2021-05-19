@@ -9,7 +9,7 @@ deploy:
 	-ssh -i private/deploy.rsa $(REMOTE) docker stop emb-radio
 	-ssh -i private/deploy.rsa $(REMOTE) docker rm emb-radio
 	ssh -i private/deploy.rsa $(REMOTE) docker load -i /tmp/emb-radio.tar
-	ssh -i private/deploy.rsa $(REMOTE) docker run --detach -p3010:3010 --name emb-radio emb-radio:latest
+	ssh -i private/deploy.rsa $(REMOTE) docker run --detach -p3010:3010 --volume=/media:/media --name emb-radio emb-radio:latest
 
 logs:
 	ssh -i private/deploy.rsa $(REMOTE) docker logs emb-radio:latest
