@@ -1,19 +1,18 @@
 dev:
 	npx nodemon server.js
 
-dockerize:
-	docker build . --tag emb-radio
-
 REMOTE=ubuntu@radio.nonzerosoftware.com
-deploy: dist/emb-radio.tar
-	scp -i private/deploy.rsa $< $(REMOTE):/tmp
-	ssh -i private/deploy.rsa $(REMOTE) docker run --detach emb-radio:latest
+deploy:
+	docker build . --tag emb-radio
+	docker save emb-radio:latest -o dist/emb-radio.tar
+	scp -i private/deploy.rsa dist/emb-radio.tar $(REMOTE):/tmp
+	-ssh -i private/deploy.rsa $(REMOTE) docker stop emb-radio
+	-ssh -i private/deploy.rsa $(REMOTE) docker rm emb-radio
+	ssh -i private/deploy.rsa $(REMOTE) docker load -i /tmp/emb-radio.tar
+	ssh -i private/deploy.rsa $(REMOTE) docker run --detach -p3010:3010 --name emb-radio emb-radio:latest
 
 logs:
 	ssh -i private/deploy.rsa $(REMOTE) docker logs emb-radio:latest
-
-dist/emb-radio.tar: dockerize
-	docker save emb-radio:latest -o $@
 
 clean:
 	rm -rf dist/*
