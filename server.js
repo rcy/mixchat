@@ -75,7 +75,17 @@ async function download(id) {
   return `/tmp/${id}.ogg`
 }
 
-const client = new irc.Client('irc.freenode.net', 'djfullmoon', { channels: ["#emb-radio"] })
+const client = new irc.Client('irc.freenode.net', 'djfullmoon', {
+  channels: ["#emb-radio"],
+  debug: true,
+  sasl: true,
+  userName: 'djfullmoon',
+  password: 'JJyf376fGgbPnfcz9',
+})
+
+client.addListener('error', function(message) {
+  console.log('irc error: ', message);
+});
 
 client.addListener('message', async function (from, to, message) {
   console.log(from + ' => ' + to + ': ' + message);
