@@ -4,6 +4,7 @@ const net = require('net');
 const youtubedl = require('youtube-dl-exec')
 const irc = require('irc')
 const fetch = require('node-fetch')
+const convert = require('xml-js');
 
 const app = express()
 const port = 3010
@@ -120,7 +121,7 @@ client.addListener('message', async function (from, to, message) {
 });
 
 const handlers = {
-  request: async ({ args, to, from }) => {
+  add: async ({ args, to, from }) => {
     const id = args
 
     const filename = await download(id)
@@ -128,12 +129,44 @@ const handlers = {
 
     client.say(to, `${from}: requested ${filename}`)
   },
-  xspf: async ({ args, to }) => {
-    const result = await fetch('http://radio.nonzerosoftware.com:8000/emb.ogg.xspf')
-    const body = await result.body()
-    console.log(result)
+  now: async ({ args, to, from }) => {
+    const xspf = await fetchXspf()
+
+    const result =
+      xspf.elements[0].elements
+          .find(e => e.name === 'trackList')
+          .elements[0].elements
+          .filter(e => e.name === 'creator' || e.name === 'title')
+          .map(e => e.elements[0].text)
+          .join(' | ');
+
+    client.say(to, `Now playing: ${result}`)
   },
-  foo: async ({ args, to }) => {
-    client.say(to, `foo: ${args}`)
+  who: async({ args, to }) => {
+    const xspf = await fetchXspf()
+
+    const result =
+      xspf.elements[0].elements
+          .find(e => e.name === 'trackList')
+          .elements[0].elements
+          .find(e => e.name === 'annotation')
+          .elements[0].text
+          .split('\n')
+          .find(e => e.match('Current Listeners'))
+
+    client.say(to, result)
   },
+  echo: async ({ args, to, from }) => {
+    client.say(to, `${from}: ${args}`)
+  },
+  help: async ({ args, to }) => {
+    const commands = Object.keys(handlers).join(' ')
+    client.say(to, commands)
+  }
+}
+
+async function fetchXspf() {
+  const raw = await fetch('http://radio.nonzerosoftware.com:8000/emb.ogg.xspf')
+  const text = await raw.text()
+  return JSON.parse(convert.xml2json(text, { arrayNotation: true }))
 }
