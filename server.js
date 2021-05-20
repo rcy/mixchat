@@ -75,6 +75,7 @@ async function download(id) {
     youtubeSkipDashManifest: true,
     output: '/media/%(id)s.%(ext)s',
     //    referer: 'https://example.com',
+    addMetadata: true,
   })
   console.log(output)
   return `/media/${id}.ogg`
