@@ -99,22 +99,35 @@ client.addListener('error', function(message) {
 client.addListener('message', async function (from, to, message) {
   console.log(from + ' => ' + to + ': ' + message);
 
-  const match = message.match(/!request (.+)/)
+  const match = message.trim().match(/^!(\w+)\s*(.*)/);
+
   if (match) {
-    const id = match[1]
+    const command = match[1]
+    const args = match[2]
 
-    try {
-      client.say(to, `${id}: downloading...`)
-      const filename = await download(id)
-      client.say(to, `${id}: downloading...done`)
-
-      client.say(to, `${id}: requesting ${filename}...`)
-      const data = await liquidsoap(`request.push ${filename}`)
-      client.say(to, `${id}: requesting ${filename}...done`)
-    } catch(e) {
-      return client.say(to, `${id}: ${e.message}`)
+    const handler = handlers[command]
+    if (handler) {
+      try {
+        await handler({ args, from, to, message })
+      } catch(e) {
+        client.say(to, `${from}: ${message}: ${e.message}`)
+      }
     }
   } else {
     console.log('unhandled message', message)
   }
 });
+
+const handlers = {
+  request: async ({ args, to }) => {
+    const id = args
+
+    const filename = await download(id)
+    const data = await liquidsoap(`request.push ${filename}`)
+
+    client.say(to, `${from}: requested ${filename}`)
+  },
+  foo: async ({ args, to }) => {
+    client.say(to, `foo: ${args}`)
+  },
+}
