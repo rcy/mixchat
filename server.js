@@ -3,6 +3,7 @@ const bodyParser = require('body-parser')
 const net = require('net');
 const youtubedl = require('youtube-dl-exec')
 const irc = require('irc')
+const fetch = require('node-fetch')
 
 const app = express()
 const port = 3010
@@ -119,13 +120,18 @@ client.addListener('message', async function (from, to, message) {
 });
 
 const handlers = {
-  request: async ({ args, to }) => {
+  request: async ({ args, to, from }) => {
     const id = args
 
     const filename = await download(id)
     const data = await liquidsoap(`request.push ${filename}`)
 
     client.say(to, `${from}: requested ${filename}`)
+  },
+  xspf: async ({ args, to }) => {
+    const result = await fetch('http://radio.nonzerosoftware.com:8000/emb.ogg.xspf')
+    const body = await result.body()
+    console.log(result)
   },
   foo: async ({ args, to }) => {
     client.say(to, `foo: ${args}`)
