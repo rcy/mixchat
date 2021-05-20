@@ -65,6 +65,7 @@ async function liquidsoap(command, host = '172.17.0.1', port = 1234) {
 
 async function download(id) {
   const output = await youtubedl(`https://www.youtube.com/watch?v=${id}`, {
+    quiet: true,
     extractAudio: true,
     audioFormat: 'vorbis',
     //dumpSingleJson: true,
@@ -73,12 +74,14 @@ async function download(id) {
     // noCheckCertificate: true,
     // preferFreeFormats: true,
     youtubeSkipDashManifest: true,
-    output: '/media/%(id)s.%(ext)s',
+    //output: '/media/%(id)s.%(ext)s',
     //    referer: 'https://example.com',
     addMetadata: true,
+    restrictFilenames: true,
+    exec: "mv {} /media && echo {}", // output
   })
   console.log(output)
-  return `/media/${id}.ogg`
+  return `/media/${output}`
 }
 
 const client = new irc.Client('irc.freenode.net', 'djfullmoon', {
