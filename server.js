@@ -104,10 +104,10 @@ client.addListener('message', async function (from, to, message) {
   const match = message.trim().match(/^!(\w+)\s*(.*)/);
 
   if (match) {
-    const command = match[1]
+    const command = match[1].toLowerCase()
     const args = match[2]
 
-    const handler = handlers[command]
+    const handler = handlers[command] || handlers.help
     if (handler) {
       try {
         await handler({ args, from, to, message })
@@ -115,8 +115,6 @@ client.addListener('message', async function (from, to, message) {
         client.say(to, `${from}: ${message}: ${e.message}`)
       }
     }
-  } else {
-    console.log('unhandled message', message)
   }
 });
 
@@ -124,10 +122,12 @@ const handlers = {
   add: async ({ args, to, from }) => {
     const id = args
 
+    client.say(to, `${from}: looking for ${id}...`)
+
     const filename = await download(id)
     const data = await liquidsoap(`request.push ${filename}`)
 
-    client.say(to, `${from}: requested ${filename}`)
+    client.say(to, `${from}: ${filename} requested.`)
   },
   now: async ({ args, to, from }) => {
     const xspf = await fetchXspf()
@@ -159,9 +159,9 @@ const handlers = {
   echo: async ({ args, to, from }) => {
     client.say(to, `${from}: ${args}`)
   },
-  help: async ({ args, to }) => {
-    const commands = Object.keys(handlers).join(' ')
-    client.say(to, commands)
+  help: async ({ args, to, from }) => {
+    const commands = Object.keys(handlers).map(k => `!${k}`).join(' ')
+    client.say(to, `${from}: ${commands}`)
   }
 }
 
