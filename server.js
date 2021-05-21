@@ -86,7 +86,7 @@ async function download(id) {
   return `/media/${output}`
 }
 
-const client = new irc.Client('irc.freenode.net', 'djfullmoon', {
+const freenodeClient = new irc.Client('irc.freenode.net', 'djfullmoon', {
   channels: ["#emb-radio"],
   debug: true,
   sasl: true,
@@ -94,32 +94,48 @@ const client = new irc.Client('irc.freenode.net', 'djfullmoon', {
   password: 'JJyf376fGgbPnfcz9',
 })
 
-client.addListener('error', function(message) {
-  console.log('irc error: ', message);
-});
+addIrcClientListeners(freenodeClient)
 
-client.addListener('message', async function (from, to, message) {
-  console.log(from + ' => ' + to + ': ' + message);
+const liberaClient = new irc.Client('irc.libera.chat', 'djfullmoon', {
+  port: 6697,
+  secure: true,
+  channels: ["#emb-radio"],
+  debug: true,
+  //  sasl: true,
+  userName: 'djfullmoon',
+  password: '6MdYaHHKBpSzEwLAa',
+})
 
-  const match = message.trim().match(/^!(\w+)\s*(.*)/);
+addIrcClientListeners(liberaClient)
 
-  if (match) {
-    const command = match[1].toLowerCase()
-    const args = match[2]
+function addIrcClientListeners(client) {
+  client.addListener('error', function(message) {
+    console.log('irc error: ', message);
+  });
 
-    const handler = handlers[command] || handlers.help
-    if (handler) {
-      try {
-        await handler({ args, from, to, message })
-      } catch(e) {
-        client.say(to, `${from}: ${message}: ${e.message}`)
+  client.addListener('message', async function (from, to, message) {
+    console.log(from + ' => ' + to + ': ' + message);
+
+    const match = message.trim().match(/^!(\w+)\s*(.*)/);
+
+    if (match) {
+      const command = match[1].toLowerCase()
+      const args = match[2]
+
+      const handler = handlers[command] || handlers.help
+      if (handler) {
+        try {
+          await handler({ client, args, from, to, message })
+        } catch(e) {
+          client.say(to, `${from}: ${message}: ${e.message}`)
+        }
       }
     }
-  }
-});
+  });
+}
 
 const handlers = {
-  add: async ({ args, to, from }) => {
+  add: async ({ client, args, to, from }) => {
     const id = args
 
     client.say(to, `${from}: looking for ${id}...`)
@@ -129,7 +145,7 @@ const handlers = {
 
     client.say(to, `${from}: ${filename} requested.`)
   },
-  now: async ({ args, to, from }) => {
+  now: async ({ client, args, to, from }) => {
     const xspf = await fetchXspf()
 
     const result =
@@ -142,7 +158,7 @@ const handlers = {
 
     client.say(to, `Now playing: ${result}`)
   },
-  who: async({ args, to }) => {
+  who: async({ client, args, to }) => {
     const xspf = await fetchXspf()
 
     const result =
@@ -156,10 +172,10 @@ const handlers = {
 
     client.say(to, result)
   },
-  echo: async ({ args, to, from }) => {
+  echo: async ({ client, args, to, from }) => {
     client.say(to, `${from}: ${args}`)
   },
-  help: async ({ args, to, from }) => {
+  help: async ({ client, args, to, from }) => {
     const commands = Object.keys(handlers).map(k => `!${k}`).join(' ')
     client.say(to, `${from}: ${commands}`)
   }
