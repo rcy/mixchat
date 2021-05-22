@@ -1,10 +1,10 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const net = require('net');
 const youtubedl = require('youtube-dl-exec')
 const irc = require('irc')
 const fetch = require('node-fetch')
 const convert = require('xml-js');
+const liquidsoap = require('./liquidsoap')
 
 const app = express()
 const port = 3010
@@ -39,31 +39,6 @@ async function requestYoutube(url) {
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 })
-
-async function liquidsoap(command, host = '172.17.0.1', port = 1234) {
-  const client = new net.Socket();
-
-  return new Promise((resolve, reject) => {
-    client.connect(port, host, function() {
-      client.write(command + '\n');
-    })
-
-    client.on('data', function(data) {
-      resolve(data.toString())
-      client.write('quit\n')
-      client.destroy();
-    });
-
-    client.on('close', function() {
-      console.log('liquidsoap telnet connection closed');
-    });
-
-    client.on('error', function(e) {
-      console.error(e)
-      reject(e)
-    });
-  })
-}
 
 async function download(url) {
   const output = await youtubedl(url, {
