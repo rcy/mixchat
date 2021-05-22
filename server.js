@@ -1,26 +1,34 @@
+require('dotenv').config()
+const assert = require('assert').strict;
+
 const webserver = require('./webserver.js')
 const ircBot = require('./ircbot.js')
 
 const channel = "#emb-radio"
 const nick = 'djfullmoon'
 
+const { LIBERA_PASSWORD, FREENODE_PASSWORD } = process.env;
+
+assert(LIBERA_PASSWORD)
+assert(FREENODE_PASSWORD)
+
 ircBot('irc.freenode.net', nick, {
-  debug: true,
+  //debug: true,
   port: 6667,
   channels: [channel],
   sasl: true,
   userName: nick,
-  password: 'JJyf376fGgbPnfcz9',
+  password: FREENODE_PASSWORD,
 })
 
 ircBot('irc.libera.chat', nick, {
-  debug: true,
+  //debug: true,
   port: 6697,
   secure: true,
   channels: [channel],
   //  sasl: true,
   userName: nick,
-  password: '6MdYaHHKBpSzEwLAa',
+  password: LIBERA_PASSWORD,
 })
 
 webserver({ port: 3010 })
