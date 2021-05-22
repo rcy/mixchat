@@ -1,10 +1,10 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const youtubedl = require('youtube-dl-exec')
 const irc = require('irc')
 const fetch = require('node-fetch')
 const convert = require('xml-js');
 const liquidsoap = require('./liquidsoap')
+const youtubeDownload = require('./youtube')
 
 const app = express()
 const port = 3010
@@ -39,28 +39,6 @@ async function requestYoutube(url) {
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 })
-
-async function download(url) {
-  const output = await youtubedl(url, {
-    quiet: true,
-    extractAudio: true,
-    audioFormat: 'vorbis',
-    //dumpSingleJson: true,
-    // noWarnings: true,
-    noCallHome: true,
-    // noCheckCertificate: true,
-    // preferFreeFormats: true,
-    youtubeSkipDashManifest: true,
-    //output: '/media/%(id)s.%(ext)s',
-    //    referer: 'https://example.com',
-    addMetadata: true,
-    restrictFilenames: true,
-    noPlaylist: true,
-    exec: "mv {} /media && echo {}", // output
-  })
-  console.log(output)
-  return `/media/${output}`
-}
 
 const freenodeClient = new irc.Client('irc.freenode.net', 'djfullmoon', {
   channels: ["#emb-radio"],
@@ -116,7 +94,7 @@ const handlers = {
 
     client.say(to, `${from}: ripping ${url}...`)
 
-    const filename = await download(url)
+    const filename = await youtubeDownload(url)
     const data = await liquidsoap(`request.push ${filename}`)
 
     client.say(to, `${from}: queued ${filename}`)
