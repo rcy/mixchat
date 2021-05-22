@@ -1,6 +1,6 @@
 const irc = require('irc')
-const liquidsoap = require('./liquidsoap')
-const youtubeDownload = require('./youtube')
+const liquidsoap = require('./liquidsoap.js')
+const youtubeDownload = require('./youtube.js')
 
 module.exports = function ircBot(host, nick, options) {
   const client = new irc.Client(host, nick, options)

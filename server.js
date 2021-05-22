@@ -1,5 +1,5 @@
-const webserver = require('./webserver')
-const ircBot = require('./ircbot')
+const webserver = require('./webserver.js')
+const ircBot = require('./ircbot.js')
 
 const channel = "#emb-radio"
 const nick = 'djfullmoon'
