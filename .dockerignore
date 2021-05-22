@@ -1,0 +1,9 @@
+*~
+.dockerignore
+.git
+.gitignore
+Dockerfile
+Makefile
+dist
+node_modules
+private

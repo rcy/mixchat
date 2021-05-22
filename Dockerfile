@@ -5,11 +5,9 @@ RUN apk add --update --no-cache python3 ffmpeg && ln -sf python3 /usr/bin/python
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY . .
 
 RUN npm install
-
-COPY ./server.js ./
 
 EXPOSE 3010
 CMD ["node", "./server.js"]
