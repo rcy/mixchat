@@ -30,8 +30,8 @@ app.post('/youtube', jsonParser, async (req, res) => {
   }
 })
 
-async function requestYoutube(id) {
-  const filename = await download(id)
+async function requestYoutube(url) {
+  const filename = await download(url)
   const data = await liquidsoap(`request.push ${filename}`)
   return { filename, data }
 }
@@ -65,8 +65,8 @@ async function liquidsoap(command, host = '172.17.0.1', port = 1234) {
   })
 }
 
-async function download(id) {
-  const output = await youtubedl(`https://www.youtube.com/watch?v=${id}`, {
+async function download(url) {
+  const output = await youtubedl(url, {
     quiet: true,
     extractAudio: true,
     audioFormat: 'vorbis',
@@ -80,6 +80,7 @@ async function download(id) {
     //    referer: 'https://example.com',
     addMetadata: true,
     restrictFilenames: true,
+    noPlaylist: true,
     exec: "mv {} /media && echo {}", // output
   })
   console.log(output)
@@ -99,7 +100,7 @@ addIrcClientListeners(freenodeClient)
 const liberaClient = new irc.Client('irc.libera.chat', 'djfullmoon', {
   port: 6697,
   secure: true,
-  channels: ["#emb-radio"],
+  channels: ["#emb-radio-debug"],
   debug: true,
   //  sasl: true,
   userName: 'djfullmoon',
@@ -136,14 +137,14 @@ function addIrcClientListeners(client) {
 
 const handlers = {
   add: async ({ client, args, to, from }) => {
-    const id = args
+    const url = args
 
-    client.say(to, `${from}: looking for ${id}...`)
+    client.say(to, `${from}: ripping ${url}...`)
 
-    const filename = await download(id)
+    const filename = await download(url)
     const data = await liquidsoap(`request.push ${filename}`)
 
-    client.say(to, `${from}: ${filename} requested.`)
+    client.say(to, `${from}: queued ${filename}`)
   },
   now: async ({ client, args, to, from }) => {
     const xspf = await fetchXspf()
