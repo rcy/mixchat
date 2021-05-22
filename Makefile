@@ -1,6 +1,9 @@
 dev:
 	npx nodemon server.js
 
+mock-liquidserver:
+	while true; do sh -c "echo | nc -l 1234"; done
+
 REMOTE=ubuntu@radio.nonzerosoftware.com
 deploy:
 	docker build . --tag emb-radio
