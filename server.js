@@ -7,26 +7,15 @@ const ircBot = require('./ircbot.js')
 const channel = "#emb-radio"
 const nick = 'djfullmoon'
 
-const { LIBERA_PASSWORD, FREENODE_PASSWORD } = process.env;
-
+const { LIBERA_PASSWORD } = process.env;
 assert(LIBERA_PASSWORD)
-assert(FREENODE_PASSWORD)
-
-ircBot('irc.freenode.net', nick, {
-  //debug: true,
-  port: 6667,
-  channels: [channel],
-  sasl: true,
-  userName: nick,
-  password: FREENODE_PASSWORD,
-})
 
 ircBot('irc.libera.chat', nick, {
-  //debug: true,
+  debug: true,
   port: 6697,
   secure: true,
   channels: [channel],
-  //  sasl: true,
+  sasl: true,
   userName: nick,
   password: LIBERA_PASSWORD,
 })
