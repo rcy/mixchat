@@ -4,7 +4,7 @@ const assert = require('assert').strict;
 const webserver = require('./webserver.js')
 const ircBot = require('./ircbot.js')
 
-const channel = "#emb-radio"
+const channels = ["#emb-radio", "#djfullmoon"]
 const nick = 'djfullmoon'
 
 const { LIBERA_PASSWORD } = process.env;
@@ -14,7 +14,7 @@ ircBot('irc.libera.chat', nick, {
   debug: true,
   port: 6697,
   secure: true,
-  channels: [channel],
+  channels,
   sasl: true,
   userName: nick,
   password: LIBERA_PASSWORD,
