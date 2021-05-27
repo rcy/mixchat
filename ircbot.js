@@ -1,4 +1,4 @@
-const irc = require('irc')
+const irc = require('irc-upd')
 const liquidsoap = require('./liquidsoap.js')
 const youtubeDownload = require('./youtube.js')
 
