@@ -4,7 +4,7 @@ const assert = require('assert').strict;
 const webserver = require('./webserver.js')
 const ircBot = require('./ircbot.js')
 
-const channels = ["#emb-radio", "#djfullmoon"]
+const channels = ["#djfullmoon"]
 const nick = 'djfullmoon'
 
 const { LIBERA_PASSWORD } = process.env;
