@@ -1,21 +1,8 @@
-dev:
-	npx nodemon server.js
+up:
+	docker-compose build
+	docker-compose --env-file .env.dev up icecast liquidsoap
 
-mock-liquidserver:
-	while true; do sh -c "echo | nc -l 1234"; done
-
-REMOTE=ubuntu@radio.nonzerosoftware.com
+deploy: DOCKER_HOST=ubuntu@radio.nonzerosoftware.com
 deploy:
-	docker build . --tag emb-radio
-	docker save emb-radio:latest -o dist/emb-radio.tar
-	scp -i private/deploy.rsa dist/emb-radio.tar $(REMOTE):/tmp
-	-ssh -i private/deploy.rsa $(REMOTE) docker stop emb-radio
-	-ssh -i private/deploy.rsa $(REMOTE) docker rm emb-radio
-	ssh -i private/deploy.rsa $(REMOTE) docker load -i /tmp/emb-radio.tar
-	ssh -i private/deploy.rsa $(REMOTE) docker run --detach -p3010:3010 --volume=/media:/media --name emb-radio emb-radio:latest
-
-logs:
-	ssh -i private/deploy.rsa $(REMOTE) docker logs emb-radio:latest
-
-clean:
-	rm -rf dist/*
+	docker-compose build
+	docker-compose --env-file .env.prod up

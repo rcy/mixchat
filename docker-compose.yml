@@ -1,0 +1,32 @@
+version: "3"
+services:
+  app:
+    build: app
+    volumes:
+      - /media:/media:rw
+    environment:
+      - LIBERA_PASSWORD
+      - LIBERA_CHANNEL
+      - LIBERA_NICK
+  icecast:
+    image: moul/icecast
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - ICECAST_SOURCE_PASSWORD
+      - ICECAST_ADMIN_PASSWORD
+      - ICECAST_PASSWORD
+      - ICECAST_RELAY_PASSWORD
+      - ICECAST_HOSTNAME
+    ports:
+      - 8000:8000
+  liquidsoap:
+    build: liquidsoap
+    volumes:
+      - /media:/media:ro
+    environment:
+      - ICECAST_SOURCE_PASSWORD
+      - API_BASE
+    ports:
+      - 1234:1234
+      - 8090:8090

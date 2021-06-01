@@ -1,6 +1,7 @@
 const irc = require('irc-upd')
 const liquidsoap = require('./liquidsoap.js')
 const youtubeDownload = require('./youtube.js')
+const { pushRequest } = require('./source.js')
 
 module.exports = function ircBot(host, nick, options) {
   const client = new irc.Client(host, nick, options)
@@ -39,7 +40,8 @@ const handlers = {
     client.say(to, `${from}: ripping ${url}...`)
 
     const filename = await youtubeDownload(url)
-    const data = await liquidsoap(`request.push ${filename}`)
+    //const data = await liquidsoap(`request.push ${filename}`)
+    pushRequest(filename)
 
     client.say(to, `${from}: queued ${filename}`)
   },

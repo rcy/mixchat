@@ -1,22 +1,20 @@
-require('dotenv').config()
 const assert = require('assert').strict;
 
 const webserver = require('./webserver.js')
 const ircBot = require('./ircbot.js')
 
-const channels = ["#djfullmoon"]
-const nick = 'djfullmoon'
-
-const { LIBERA_PASSWORD } = process.env;
+const { LIBERA_PASSWORD, LIBERA_CHANNEL, LIBERA_NICK } = process.env;
 assert(LIBERA_PASSWORD)
+assert(LIBERA_CHANNEL)
+assert(LIBERA_NICK)
 
-ircBot('irc.libera.chat', nick, {
+ircBot('irc.libera.chat', LIBERA_NICK, {
   debug: true,
   port: 6697,
   secure: true,
-  channels,
+  channels: [LIBERA_CHANNEL],
   sasl: true,
-  userName: nick,
+  userName: LIBERA_NICK,
   password: LIBERA_PASSWORD,
 })
 

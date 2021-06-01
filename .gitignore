@@ -1,4 +1,4 @@
-/node_modules/
-/private/
-/dist/*
-/.env
+node_modules
+private
+.env.*
+

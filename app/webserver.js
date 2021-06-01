@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const jsonParser = bodyParser.json()
+const { getNext } = require('./source.js')
 
 module.exports = function webserver({ port }) {
   const app = express()
@@ -17,6 +18,13 @@ module.exports = function webserver({ port }) {
       console.error(e)
       res.sendStatus(500, { error: e.message })
     }
+  })
+
+  app.get('/next', async (req, res) => {
+    console.log('next')
+    res.header('Content-type', 'audio/x-mpegurl')
+    const content = getNext()
+    res.send(`${content}\n`)
   })
 
   app.listen(port, () => {
