@@ -27,9 +27,6 @@ radio = fallback(track_sensitive=false, [tracks, emergency])
 output.icecast(%vorbis, radio, mount="emb.ogg", host="icecast", password=getenv("ICECAST_SOURCE_PASSWORD"))
 output.icecast(%mp3, radio, mount="emb.mp3", host="icecast", password=getenv("ICECAST_SOURCE_PASSWORD"))
 
-
-
-
 # Add a skip function to a source when it does not have one by default.
 # @category Interaction
 # @param s The source to attach the command to.
