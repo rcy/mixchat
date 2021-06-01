@@ -1,10 +1,13 @@
+const liquidsoap = require('./liquidsoap.js')
+
 const requests = []
 
 let count = 0;
 
 module.exports = {
-  pushRequest(file) {
-    requests.push(file)
+  async pushRequest(filename) {
+    const data = await liquidsoap(`request.push ${filename}`)
+    //requests.push(file)
   },
   getNext() {
     let next = requests.shift();
