@@ -9,7 +9,7 @@ assert(LIBERA_CHANNEL)
 assert(LIBERA_NICK)
 
 ircBot('irc.libera.chat', LIBERA_NICK, {
-  debug: true,
+  //debug: true,
   port: 6697,
   secure: true,
   channels: [LIBERA_CHANNEL],
