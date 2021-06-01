@@ -1,4 +1,5 @@
 const irc = require('irc-upd')
+const liquidsoap = require('./liquidsoap')
 const youtubeDownload = require('./youtube.js')
 const { pushRequest } = require('./source.js')
 
@@ -73,10 +74,15 @@ const handlers = {
   echo: async ({ client, args, to, from }) => {
     client.say(to, `${from}: ${args}`)
   },
+  skip: async ({ client, args, to, from }) => {
+    const result = await liquidsoap("dynlist.skip")
+
+    client.say(to, `${from}: ${result}`)
+  },
   help: async ({ client, args, to, from }) => {
     const commands = Object.keys(handlers).map(k => `!${k}`).join(' ')
     client.say(to, `${from}: ${commands}`)
-  }
+  },
 }
 
 const fetch = require('node-fetch')

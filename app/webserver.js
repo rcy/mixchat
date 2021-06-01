@@ -21,8 +21,6 @@ module.exports = function webserver({ port }) {
   })
 
   app.get('/next', async (req, res) => {
-    console.log('next')
-    res.header('Content-type', 'audio/x-mpegurl')
     const content = getNext()
     res.send(`${content}\n`)
   })
