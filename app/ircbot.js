@@ -32,10 +32,11 @@ module.exports = function ircBot(host, nick, options) {
     }
   });
 
-  PubSub.subscribe('NOW', function(msg, data) {
+  PubSub.subscribe('NOW', async function(msg, data) {
     console.log('RECV', msg, data)
     const { artist, album, title } = data
-    client.say(options.channels[0], `Now playing: ${artist} | ${album} | ${title}`)
+    const count = await countListeners()
+    client.say(options.channels[0], `Playing(${count}): ${artist} | ${album} | ${title}`)
   })
 
   return client
