@@ -3,6 +3,7 @@ const irc = require('irc-upd')
 const liquidsoap = require('./liquidsoap')
 const youtubeDownload = require('./youtube.js')
 const { pushRequest } = require('./source.js')
+const { countListeners, fetchXspf } = require('./icecast.js')
 
 module.exports = function ircBot(host, nick, options) {
   const client = new irc.Client(host, nick, options)
@@ -65,18 +66,8 @@ const handlers = {
     client.say(to, `Now playing: ${result}`)
   },
   who: async({ client, args, to }) => {
-    const xspf = await fetchXspf()
-
-    const result =
-      xspf.elements[0].elements
-          .find(e => e.name === 'trackList')
-          .elements[0].elements
-          .find(e => e.name === 'annotation')
-          .elements[0].text
-          .split('\n')
-          .find(e => e.match('Current Listeners'))
-
-    client.say(to, result)
+    const numListeners = await countListeners()
+    client.say(to, numListeners)
   },
   echo: async ({ client, args, to, from }) => {
     client.say(to, `${from}: ${args}`)
@@ -90,12 +81,4 @@ const handlers = {
     const commands = Object.keys(handlers).map(k => `!${k}`).join(' ')
     client.say(to, `${from}: ${commands}`)
   },
-}
-
-const fetch = require('node-fetch')
-const convert = require('xml-js');
-async function fetchXspf() {
-  const raw = await fetch('http://radio.nonzerosoftware.com:8000/emb.ogg.xspf')
-  const text = await raw.text()
-  return JSON.parse(convert.xml2json(text, { arrayNotation: true }))
 }
