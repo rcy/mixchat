@@ -16,6 +16,9 @@ radio = fallback(track_sensitive=false, [src, emergency])
 
 def track_change(metadata) =
   print("track_change")
+  filename = metadata["filename"]
+  duration = request.duration(filename)
+  metadata = list.append(metadata, [("duration", string_of(int_of_float(duration)))])
   print(metadata)
   result = http.post(getenv("API_BASE") ^ "/now", data=json_of(metadata), headers=[("Content-Type","application/json")])
 end
