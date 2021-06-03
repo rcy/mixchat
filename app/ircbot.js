@@ -44,7 +44,7 @@ const handlers = {
   add: async ({ client, args, to, from }) => {
     const url = args
 
-    client.say(to, `${from}: ripping ${url}...`)
+    //client.say(to, `${from}: ripping...`)
 
     const filename = await youtubeDownload(url)
     pushRequest(filename)
