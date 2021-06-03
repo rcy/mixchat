@@ -1,4 +1,5 @@
 const fs = require('fs');
+const shuffle = require('lodash.shuffle')
 
 let playlist = []
 const requests = []
@@ -27,7 +28,7 @@ module.exports = {
 function nextFromPlaylist() {
   let next = playlist.shift()
   if (!next) {
-    playlist = loadPlaylist()
+    playlist = shuffle(loadPlaylist())
     next = playlist.shift()
   }
   return next
