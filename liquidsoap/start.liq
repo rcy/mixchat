@@ -14,6 +14,14 @@ end
 src = request.dynamic.list(my_request_function, id="dynlist")
 radio = fallback(track_sensitive=false, [src, emergency])
 
+def track_change(metadata) =
+  print("track_change")
+  print(metadata)
+  result = http.post(getenv("API_BASE") ^ "/now", data=json_of(metadata), headers=[("Content-Type","application/json")])
+end
+
+radio = on_track(track_change, radio)
+
 output.icecast(%vorbis, radio, mount="emb.ogg", host="icecast", password=getenv("ICECAST_SOURCE_PASSWORD"))
 output.icecast(%mp3, radio, mount="emb.mp3", host="icecast", password=getenv("ICECAST_SOURCE_PASSWORD"))
 

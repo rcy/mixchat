@@ -1,3 +1,4 @@
+const PubSub = require('pubsub-js');
 const irc = require('irc-upd')
 const liquidsoap = require('./liquidsoap')
 const youtubeDownload = require('./youtube.js')
@@ -29,6 +30,12 @@ module.exports = function ircBot(host, nick, options) {
       }
     }
   });
+
+  PubSub.subscribe('NOW', function(msg, data) {
+    console.log('RECV', msg, data)
+    const { artist, album, title } = data
+    client.say(options.channels[0], `Now playing: ${artist} | ${album} | ${title}`)
+  })
 
   return client
 }

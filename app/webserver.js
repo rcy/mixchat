@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const jsonParser = bodyParser.json()
 const { getNext } = require('./source.js')
+const PubSub = require('pubsub-js');
 
 module.exports = function webserver({ port }) {
   const app = express()
@@ -24,6 +25,12 @@ module.exports = function webserver({ port }) {
     const content = getNext()
     res.send(`${content}\n`)
   })
+
+  app.post('/now', jsonParser, async (req, res) => {
+    console.log('SENT NOW', req.body)
+    PubSub.publish('NOW', req.body)
+    res.sendStatus(200)
+  });
 
   app.listen(port, () => {
     console.log(`App listening at http://localhost:${port}`)
