@@ -82,4 +82,7 @@ const handlers = {
     const commands = Object.keys(handlers).map(k => `!${k}`).join(' ')
     client.say(to, `${from}: ${commands}`)
   },
+  src: async ({ client, args, to, from }) => {
+    client.say(to, `${from}: https://github.com/rcy/djfullmoon`)
+  },
 }
