@@ -3,6 +3,8 @@ const bodyParser = require('body-parser')
 const jsonParser = bodyParser.json()
 const { getNext } = require('./source.js')
 const PubSub = require('pubsub-js');
+const youtubeDownload = require('./youtube.js')
+const { pushRequest } = require('./source.js')
 
 module.exports = function webserver({ port }) {
   const app = express()
@@ -11,13 +13,14 @@ module.exports = function webserver({ port }) {
     res.send('Hello World!\n')
   })
 
-  app.post('/youtube', jsonParser, async (req, res) => {
+  app.post('/add', jsonParser, async (req, res) => {
     try {
-      const { filename, data } = requestYoutube(req.body.id)
+      const { filename, data } = await youtubeDownload(req.body.url)
+      pushRequest(filename)
       res.status(200).json({ filename, data })
     } catch(e) {
       console.error(e)
-      res.sendStatus(500, { error: e.message })
+      res.send(400, { error: e.message })
     }
   })
 
