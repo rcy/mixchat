@@ -36,7 +36,9 @@ module.exports = function ircBot(host, nick, options) {
     console.log('RECV', msg, data)
     const { artist, album, title, duration } = data
     const count = await countListeners()
-    client.say(options.channels[0], `Next up: ${artist} | ${album} | ${title} | ${duration}s | ${count} listening`)
+    if (count > 0) {
+      client.say(options.channels[0], `Next up: ${artist} | ${album} | ${title} | ${duration}s | ${count} listening`)
+    }
   })
 
   return client
