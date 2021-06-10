@@ -6,6 +6,8 @@ const { pushRequest } = require('./source.js')
 const { countListeners, fetchXspf } = require('./icecast.js')
 const { formatDuration } = require('./util.js')
 
+let nowPlayingData = {}
+
 module.exports = function ircBot(host, nick, options) {
   const client = new irc.Client(host, nick, options)
 
@@ -35,21 +37,35 @@ module.exports = function ircBot(host, nick, options) {
 
   PubSub.subscribe('NOW', async function(msg, data) {
     console.log('RECV', msg, data)
-    const { artist, album, title, duration } = data
+    nowPlayingData = data
+
     const count = await countListeners()
+
     if (count > 0) {
-      const str = [
-        artist || null,
-        title || null,
-        formatDuration(duration),
-        `${count} listening`,
-      ].filter(x => x !== null)
-       .join(' | ');
-      client.say(options.channels[0], `Next up: ${str}`)
+      announceNowPlaying(client, options.channels[0])
     }
   })
 
   return client
+}
+
+function ifString(x) {
+  return typeof x === 'string'
+}
+
+async function announceNowPlaying(client, to) {
+  const { artist, album, title, duration } = nowPlayingData
+  const count = await countListeners()
+
+  const str = [
+    `${count} listening to:`,
+    [
+      [artist, title].filter(ifString).join(', '),
+      formatDuration(duration),
+    ].filter(ifString).join(' - ') || "???"
+  ].join(' ')
+
+  client.say(to, str)
 }
 
 const handlers = {
@@ -64,17 +80,7 @@ const handlers = {
     client.say(to, `${from}: queued ${filename}`)
   },
   now: async ({ client, args, to, from }) => {
-    const xspf = await fetchXspf()
-
-    const result =
-      xspf.elements[0].elements
-          .find(e => e.name === 'trackList')
-          .elements[0].elements
-          .filter(e => e.name === 'creator' || e.name === 'title')
-          .map(e => e.elements[0].text)
-          .join(' | ');
-
-    client.say(to, `Now playing: ${result}`)
+    await announceNowPlaying(client, to)
   },
   who: async({ client, args, to }) => {
     const numListeners = await countListeners()
