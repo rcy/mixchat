@@ -58,7 +58,7 @@ async function announceNowPlaying(client, to) {
   const count = await countListeners()
 
   const str = [
-    `${count} listening to:`,
+    `${count} listener${count === 1 ? "" : "s"}:`,
     [
       [artist, title].filter(ifString).join(', '),
       formatDuration(duration),

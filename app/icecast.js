@@ -19,7 +19,7 @@ async function countListeners() {
         .find(e => e.match('Current Listeners'))
         .match(/: (.+)$/)
 
-  return match[1]
+  return +match[1]
 }
 
 module.exports = {
