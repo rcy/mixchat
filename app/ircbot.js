@@ -4,6 +4,7 @@ const liquidsoap = require('./liquidsoap')
 const youtubeDownload = require('./youtube.js')
 const { pushRequest } = require('./source.js')
 const { countListeners, fetchXspf } = require('./icecast.js')
+const { formatDuration } = require('./util.js')
 
 module.exports = function ircBot(host, nick, options) {
   const client = new irc.Client(host, nick, options)
@@ -37,7 +38,7 @@ module.exports = function ircBot(host, nick, options) {
     const { artist, album, title, duration } = data
     const count = await countListeners()
     if (count > 0) {
-      client.say(options.channels[0], `Next up: ${artist} | ${album} | ${title} | ${duration}s | ${count} listening`)
+      client.say(options.channels[0], `Next up: ${artist} | ${album} | ${title} | ${formatDuration(duration)} | ${count} listening`)
     }
   })
 
