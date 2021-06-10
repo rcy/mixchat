@@ -38,7 +38,14 @@ module.exports = function ircBot(host, nick, options) {
     const { artist, album, title, duration } = data
     const count = await countListeners()
     if (count > 0) {
-      client.say(options.channels[0], `Next up: ${artist} | ${album} | ${title} | ${formatDuration(duration)} | ${count} listening`)
+      const str = [
+        artist || null,
+        title || null,
+        formatDuration(duration),
+        `${count} listening`,
+      ].filter(x => x !== null)
+       .join(' | ');
+      client.say(options.channels[0], `Next up: ${str}`)
     }
   })
 
