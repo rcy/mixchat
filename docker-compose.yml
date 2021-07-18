@@ -19,14 +19,16 @@ services:
       - ICECAST_RELAY_PASSWORD
       - ICECAST_HOSTNAME
     ports:
-      - 8000:8000
+      - 8010:8000
   liquidsoap:
     build: liquidsoap
     volumes:
       - /media:/media:ro
     environment:
       - ICECAST_SOURCE_PASSWORD
+      - LIQUIDSOAP_BROADCAST_PASSWORD
       - API_BASE
     ports:
       - 1234:1234
-      - 8090:8090
+      - 8011:8000
+    restart: always
