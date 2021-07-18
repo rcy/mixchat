@@ -1,6 +1,7 @@
 set("server.telnet",true)
 set("server.telnet.port", 1234)
 set("server.telnet.bind_addr", "0.0.0.0")
+set("harbor.bind_addr","0.0.0.0")
 
 emergency = single("./emergency.ogg")
 
@@ -11,8 +12,10 @@ def my_request_function() =
   [request.create(result)]
 end
 
+live = input.harbor("live",port=8000,password=getenv("LIQUIDSOAP_BROADCAST_PASSWORD"))
+
 src = request.dynamic.list(my_request_function, id="dynlist")
-radio = fallback(track_sensitive=false, [src, emergency])
+radio = fallback(track_sensitive=false, [live, src, emergency])
 
 def track_change(metadata) =
   print("track_change")

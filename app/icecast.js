@@ -1,7 +1,7 @@
 const fetch = require('node-fetch')
 const convert = require('xml-js');
 async function fetchXspf() {
-  const raw = await fetch('http://radio.nonzerosoftware.com:8000/emb.ogg.xspf')
+  const raw = await fetch('http://icecast:8000/emb.ogg.xspf')
   const text = await raw.text()
   return JSON.parse(convert.xml2json(text, { arrayNotation: true }))
 }
