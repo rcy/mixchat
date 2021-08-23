@@ -1,14 +1,14 @@
 const PubSub = require('pubsub-js');
 const irc = require('irc-upd')
 const liquidsoap = require('./liquidsoap')
-const youtubeDownload = require('./youtube.js')
-const { pushRequest } = require('./source.js')
+//const youtubeDownload = require('./youtube.js')
+//const { pushRequest } = require('./source.js')
 const { countListeners, fetchXspf } = require('./icecast.js')
 const { formatDuration } = require('./util.js')
 
 let nowPlayingData = {}
 
-module.exports = function ircBot(host, nick, options) {
+module.exports = function ircBot(host, nick, pgClient, options) {
   const client = new irc.Client(host, nick, options)
 
   client.addListener('error', function(message) {
@@ -18,22 +18,36 @@ module.exports = function ircBot(host, nick, options) {
   client.addListener('message', async function (from, to, message) {
     console.log(from + ' => ' + to + ': ' + message);
 
-    const match = message.trim().match(/^!(\w+)\s*(.*)/);
+    const match = message.trim().match(/^!(.*)/);
 
     if (match) {
-      const command = match[1].toLowerCase()
-      const args = match[2]
-
-      const handler = handlers[command] || handlers.help
-      if (handler) {
-        try {
-          await handler({ client, args, from, to, message })
-        } catch(e) {
-          client.say(to, `${from}: ${message}: ${e.message}`)
-        }
-      }
+      const tokens = match[1].trim().split(/\s+/)
+      const data = { via: 'irc', from, to, tokens, host, nick }
+      await pgClient.query('insert into events (name, data) values ($1::text, $2::jsonb) returning *', ['IRC_COMMAND', data])
     }
   });
+
+  pgClient.on('notification', async function(msg) {
+    console.log('NOTIFICATION', msg)
+    if (msg.channel === 'result') {
+      const res = await pgClient.query(`
+select
+   events.name as event_name,
+   events.id as event_id,
+   events.data as event_data,
+   results.name as result_name,
+   results.id as result_id,
+   results.data as result_data
+ from results 
+ join events on results.event_id = events.id
+ where results.id = $1
+      `, [msg.payload])
+      const row = res.rows[0];
+      const message = `${row.event_data.from}: ${row.event_id}.${row.result_id} ${JSON.stringify(row.result_data)}`
+      client.say(row.event_data.to, message)
+    }
+  })
+  pgClient.query("LISTEN result");
 
   PubSub.subscribe('NOW', async function(msg, data) {
     console.log('RECV', msg, data)
@@ -68,16 +82,19 @@ async function announceNowPlaying(client, to) {
   client.say(to, str)
 }
 
+// DEAD vvv
 const handlers = {
   add: async ({ client, args, to, from }) => {
     const url = args
 
-    //client.say(to, `${from}: ripping...`)
+    client.say(to, `${from}: ripping...`)
 
-    const filename = await youtubeDownload(url)
-    pushRequest(filename)
+    //const filename = await youtubeDownload(url)
+    //pushRequest(filename)
 
-    client.say(to, `${from}: queued ${filename}`)
+    //client.say(to, `${from}: queued ${filename}`)
+
+    client.say(to, `${from}: ok working on it`)
   },
   now: async ({ client, args, to, from }) => {
     await announceNowPlaying(client, to)

@@ -1,21 +1,43 @@
+const { Client } = require('pg')
 const assert = require('assert').strict;
 
 const webserver = require('./webserver.js')
 const ircBot = require('./ircbot.js')
 
-const { LIBERA_PASSWORD, LIBERA_CHANNEL, LIBERA_NICK } = process.env;
+const { LIBERA_PASSWORD, LIBERA_CHANNEL, LIBERA_NICK, DATABASE_URL } = process.env;
 assert(LIBERA_PASSWORD)
 assert(LIBERA_CHANNEL)
 assert(LIBERA_NICK)
+assert(DATABASE_URL)
 
-ircBot('irc.libera.chat', LIBERA_NICK, {
-  //debug: true,
-  port: 6697,
-  secure: true,
-  channels: [LIBERA_CHANNEL],
-  sasl: true,
-  userName: LIBERA_NICK,
-  password: LIBERA_PASSWORD,
-})
+async function start() {
+  const pgClient = new Client({ connectionString: DATABASE_URL })
+  await pgClient.connect()
+  try {
+    // make sure database connection is sound right away
+    await pgClient.query('select * from events limit 1')
+  } catch(e) {
+    console.error(e)
+    process.exit(1)
+  }
 
-webserver({ port: 3010 })
+  ircBot('irc.libera.chat', LIBERA_NICK, pgClient, {
+    //debug: true,
+    port: 6697,
+    secure: true,
+    channels: [LIBERA_CHANNEL],
+    sasl: true,
+    userName: LIBERA_NICK,
+    password: LIBERA_PASSWORD,
+  })
+
+  const { makeWorkerUtils } = require("graphile-worker");
+  makeWorkerUtils({
+  }).then(workerUtils => {
+    workerUtils.addJob('hello', { name: `****** APP BOOTED ${pgClient.database}` })
+  })
+
+  webserver({ pgClient, port: 3010 })
+}
+
+start()

@@ -1,32 +1,24 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const jsonParser = bodyParser.json()
-const { getNext } = require('./source.js')
 const PubSub = require('pubsub-js');
-const youtubeDownload = require('./youtube.js')
-const { pushRequest } = require('./source.js')
 
-module.exports = function webserver({ port }) {
+module.exports = function webserver({ pgClient, port }) {
   const app = express()
 
   app.get('/', (req, res) => {
     res.send('Hello World!\n')
   })
 
-  app.post('/add', jsonParser, async (req, res) => {
-    try {
-      const { filename, data } = await youtubeDownload(req.body.url)
-      pushRequest(filename)
-      res.status(200).json({ filename, data })
-    } catch(e) {
-      console.error(e)
-      res.send(400, { error: e.message })
-    }
-  })
-
   app.get('/next', async (req, res) => {
-    const content = getNext()
-    res.send(`${content}\n`)
+    const { rows } = await pgClient.query('select id, filename from tracks order by bucket + fuzz limit 1')
+    const track = rows[0]
+    if (!track) {
+      res.send('/media/thoop-RGcR9hVG4f4.ogg')
+      return
+    }
+    await pgClient.query('insert into plays (track_id) values ($1)', [track.id])
+    res.send(`${track.filename}\n`)
   })
 
   app.post('/now', jsonParser, async (req, res) => {
@@ -40,10 +32,4 @@ module.exports = function webserver({ port }) {
   })
 
   return app
-}
-
-async function requestYoutube(url) {
-  const filename = await download(url)
-  const data = await liquidsoap(`request.push ${filename}`)
-  return { filename, data }
 }

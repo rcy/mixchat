@@ -1,7 +1,12 @@
 const fetch = require('node-fetch')
 const convert = require('xml-js');
+const assert = require('assert').strict;
+
+const ICECAST_URL = process.env['ICECAST_URL']
+assert(ICECAST_URL)
+
 async function fetchXspf() {
-  const raw = await fetch('http://icecast:8000/emb.ogg.xspf')
+  const raw = await fetch(`${ICECAST_URL}/emb.ogg.xspf`)
   const text = await raw.text()
   return JSON.parse(convert.xml2json(text, { arrayNotation: true }))
 }

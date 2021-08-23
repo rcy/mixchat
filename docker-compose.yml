@@ -8,6 +8,16 @@ services:
       - LIBERA_PASSWORD
       - LIBERA_CHANNEL
       - LIBERA_NICK
+      - DATABASE_URL=postgres://djfm:djfm@postgres:5432/djfullmoon_development
+      - ICECAST_URL=http://icecast:8000
+
+  worker:
+    build: worker
+    volumes:
+      - /media:/media:rw
+    environment:
+      - DATABASE_URL=postgres://djfm:djfm@postgres:5432/djfullmoon_development
+
   icecast:
     image: moul/icecast
     volumes:
@@ -20,6 +30,7 @@ services:
       - ICECAST_HOSTNAME
     ports:
       - 8010:8000
+
   liquidsoap:
     build: liquidsoap
     volumes:
@@ -32,3 +43,12 @@ services:
       - 1234:1234
       - 8011:8000
     restart: always
+
+  postgres:
+    image: postgres:13.3
+    ports:
+      - 5432:5432
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
