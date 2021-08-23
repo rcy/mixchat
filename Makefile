@@ -1,6 +1,6 @@
 up:
 	docker-compose build
-	docker-compose --env-file .env.dev up icecast liquidsoap postgres worker app
+	docker-compose --env-file .env.dev up icecast liquidsoap postgres
 
 deploy: export DOCKER_HOST=ssh://ubuntu@djfullmoon.com
 deploy:
