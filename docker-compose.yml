@@ -8,7 +8,7 @@ services:
       - LIBERA_PASSWORD
       - LIBERA_CHANNEL
       - LIBERA_NICK
-      - DATABASE_URL=postgres://djfm:djfm@postgres:5432/djfullmoon_development
+      - DATABASE_URL=${DATABASE_URL}
       - ICECAST_URL=http://icecast:8000
 
   worker:
@@ -16,7 +16,7 @@ services:
     volumes:
       - /media:/media:rw
     environment:
-      - DATABASE_URL=postgres://djfm:djfm@postgres:5432/djfullmoon_development
+      - DATABASE_URL=${DATABASE_URL}
 
   icecast:
     image: moul/icecast
