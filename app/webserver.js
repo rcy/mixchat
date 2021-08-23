@@ -14,7 +14,7 @@ module.exports = function webserver({ pgClient, port }) {
     const { rows } = await pgClient.query('select id, filename from tracks order by bucket, fuzz, created_at limit 1')
     const track = rows[0]
     if (!track) {
-      res.send('/media/thoop-RGcR9hVG4f4.ogg')
+      throw new Error('cannot find any track!')
       return
     }
     await pgClient.query('insert into plays (track_id) values ($1)', [track.id])
