@@ -47,7 +47,7 @@ services:
   postgres:
     image: postgres:13.3
     ports:
-      - 5432:5432
+      - ${PGPORT}:5432
     restart: always
     environment:
       - POSTGRES_USER=postgres
