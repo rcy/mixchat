@@ -14,6 +14,9 @@ uncommit:
 migrate:
 	npx graphile-migrate migrate
 
+migrate-prod:
+	. ../.env.prod && npx graphile-migrate migrate
+
 create:
 	psql postgres://postgres:postgres@localhost:5432/postgres -f create.sql
 
