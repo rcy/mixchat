@@ -1,6 +1,6 @@
-export DATABASE_URL?=postgres://djfm:djfm@localhost:5432/djfullmoon_development
-export SHADOW_DATABASE_URL?=postgres://djfm:djfm@localhost:5432/djfullmoon_shadow_development
-export ROOT_DATABASE_URL?=postgres://postgres:postgres@localhost:5432/postgres
+export DATABASE_URL?=postgres://djfm:djfm@localhost:54322/djfullmoon_development
+export SHADOW_DATABASE_URL?=postgres://djfm:djfm@localhost:54322/djfullmoon_shadow_development
+export ROOT_DATABASE_URL?=postgres://postgres:postgres@localhost:54322/postgres
 
 watch:
 	npx graphile-migrate watch
