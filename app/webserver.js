@@ -22,7 +22,7 @@ module.exports = function webserver({ pgClient, port }) {
   })
 
   app.post('/now', jsonParser, async (req, res) => {
-    console.log('SENT NOW', req.body)
+    console.log('SENT NOW', req.body.filename)
     PubSub.publish('NOW', req.body)
     res.sendStatus(200)
   });

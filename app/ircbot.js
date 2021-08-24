@@ -50,7 +50,7 @@ select
   pgClient.query("LISTEN result");
 
   PubSub.subscribe('NOW', async function(msg, data) {
-    console.log('RECV', msg, data)
+    console.log('RECV', msg, data.filename)
     nowPlayingData = data
 
     const count = await countListeners()
