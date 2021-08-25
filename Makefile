@@ -5,7 +5,7 @@ up:
 deploy: export DOCKER_HOST=ssh://ubuntu@djfullmoon.com
 deploy:
 	echo ${DOCKER_HOST}
-	docker-compose build
+	docker-compose --env-file .env.prod build
 	docker-compose --env-file .env.prod up -d icecast liquidsoap app worker
 
 psql:
