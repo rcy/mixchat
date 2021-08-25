@@ -23,6 +23,7 @@ module.exports = function webserver({ pgClient, port }) {
 
   app.post('/now', jsonParser, async (req, res) => {
     console.log('SENT NOW', req.body.filename)
+    await pgClient.query('insert into track_changes (track_id) values ((select id from tracks where filename = $1))', [req.body.filename]);
     PubSub.publish('NOW', req.body)
     res.sendStatus(200)
   });

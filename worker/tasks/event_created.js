@@ -29,6 +29,10 @@ const handlers = {
   echo: async function(args, { insertResult }) {
     insertResult({ msg: args })
   },
+  now: async function(args, { helpers, insertResult }) {
+    const { rows } = await helpers.query("select tracks.id, filename, track_changes.created_at as started_at from track_changes join tracks on track_id = tracks.id order by track_changes.created_at DESC limit 1");
+    await insertResult({ rows })
+  },
   add: async function(args, { event, helpers, insertResult }) {
     await insertResult({ status: 'adding' })
 
