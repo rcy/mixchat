@@ -1,3 +1,4 @@
+const liquidsoap = require('../liquidsoap.js')
 const youtubeDownload = require('../youtube.js')
 
 module.exports = async ({ id }, helpers) => {
@@ -28,6 +29,11 @@ module.exports = async ({ id }, helpers) => {
 const handlers = {
   echo: async function(args, { insertResult }) {
     insertResult({ msg: args })
+  },
+  skip: async function(args, { helpers, insertResult }) {
+    const result = await liquidsoap("dynlist.skip")
+    const { rows } = await helpers.query("insert into plays (action, track_id) values ('skipped', (select track_id from plays where action = 'played' order by created_at desc limit 1)) returning *")
+    await insertResult({ result, rows })
   },
   now: async function(args, { helpers, insertResult }) {
     const { rows } = await helpers.query("select tracks.id, filename, plays.created_at as started_at from plays join tracks on track_id = tracks.id where plays.action = 'played' order by plays.created_at DESC limit 1");
