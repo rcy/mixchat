@@ -30,7 +30,7 @@ const handlers = {
     insertResult({ msg: args })
   },
   now: async function(args, { helpers, insertResult }) {
-    const { rows } = await helpers.query("select tracks.id, filename, track_changes.created_at as started_at from track_changes join tracks on track_id = tracks.id order by track_changes.created_at DESC limit 1");
+    const { rows } = await helpers.query("select tracks.id, filename, plays.created_at as started_at from plays join tracks on track_id = tracks.id where plays.action = 'played' order by plays.created_at DESC limit 1");
     await insertResult({ rows })
   },
   add: async function(args, { event, helpers, insertResult }) {
