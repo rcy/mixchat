@@ -17,13 +17,18 @@ module.exports = function webserver({ pgClient, port }) {
       throw new Error('cannot find any track!')
       return
     }
-    await pgClient.query('insert into plays (track_id) values ($1)', [track.id])
+    await pgClient.query('insert into plays (track_id, action) values ($1, $2)', [track.id, 'queued'])
     res.send(`${track.filename}\n`)
   })
 
   app.post('/now', jsonParser, async (req, res) => {
     console.log('SENT NOW', req.body.filename)
-    await pgClient.query('insert into track_changes (track_id) values ((select id from tracks where filename = $1))', [req.body.filename]);
+    try {
+      await pgClient.query('insert into track_changes (track_id) values ((select id from tracks where filename = $1))', [req.body.filename]);
+      await pgClient.query('insert into plays (track_id, action) values ((select id from tracks where filename = $1), $2)', [req.body.filename, 'played'])
+    } catch(e) {
+      console.error(e)
+    }
     PubSub.publish('NOW', req.body)
     res.sendStatus(200)
   });
