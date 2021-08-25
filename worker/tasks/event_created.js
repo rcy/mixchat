@@ -15,9 +15,9 @@ module.exports = async ({ id }, helpers) => {
     // ================ dispatch to handlers here
     const handler = handlers[command]
     if (handler) {
-      handler(args, { event, insertResult, helpers })
+      await handler(args, { event, insertResult, helpers })
     } else {
-      insertResult({ error: `no such command: ${command}` })
+      await insertResult({ error: `no such command: ${command}` })
     }
   }
 
@@ -31,9 +31,13 @@ const handlers = {
     insertResult({ msg: args })
   },
   skip: async function(args, { helpers, insertResult }) {
-    const result = await liquidsoap("dynlist.skip")
-    const { rows } = await helpers.query("insert into plays (action, track_id) values ('skipped', (select track_id from plays where action = 'played' order by created_at desc limit 1)) returning *")
-    await insertResult({ result, rows })
+    try {
+      const result = await liquidsoap("dynlist.skip")
+      const { rows } = await helpers.query("insert into plays (action, track_id) values ('skipped', (select track_id from plays where action = 'played' order by created_at desc limit 1)) returning *")
+      await insertResult({ result, rows })
+    } catch(e) {
+      await insertResult({ status: 'error', error: e })
+    }
   },
   now: async function(args, { helpers, insertResult }) {
     const { rows } = await helpers.query("select tracks.id, filename, plays.created_at as started_at from plays join tracks on track_id = tracks.id where plays.action = 'played' order by plays.created_at DESC limit 1");
