@@ -47,7 +47,11 @@ const handlers = {
   },
   now: async function(args, { helpers, insertResult }) {
     const { rows } = await helpers.query("select tracks.id, filename, plays.created_at as started_at from plays join tracks on track_id = tracks.id where plays.action = 'played' order by plays.created_at DESC limit 1");
-    await insertResult({ rows })
+    const track = rows[0]
+    if (track) {
+      const message = `${track.id} ${track.filename}`
+      await insertResult({ message })
+    }
   },
   add: async function(args, { event, helpers, insertResult }) {
     //await insertResult({ status: 'adding' })
