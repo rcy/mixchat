@@ -17,7 +17,7 @@ module.exports = async ({ id }, helpers) => {
     if (handler) {
       await handler(args, { event, insertResult, helpers })
     } else {
-      await insertResult({ error: `no such command: ${command}` })
+      await insertResult({ message: `Bad command !${command}. Type !help` })
     }
   }
 
@@ -27,8 +27,14 @@ module.exports = async ({ id }, helpers) => {
 };
 
 const handlers = {
+  '?': async function(args, { helpers, insertResult }) {
+    const { rows } = await helpers.query("select * from results where id = $1", [args[0]])
+    if (rows[0]) {
+      insertResult({ message: JSON.stringify(rows[0].data) })
+    }
+  },
   echo: async function(args, { insertResult }) {
-    insertResult({ msg: args })
+    insertResult({ message: `${args.join(' ')}` })
   },
   skip: async function(args, { helpers, insertResult }) {
     try {
@@ -44,7 +50,7 @@ const handlers = {
     await insertResult({ rows })
   },
   add: async function(args, { event, helpers, insertResult }) {
-    await insertResult({ status: 'adding' })
+    //await insertResult({ status: 'adding' })
 
     const url = args.join(' ')
     console.log(`ripping ${url}`)
@@ -54,20 +60,21 @@ const handlers = {
     // download
     try {
       filename = await youtubeDownload(url)
-      await insertResult({ status: 'added', filename })
+      //await insertResult({ status: 'added', filename })
     } catch(e) {
       console.error(e)
-      await insertResult({ status: 'error', error: e })
+      await insertResult({ status: 'error', error: e, message: e.stderr.split('. ')[0] })
       return
     }
 
     // add track to db
     try {
       const { rows } = await helpers.query("insert into tracks (filename, event_id) values ($1::text, $2::integer) returning id", [filename, event.id]);
-      await insertResult({ status: 'queued', filename, id: rows[0].id })
+      const track_id = rows[0].id
+      await insertResult({ filename, track_id, message: `queued track ${track_id} ${filename}` })
     } catch(e) {
       console.error(e)
-      await insertResult({ status: 'error', message: e.message, code: e.code, detail: e.detail })
+      await insertResult({ status: 'error', message: e.message, error: e, code: e.code, detail: e.detail })
     }
   }
 }

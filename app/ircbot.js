@@ -43,7 +43,11 @@ select
  where results.id = $1
       `, [msg.payload])
       const row = res.rows[0];
-      const message = `${row.event_data.from}: ${row.event_id}.${row.result_id} ${JSON.stringify(row.result_data)}`
+      //const message = `${row.event_data.from}: ${row.event_id}.${row.result_id} ${JSON.stringify(row.result_data)}`
+      let message = `${row.event_data.from}: ${row.result_data.message}`
+      if (row.result_data.error) {
+        message += ` !? ${row.result_id}`
+      }
       client.say(row.event_data.to, message)
     }
   })
