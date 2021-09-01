@@ -1,6 +1,6 @@
 const PubSub = require('pubsub-js');
 const irc = require('irc-upd')
-const liquidsoap = require('./liquidsoap')
+//const liquidsoap = require('./liquidsoap')
 //const youtubeDownload = require('./youtube.js')
 //const { pushRequest } = require('./source.js')
 const { countListeners, fetchXspf } = require('./icecast.js')
