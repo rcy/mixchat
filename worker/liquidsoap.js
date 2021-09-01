@@ -12,7 +12,9 @@ module.exports = async function liquidsoap(command, host = '172.17.0.1', port = 
     })
 
     client.on('data', function(data) {
-      const text = data.toString().trim()
+      const text = data.toString()
+
+      result += text
 
       console.log('liquidsoap data: <<<', text, '>>>')
 
@@ -20,17 +22,16 @@ module.exports = async function liquidsoap(command, host = '172.17.0.1', port = 
       for (let line of lines) {
         console.log('liquidsoap line', line);
         if (line === "END") {
-          console.log('liquidsoap write quit');
           client.write('quit\n')
-        } else {
-          result += line
         }
       }
     });
 
     client.on('close', function() {
-      console.log('liquidsoap telnet connection closed (resolving)');
-      resolve(result.toString())
+      console.log('liquidsoap telnet connection closed');
+      const lines = result.trim().split('\r\n');
+      console.log('RESOLVE:', command, lines);
+      resolve(lines)
     });
 
     client.on('error', function(e) {

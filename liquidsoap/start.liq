@@ -5,32 +5,6 @@ set("harbor.bind_addr","0.0.0.0")
 
 emergency = single("./emergency.ogg")
 
-def my_request_function() = 
-  # Get the first line of my external process
-  result = list.hd(default="", get_process_lines("sh ./request.sh"))
-  # Create and return a request using this result
-  [request.create(result)]
-end
-
-live = input.harbor("live",port=8000,password=getenv("LIQUIDSOAP_BROADCAST_PASSWORD"))
-
-src = request.dynamic.list(my_request_function, id="dynlist")
-radio = fallback(track_sensitive=false, [live, src, emergency])
-
-def track_change(metadata) =
-  print("track_change")
-  filename = metadata["filename"]
-  duration = request.duration(filename)
-  metadata = list.append(metadata, [("duration", string_of(int_of_float(duration)))])
-  print(metadata)
-  result = http.post(getenv("API_BASE") ^ "/now", data=json_of(metadata), headers=[("Content-Type","application/json")])
-end
-
-radio = on_track(track_change, radio)
-
-output.icecast(%vorbis, radio, mount="emb.ogg", host="icecast", password=getenv("ICECAST_SOURCE_PASSWORD"))
-output.icecast(%mp3, radio, mount="emb.mp3", host="icecast", password=getenv("ICECAST_SOURCE_PASSWORD"))
-
 def add_skip_command(s) =
   # A command to skip
   def skip(_) =
@@ -44,4 +18,41 @@ def add_skip_command(s) =
                   "skip",skip)
 end
 
-add_skip_command(src)
+def make_station(slug) =
+  def my_request_function() =
+    # Get the first line of my external process
+    result = list.hd(default="", get_process_lines("sh ./request.sh " ^ slug))
+    # Create and return a request using this result
+    [request.create(result)]
+  end
+
+  def track_change(metadata) =
+    print("track_change")
+    filename = metadata["filename"]
+    duration = request.duration(filename)
+    metadata = list.append(metadata, [("duration", string_of(int_of_float(duration)))])
+    print(metadata)
+    result = http.post(getenv("API_BASE") ^ "/now/" ^ slug, data=json_of(metadata), headers=[("Content-Type","application/json")])
+  end
+
+  live = input.harbor("live/" ^ slug, port=8000, password=getenv("LIQUIDSOAP_BROADCAST_PASSWORD"))
+  src = request.dynamic.list(my_request_function, id="dynlist_" ^ slug)
+  radio = fallback(track_sensitive=false, [live, src, emergency])
+  radio = on_track(track_change, radio)
+
+  output.icecast(%vorbis, radio, mount=slug ^ ".ogg", host="icecast", password=getenv("ICECAST_SOURCE_PASSWORD"))
+  output.icecast(%mp3, radio, mount=slug ^ ".mp3", host="icecast", password=getenv("ICECAST_SOURCE_PASSWORD"))
+
+  add_skip_command(src)
+end
+
+# define an output to keep liquidsoap from exiting
+output.icecast(%vorbis, emergency, mount="emergency.ogg", host="icecast", password=getenv("ICECAST_SOURCE_PASSWORD"))
+
+def make_station_wrapper(slug) =
+  make_station(slug)
+  "Station created:" ^ slug
+end
+server.register(namespace="meta",usage="make_station slug",description="Make a station","make_station",make_station_wrapper)
+
+make_station("emb")

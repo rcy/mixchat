@@ -38,10 +38,17 @@ const handlers = {
   },
   skip: async function(args, { helpers, insertResult }) {
     try {
-      await liquidsoap("dynlist.skip")
-      await helpers.query("insert into plays (action, track_id) values ('skipped', (select track_id from plays where action = 'played' order by created_at desc limit 1)) returning *")
+      // TODO make slug dynamic when we generate irc channel mappings to stations
+      const slug = "emb";
+
+      const result = await liquidsoap(`dynlist_${slug}.skip`)
+      if (result[0] === 'Skipped!' && result[1] === 'END') {
+        await helpers.query("insert into plays (action, track_id) values ('skipped', (select track_id from plays where action = 'played' order by created_at desc limit 1)) returning *")
+      } else {
+        await insertResult({ error: result, message: 'Skip failed' })
+      }
     } catch(e) {
-      await insertResult({ status: 'error', error: e, message: error.message })
+      await insertResult({ error: e, message: error.message })
     }
   },
   now: async function(args, { helpers, insertResult }) {
