@@ -36,6 +36,8 @@ services:
     volumes:
       - /media:/media:ro
     environment:
+      - ICECAST_HOST
+      - ICECAST_PORT
       - ICECAST_SOURCE_PASSWORD
       - LIQUIDSOAP_BROADCAST_PASSWORD
       - API_BASE
