@@ -21,7 +21,7 @@ module.exports = function webserver({ pgClient, port }) {
     res.send(`${track.filename}\n`)
   })
 
-  app.post('/now', jsonParser, async (req, res) => {
+  app.post('/now/:station', jsonParser, async (req, res) => {
     console.log('SENT NOW', req.body.filename)
     try {
       await pgClient.query('insert into plays (track_id, action) values ((select id from tracks where filename = $1), $2)', [req.body.filename, 'played'])
