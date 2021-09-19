@@ -4,5 +4,6 @@ pkgs.mkShell {
   buildInputs = with pkgs; [
     nodejs
     foreman
+    liquidsoap
   ];
 }
