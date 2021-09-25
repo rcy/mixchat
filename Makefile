@@ -15,4 +15,4 @@ deploy:
 	docker-compose --env-file .env.prod up -d worker
 
 psql:
-	psql postgres://djfm:djfm@localhost:5432/djfullmoon_development
+	psql postgres://djfm:djfm@localhost:54322/djfullmoon_development
