@@ -59,7 +59,7 @@ select
 
     const count = await countListeners(data.station)
 
-    if (count >= 0) {
+    if (count > 0) {
       announceNowPlaying(client, options.channels[0])
     }
   })
