@@ -5,14 +5,16 @@ const assert = require('assert').strict;
 const ICECAST_URL = process.env['ICECAST_URL']
 assert(ICECAST_URL)
 
-async function fetchXspf() {
-  const raw = await fetch(`${ICECAST_URL}/emb.ogg.xspf`)
+async function fetchXspf(station) {
+  const url = `${ICECAST_URL}/${station}.ogg.xspf`
+  console.log('fetchXspf', url)
+  const raw = await fetch(url)
   const text = await raw.text()
   return JSON.parse(convert.xml2json(text, { arrayNotation: true }))
 }
 
-async function countListeners() {
-  const xspf = await fetchXspf()
+async function countListeners(station) {
+  const xspf = await fetchXspf(station)
 
   const match =
     xspf.elements[0].elements
@@ -28,6 +30,5 @@ async function countListeners() {
 }
 
 module.exports = {
-  fetchXspf,
   countListeners,
 }

@@ -3,7 +3,7 @@ const irc = require('irc-upd')
 //const liquidsoap = require('./liquidsoap')
 //const youtubeDownload = require('./youtube.js')
 //const { pushRequest } = require('./source.js')
-const { countListeners, fetchXspf } = require('./icecast.js')
+const { countListeners } = require('./icecast.js')
 const { formatDuration } = require('./util.js')
 
 let nowPlayingData = {}
@@ -54,12 +54,12 @@ select
   pgClient.query("LISTEN result");
 
   PubSub.subscribe('NOW', async function(msg, data) {
-    console.log('RECV', msg, data.filename)
+    console.log('RECV', msg, data.station, data.filename)
     nowPlayingData = data
 
-    const count = await countListeners()
+    const count = await countListeners(data.station)
 
-    if (count > 0) {
+    if (count >= 0) {
       announceNowPlaying(client, options.channels[0])
     }
   })
@@ -72,11 +72,11 @@ function ifString(x) {
 }
 
 async function announceNowPlaying(client, to) {
-  const { artist, album, title, duration } = nowPlayingData
-  const count = await countListeners()
+  const { artist, album, title, duration, station } = nowPlayingData
+  const count = await countListeners(station)
 
   const str = [
-    `${count} listener${count === 1 ? "" : "s"}:`,
+    `${station} ${count} listener${count === 1 ? "" : "s"}:`,
     [
       [artist, title].filter(ifString).join(', '),
       formatDuration(duration),
