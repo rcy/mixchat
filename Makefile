@@ -6,7 +6,7 @@ up:
 	docker-compose --env-file .env.dev build ${SERVICES}
 	docker-compose --env-file .env.dev up -d ${SERVICES}
 
-deploy: export DOCKER_HOST=ssh://ubuntu@djfullmoon.com
+deploy: export DOCKER_HOST=ssh://ubuntu@stream.djfullmoon.com
 deploy:
 	echo ${DOCKER_HOST}
 	docker-compose --env-file .env.prod build
