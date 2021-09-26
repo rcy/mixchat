@@ -5,8 +5,7 @@ const assert = require('assert').strict;
 const ICECAST_URL = process.env['ICECAST_URL']
 assert(ICECAST_URL)
 
-async function fetchXspf(station) {
-  const url = `${ICECAST_URL}/${station}.ogg.xspf`
+async function fetchXspf(url) {
   console.log('fetchXspf', url)
   const raw = await fetch(url)
   const text = await raw.text()
@@ -14,7 +13,12 @@ async function fetchXspf(station) {
 }
 
 async function countListeners(station) {
-  const xspf = await fetchXspf(station)
+  return await countFormatListeners(station, 'ogg') + await countFormatListeners(station, 'mp3')
+}
+
+async function countFormatListeners(station, format) {
+  const url = `${ICECAST_URL}/${station}.${format}.xspf`
+  const xspf = await fetchXspf(url)
 
   const match =
     xspf.elements[0].elements
