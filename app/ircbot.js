@@ -60,7 +60,7 @@ select
     const count = await countListeners(data.station)
 
     if (count > 0) {
-      announceNowPlaying(client, options.channels[0])
+      announceNowPlaying({ client, to: options.channels[0] })
     }
   })
 
@@ -71,7 +71,7 @@ function ifString(x) {
   return typeof x === 'string'
 }
 
-async function announceNowPlaying(client, to) {
+async function announceNowPlaying({ client, to }) {
   const { artist, album, title, duration, station } = nowPlayingData
   const count = await countListeners(station)
 
