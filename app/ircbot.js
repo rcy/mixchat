@@ -6,8 +6,6 @@ const irc = require('irc-upd')
 const { countListeners } = require('./icecast.js')
 const { formatDuration } = require('./util.js')
 
-let nowPlayingData = {}
-
 module.exports = function ircBot(host, nick, pgClient, options) {
   const client = new irc.Client(host, nick, options)
 
@@ -55,12 +53,11 @@ select
 
   PubSub.subscribe('NOW', async function(msg, data) {
     console.log('RECV', msg, data.station, data.filename)
-    nowPlayingData = data
-
+    const nowPlayingData = data
     const count = await countListeners(data.station)
 
     if (count > 0) {
-      announceNowPlaying({ client, to: options.channels[0] })
+      announceNowPlaying({ client, to: options.channels[0], count, nowPlayingData })
     }
   })
 
@@ -71,9 +68,8 @@ function ifString(x) {
   return typeof x === 'string'
 }
 
-async function announceNowPlaying({ client, to }) {
+async function announceNowPlaying({ client, to, count, nowPlayingData }) {
   const { artist, album, title, duration, station } = nowPlayingData
-  const count = await countListeners(station)
 
   const str = [
     `${station} ${count} listener${count === 1 ? "" : "s"}:`,
