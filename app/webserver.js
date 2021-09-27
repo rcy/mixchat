@@ -10,26 +10,35 @@ module.exports = function webserver({ pgClient, port }) {
     res.send('Hello World!\n')
   })
 
-  app.get('/next/:station', async (req, res) => {
-    const { rows } = await pgClient.query('select id, filename from tracks order by bucket, fuzz, created_at limit 1')
-    const track = rows[0]
+  app.get('/next/:station_slug', async (req, res) => {
+    const { rows: [{ station_id }] } = await pgClient.query("select id as station_id from stations where slug = $1", [req.params.station_slug]);
+
+    const { rows: [track] } = await pgClient.query('select id, filename from tracks where station_id = $1 order by bucket, fuzz, created_at limit 1', [station_id])
+    //const track = rows[0]
     if (!track) {
       throw new Error('cannot find any track!')
       return
     }
-    console.log('/next', req.params, track)
-    await pgClient.query('insert into plays (track_id, action) values ($1, $2)', [track.id, 'queued'])
+    console.log(`/next/${req.params.station_slug}`, { track, station_id })
+    await pgClient.query('insert into track_events (station_id, track_id, action) values ($1, $2, $3)', [station_id, track.id, 'queued'])
     res.send(`${track.filename}\n`)
   })
 
-  app.post('/now/:station', jsonParser, async (req, res) => {
+  app.post('/now/:station_slug', jsonParser, async (req, res) => {
     console.log('SENT NOW', req.params, req.body.filename)
-    try {
-      await pgClient.query('insert into plays (track_id, action) values ((select id from tracks where filename = $1), $2)', [req.body.filename, 'played'])
-    } catch(e) {
-      console.error(e)
-    }
-    PubSub.publish('NOW', { ...req.body, station: req.params.station })
+
+    await pgClient.query(`
+insert into track_events (
+   station_id,
+   track_id,
+   action
+) values (
+   (select id from stations where slug = $1),
+   (select id from tracks where filename = $2),
+   'played'
+)`, [req.params.station_slug, req.body.filename]);
+
+    PubSub.publish('NOW', { ...req.body, station: req.params.station_slug })
     res.sendStatus(200)
   });
 

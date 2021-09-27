@@ -22,7 +22,7 @@ module.exports = async ({ id }, helpers) => {
   }
 
   async function insertResult(data) {
-    return await helpers.query("insert into results (event_id, name, data) values ($1::integer, $2::text, $3::jsonb) returning id", [event.id, 'IRC_RESPONSE', data])
+    return await helpers.query("insert into results (station_id, event_id, name, data) values ($1::integer, $2::integer, $3::text, $4::jsonb) returning id", [event.station_id, event.id, 'IRC_RESPONSE', data])
   }
 };
 
@@ -36,19 +36,18 @@ const handlers = {
   echo: async function(args, { insertResult }) {
     insertResult({ message: `${args.join(' ')}` })
   },
-  skip: async function(args, { helpers, insertResult }) {
+  skip: async function(args, { event, helpers, insertResult }) {
     try {
-      // TODO make slug dynamic when we generate irc channel mappings to stations
-      const slug = "emb";
+      const { rows: [{ slug }] } = await helpers.query("select slug from stations where id = $1", [event.station_id]);
 
       const result = await liquidsoap(`dynlist_${slug}.skip`)
       if (result[0] === 'Skipped!' && result[1] === 'END') {
-        await helpers.query("insert into plays (action, track_id) values ('skipped', (select track_id from plays where action = 'played' order by created_at desc limit 1)) returning *")
+        await helpers.query("insert into track_events (station_id, action, track_id) values ($1, 'skipped', (select track_id from plays where action = 'played' order by created_at desc limit 1))", [event.station_id])
       } else {
         await insertResult({ error: result, message: 'Skip failed' })
       }
     } catch(e) {
-      await insertResult({ error: e, message: error.message })
+      await insertResult({ error: e, message: e.message })
     }
   },
   now: async function(args, { helpers, insertResult }) {
@@ -79,7 +78,7 @@ const handlers = {
 
     // add track to db
     try {
-      const { rows } = await helpers.query("insert into tracks (filename, event_id) values ($1::text, $2::integer) returning id", [filename, event.id]);
+      const { rows } = await helpers.query("insert into tracks (station_id, filename, event_id, bucket) values ($1::integer, $2::text, $3::integer, current_bucket($1::integer)) returning id", [event.station_id, filename, event.id]);
       const track_id = rows[0].id
       await insertResult({ filename, track_id, message: `queued track ${track_id} ${filename}` })
     } catch(e) {

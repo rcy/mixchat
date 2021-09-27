@@ -7,6 +7,7 @@ const { countListeners } = require('./icecast.js')
 const { formatDuration } = require('./util.js')
 
 module.exports = function ircBot(host, nick, pgClient, options) {
+  console.log('ircBot connecting', { host, nick, options })
   const client = new irc.Client(host, nick, options)
 
   client.addListener('error', function(message) {
@@ -21,7 +22,9 @@ module.exports = function ircBot(host, nick, pgClient, options) {
     if (match) {
       const tokens = match[1].trim().split(/\s+/)
       const data = { via: 'irc', from, to, tokens, host, nick }
-      await pgClient.query('insert into events (name, data) values ($1::text, $2::jsonb) returning *', ['IRC_COMMAND', data])
+      const { rows: [{ station_id }] } = await pgClient.query("select station_id from irc_channels where channel = $1 and server = $2", [to, host]);
+
+      await pgClient.query('insert into events (station_id, name, data) values ($1::integer, $2::text, $3::jsonb) returning *', [station_id, 'IRC_COMMAND', data])
     }
   });
 

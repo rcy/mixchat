@@ -21,11 +21,13 @@ async function start() {
     process.exit(1)
   }
 
+  const { rows } = await pgClient.query('select channel from irc_channels')
+  const channels = rows.map(row => row.channel)
   ircBot('irc.libera.chat', LIBERA_NICK, pgClient, {
     //debug: true,
     port: 6697,
     secure: true,
-    channels: [LIBERA_CHANNEL],
+    channels: [...channels, '#fakeemb'],
     sasl: true,
     userName: LIBERA_NICK,
     password: LIBERA_PASSWORD,

@@ -70,4 +70,4 @@ server.register(namespace="meta",usage="make_station slug",description="Make a s
 
 make_station("emb")
 make_station("tlm")
-make_station("xyz")
+
