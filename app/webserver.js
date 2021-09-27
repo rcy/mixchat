@@ -14,14 +14,16 @@ module.exports = function webserver({ pgClient, port }) {
     const { rows: [{ station_id }] } = await pgClient.query("select id as station_id from stations where slug = $1", [req.params.station_slug]);
 
     const { rows: [track] } = await pgClient.query('select id, filename from tracks where station_id = $1 order by bucket, fuzz, created_at limit 1', [station_id])
-    //const track = rows[0]
+
     if (!track) {
-      throw new Error('cannot find any track!')
+      console.error('cannot find any track!')
+      res.sendStatus(404)
       return
+    } else {
+      console.log(`/next/${req.params.station_slug}`, { track, station_id })
+      await pgClient.query('insert into track_events (station_id, track_id, action) values ($1, $2, $3)', [station_id, track.id, 'queued'])
+      res.send(`${track.filename}\n`)
     }
-    console.log(`/next/${req.params.station_slug}`, { track, station_id })
-    await pgClient.query('insert into track_events (station_id, track_id, action) values ($1, $2, $3)', [station_id, track.id, 'queued'])
-    res.send(`${track.filename}\n`)
   })
 
   app.post('/now/:station_slug', jsonParser, async (req, res) => {
