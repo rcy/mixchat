@@ -10,6 +10,7 @@ services:
       - LIBERA_NICK
       - DATABASE_URL=${DATABASE_URL}
       - ICECAST_URL=http://icecast:8000
+    restart: on-failure
 
   worker:
     build: worker
@@ -17,6 +18,7 @@ services:
       - /media:/media:rw
     environment:
       - DATABASE_URL=${DATABASE_URL}
+    restart: on-failure
 
   icecast:
     image: moul/icecast
@@ -30,6 +32,7 @@ services:
       - ICECAST_HOSTNAME
     ports:
       - 8010:8000
+    restart: on-failure
 
   liquidsoap:
     build: liquidsoap
@@ -44,7 +47,7 @@ services:
     ports:
       - 1234:1234
       - 8011:8000
-    restart: always
+    restart: on-failure
 
   postgres:
     image: postgres:13.3
@@ -54,3 +57,4 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    restart: on-failure
