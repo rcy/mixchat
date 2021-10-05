@@ -60,7 +60,12 @@ select
     const count = await countListeners(data.station)
 
     if (count > 0) {
-      announceNowPlaying({ client, to: options.channels[0], count, nowPlayingData })
+      const { rows: [{ channel }] } = await pgClient.query(
+        "select channel from irc_channels join stations on stations.id = station_id where slug = $1",
+        [data.station]
+      );
+
+      announceNowPlaying({ client, to: channel, count, nowPlayingData })
     }
   })
 
