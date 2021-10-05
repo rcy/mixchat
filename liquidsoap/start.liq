@@ -60,7 +60,7 @@ def make_station(slug) =
 end
 
 # define an output to keep liquidsoap from exiting
-output.icecast(%vorbis, emergency, mount="emergency.ogg", port=icecast_port, host=icecast_host, password=icecast_source_password)
+#output.icecast(%vorbis, emergency, mount="emergency.ogg", port=icecast_port, host=icecast_host, password=icecast_source_password)
 
 def make_station_wrapper(slug) =
   make_station(slug)
@@ -70,4 +70,3 @@ server.register(namespace="meta",usage="make_station slug",description="Make a s
 
 make_station("emb")
 make_station("tlm")
-

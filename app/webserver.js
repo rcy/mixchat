@@ -16,7 +16,7 @@ module.exports = function webserver({ pgClient, port }) {
     const { rows: [track] } = await pgClient.query('select id, filename from tracks where station_id = $1 order by bucket, fuzz, created_at limit 1', [station_id])
 
     if (!track) {
-      console.error('cannot find any track!')
+      //console.error('cannot find any track!')
       res.sendStatus(404)
       return
     } else {
@@ -29,7 +29,8 @@ module.exports = function webserver({ pgClient, port }) {
   app.post('/now/:station_slug', jsonParser, async (req, res) => {
     console.log('SENT NOW', req.params, req.body.filename)
 
-    await pgClient.query(`
+    try {
+      await pgClient.query(`
 insert into track_events (
    station_id,
    track_id,
@@ -39,6 +40,10 @@ insert into track_events (
    (select id from tracks where filename = $2),
    'played'
 )`, [req.params.station_slug, req.body.filename]);
+    } catch(e) {
+      // TODO: handle better
+      console.error(e);
+    }
 
     PubSub.publish('NOW', { ...req.body, station: req.params.station_slug })
     res.sendStatus(200)
