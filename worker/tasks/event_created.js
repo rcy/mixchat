@@ -50,8 +50,15 @@ const handlers = {
       await insertResult({ error: e, message: e.message })
     }
   },
-  now: async function(args, { helpers, insertResult }) {
-    const { rows } = await helpers.query("select tracks.id, filename, plays.created_at as started_at from plays join tracks on track_id = tracks.id where plays.action = 'played' order by plays.created_at DESC limit 1");
+  now: async function(args, { event, helpers, insertResult }) {
+    const { rows } = await helpers.query(`
+select tracks.id, filename, plays.created_at as started_at
+from plays
+join tracks on track_id = tracks.id
+where station_id = $1
+  and plays.action = 'played'
+order by plays.created_at DESC limit 1
+    `, [event.station_id]);
     const track = rows[0]
     if (track) {
       const message = `${track.id} ${track.filename}`
