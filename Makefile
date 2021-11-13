@@ -4,7 +4,7 @@ start:
 up: SERVICES=icecast postgres liquidsoap
 up:
 	docker-compose --env-file .env.dev build ${SERVICES}
-	docker-compose --env-file .env.dev up -d ${SERVICES}
+	docker-compose --env-file .env.dev up ${SERVICES}
 
 deploy: export DOCKER_HOST=ssh://ubuntu@stream.djfullmoon.com
 deploy:
