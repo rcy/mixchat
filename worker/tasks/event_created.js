@@ -50,6 +50,12 @@ const handlers = {
       await insertResult({ error: e, message: e.message })
     }
   },
+  yeet: async function(args, { event, helpers, insertResult }) {
+    const trackId = args[0]
+    const { rows } = await helpers.query("select * from tracks where station_id = $1 and id = $2", [event.station_id, trackId])
+    await helpers.query("insert into track_events (station_id, action, track_id) values ($1, 'yeeted', $2)", [event.station_id, trackId])
+    await insertResult({ message: `yeeted ${trackId} ${rows[0].filename} into oblivion`})
+  },
   now: async function(args, { event, helpers, insertResult }) {
     const { rows } = await helpers.query(`
 select tracks.id, filename, plays.created_at as started_at
