@@ -31,7 +31,7 @@ const handlers = {
     const commands = Object.keys(handlers).map(k => `!${k}`).join(' ')
     await insertResult({ message: commands })
   },
-  '?': async function(args, { helpers, insertResult }) {
+  'error': async function(args, { helpers, insertResult }) {
     const { rows } = await helpers.query("select * from results where id = $1", [args[0]])
     if (rows[0]) {
       insertResult({ message: JSON.stringify(rows[0].data) })
