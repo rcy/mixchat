@@ -60,12 +60,17 @@ select
     const count = await countListeners(data.station)
 
     if (count > 0) {
-      const { rows: [{ channel }] } = await pgClient.query(
-        "select channel from irc_channels join stations on stations.id = station_id where slug = $1",
+      const { rows: [{ channel, id: stationId }] } = await pgClient.query(
+        "select stations.id, channel from irc_channels join stations on stations.id = station_id where slug = $1",
         [data.station]
       );
 
-      announceNowPlaying({ client, to: channel, count, nowPlayingData })
+      const { rows: [{ id: trackId }] } = await pgClient.query(
+        "select id from tracks where station_id = $1 and filename = $2",
+        [stationId, data.filename]
+      );
+
+      announceNowPlaying({ client, to: channel, count, nowPlayingData: {...nowPlayingData, trackId} })
     }
   })
 
@@ -77,12 +82,13 @@ function ifString(x) {
 }
 
 async function announceNowPlaying({ client, to, count, nowPlayingData }) {
-  const { artist, album, title, duration, station } = nowPlayingData
+  const { artist, album, title, duration, station, trackId } = nowPlayingData
 
   const str = [
-    `${station} ${count} listener${count === 1 ? "" : "s"}:`,
+    `${count} listener${count === 1 ? "" : "s"}:`,
     [
       [artist, title].filter(ifString).join(', '),
+      `[${trackId}]`,
       formatDuration(duration),
     ].filter(ifString).join(' - ') || "???"
   ].join(' ')
