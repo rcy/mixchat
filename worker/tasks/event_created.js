@@ -27,6 +27,10 @@ module.exports = async ({ id }, helpers) => {
 };
 
 const handlers = {
+  'help': async function(args, { helpers, insertResult }) {
+    const commands = Object.keys(handlers).map(k => `!${k}`).join(' ')
+    await insertResult({ message: commands })
+  },
   '?': async function(args, { helpers, insertResult }) {
     const { rows } = await helpers.query("select * from results where id = $1", [args[0]])
     if (rows[0]) {
