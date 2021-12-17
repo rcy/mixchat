@@ -1,7 +1,6 @@
-FROM node:16-alpine
+FROM node:16-bullseye
 
-# youtube-dl needs python, ffmpeg
-RUN apk add --update --no-cache python3 ffmpeg && ln -sf python3 /usr/bin/python
+RUN apt-get update && apt-get install -y ffmpeg bsdgames
 
 WORKDIR /app
 

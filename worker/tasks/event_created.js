@@ -1,5 +1,6 @@
 const liquidsoap = require('../liquidsoap.js')
 const youtubeDownload = require('../youtube.js')
+const { execSync } = require('child_process')
 
 module.exports = async ({ id }, helpers) => {
   const { rows } = await helpers.query("select * from events where id = $1", [id])
@@ -109,5 +110,8 @@ order by plays.created_at DESC limit 1
     await new Promise(resolve => setTimeout(resolve, ms))
 
     insertResult({ message: `slept for ${ms} milliseconds` })
+  },
+  pom: async function(_args, { insertResult }) {
+    insertResult({ message: execSync('/usr/games/pom').toString() })
   },
 }
