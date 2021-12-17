@@ -102,5 +102,12 @@ order by plays.created_at DESC limit 1
       console.error(e)
       await insertResult({ status: 'error', message: e.message, error: e, code: e.code, detail: e.detail })
     }
-  }
+  },
+  sleep: async function(args, { insertResult }) {
+    const ms = +args;
+
+    await new Promise(resolve => setTimeout(resolve, ms))
+
+    insertResult({ message: `slept for ${ms} milliseconds` })
+  },
 }
