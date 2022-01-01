@@ -1,6 +1,6 @@
 FROM node:16-bullseye
 
-RUN apt-get update && apt-get install -y ffmpeg bsdgames
+RUN apt-get update && apt-get install -y ffmpeg bsdgames python-is-python3
 
 WORKDIR /app
 
