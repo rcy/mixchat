@@ -18,7 +18,7 @@ migrate-prod:
 	. ../.env.prod && npx graphile-migrate migrate
 
 create:
-	psql postgres://postgres:postgres@localhost:5432/postgres -f create.sql
+	psql ${ROOT_DATABASE_URL} -f create.sql
 
 init:
 	npx graphile-migrate init
