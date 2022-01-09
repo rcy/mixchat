@@ -5,5 +5,6 @@ pkgs.mkShell {
     nodejs
     foreman
     liquidsoap
+    postgresql_13
   ];
 }
