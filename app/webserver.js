@@ -1,10 +1,14 @@
 const express = require('express')
+const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const jsonParser = bodyParser.json()
 const PubSub = require('pubsub-js');
 
 module.exports = function webserver({ pgClient, port }) {
   const app = express()
+
+  // add logging middleware
+  app.use(morgan('combined'))
 
   app.get('/', (req, res) => {
     res.send('Hello World!\n')

@@ -14,6 +14,7 @@
     "express": "^4.17.1",
     "graphile-worker": "^0.11.3",
     "irc-upd": "^0.11.0",
+    "morgan": "^1.10.0",
     "node-fetch": "^2.6.1",
     "pubsub-js": "^1.9.3",
     "xml-js": "^1.6.11"
