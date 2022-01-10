@@ -6,5 +6,7 @@ pkgs.mkShell {
     foreman
     liquidsoap
     postgresql_13
+    python3
+    ffmpeg
   ];
 }
