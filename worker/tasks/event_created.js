@@ -74,10 +74,12 @@ order by plays.created_at DESC limit 1
     if (track) {
       const message = `${track.id} ${track.filename}`
       await insertResult({ message })
+    } else {
+      await insertResult({ message: 'something outside the collection is playing' })
     }
   },
   add: async function(args, { event, helpers, insertResult }) {
-    //await insertResult({ status: 'adding' })
+    await insertResult({ status: 'ripping and adding track...' })
 
     const url = args.join(' ')
     console.log(`ripping ${url}`)
