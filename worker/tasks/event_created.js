@@ -112,6 +112,11 @@ order by plays.created_at DESC limit 1
     insertResult({ message: `slept for ${ms} milliseconds` })
   },
   pom: async function(_args, { insertResult }) {
-    insertResult({ message: execSync('/usr/games/pom').toString() })
+    try {
+      const message = execSync('/usr/games/pom').toString()
+      insertResult({ message })
+    } catch(e) {
+      insertResult({ status: 'error', message: e.message, error: e, code: e.code, detail: e.detail })
+    }
   },
 }
