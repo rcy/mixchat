@@ -16,7 +16,9 @@ module.exports = async ({ id }, helpers) => {
     // ================ dispatch to handlers here
     const handler = handlers[command]
     if (handler) {
+      //await insertResult({ message: `Read command !${command}...` })
       await handler(args, { event, insertResult, helpers })
+      //await insertResult({ message: `Read command !${command}...done` })
     } else {
       await insertResult({ message: `Bad command !${command}. Type !help` })
     }
