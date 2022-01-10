@@ -20,8 +20,8 @@ module.exports = function webserver({ pgClient, port }) {
     const { rows: [track] } = await pgClient.query('select id, filename from tracks where station_id = $1 order by bucket, fuzz, created_at limit 1', [station_id])
 
     if (!track) {
-      //console.error('cannot find any track!')
-      res.sendStatus(404)
+      console.error(`${req.params.station_slug}: no track found, sending ./404.ogg`)
+      res.status(404).send('./404.ogg')
       return
     } else {
       console.log(`/next/${req.params.station_slug}`, { track, station_id })

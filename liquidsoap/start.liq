@@ -34,6 +34,9 @@ def make_station(slug) =
   def my_request_function() =
     # Get the first line of my external process
     result = list.hd(default="", get_process_lines("sh ./request.sh " ^ slug))
+
+    print("my_request_function: " ^ result)
+
     # Create and return a request using this result
     [request.create(result)]
   end
@@ -69,4 +72,4 @@ end
 server.register(namespace="meta",usage="make_station slug",description="Make a station","make_station",make_station_wrapper)
 
 make_station("emb")
-make_station("tlm")
+#make_station("tlm")
