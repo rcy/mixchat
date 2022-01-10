@@ -65,12 +65,17 @@ select
         [data.station]
       );
 
-      const { rows: [{ id: trackId }] } = await pgClient.query(
+      const { rows } = await pgClient.query(
         "select id from tracks where station_id = $1 and filename = $2",
         [stationId, data.filename]
       );
+      if (rows.length) {
+        const trackId = rows[0].id
 
-      announceNowPlaying({ client, to: channel, count, nowPlayingData: {...nowPlayingData, trackId} })
+        announceNowPlaying({ client, to: channel, count, nowPlayingData: {...nowPlayingData, trackId} })
+      } else {
+        client.say(channel, `playing system file: ${data.filename} (not in db)`);
+      }
     }
   })
 
