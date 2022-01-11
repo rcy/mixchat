@@ -11,6 +11,8 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - ICECAST_URL=http://icecast:8000
     restart: on-failure
+    ports:
+      - 3010:3010
 
   worker:
     build: worker
