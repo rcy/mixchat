@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y curl
 WORKDIR /work
 
 COPY ./emergency.ogg /work/
+COPY ./404.ogg /work/
 COPY ./start.liq /work/
 COPY ./request.sh /work/
 
