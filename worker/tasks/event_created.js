@@ -81,7 +81,7 @@ order by plays.created_at DESC limit 1
     }
   },
   add: async function(args, { event, helpers, insertResult }) {
-    await insertResult({ status: 'ripping and adding track...' })
+    await insertResult({ message: 'adding track...' })
 
     const url = args.join(' ')
     console.log(`ripping ${url}`)
