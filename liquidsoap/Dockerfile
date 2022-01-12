@@ -1,6 +1,4 @@
-FROM phasecorex/liquidsoap
-
-RUN apt-get update && apt-get install -y curl
+FROM savonet/liquidsoap:v1.4.3
 
 WORKDIR /work
 
@@ -9,4 +7,4 @@ COPY ./404.ogg /work/
 COPY ./start.liq /work/
 COPY ./request.sh /work/
 
-ENTRYPOINT ["user-entrypoint", "/app/liquidsoap", "/work/start.liq"]
+ENTRYPOINT ["liquidsoap", "/work/start.liq"]
