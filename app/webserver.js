@@ -3,12 +3,27 @@ const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const jsonParser = bodyParser.json()
 const PubSub = require('pubsub-js');
+const { postgraphile } = require('postgraphile')
 
 module.exports = function webserver({ pgClient, port }) {
   const app = express()
 
   // add logging middleware
   app.use(morgan('combined'))
+
+  // add postgraphile
+  app.use(
+    postgraphile(
+      process.env.DATABASE_URL,
+      "public",
+      {
+        watchPg: true,
+        graphiql: true,
+        enhanceGraphiql: true,
+        ownerConnectionString: process.env.ROOT_DATABASE_URL, // to setup watch fixtures
+      }
+    )
+  )
 
   app.get('/', (req, res) => {
     res.send('Hello World!\n')

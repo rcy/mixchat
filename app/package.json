@@ -16,6 +16,7 @@
     "irc-upd": "^0.11.0",
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.1",
+    "postgraphile": "^4.12.8",
     "pubsub-js": "^1.9.3",
     "xml-js": "^1.6.11"
   },
