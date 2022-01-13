@@ -7,7 +7,7 @@ function App() {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <p>
-          Edit <code>src/App.js</code> and save to reload.
+          dj Fu LL Moon
         </p>
         <a
           className="App-link"
@@ -15,8 +15,18 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn React
         </a>
+        <audio controls>
+	  <source src="https://stream.djfullmoon.com/emb.ogg" type="audio/ogg" />
+ 	  <source src="https://stream.djfullmoon.com/emb.mp3" type="audio/mp3" />
+        </audio>
+        <br/>
+        <a
+          className="App-link"
+          href="https://web.libera.chat/#djfullmoon"
+          target="_blank"
+          rel="noopener noreferrer"
+        >join the chat!</a>
       </header>
     </div>
   );
