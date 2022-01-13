@@ -1,4 +1,5 @@
 const express = require('express')
+const cors = require('cors')
 const morgan = require('morgan')
 const bodyParser = require('body-parser')
 const jsonParser = bodyParser.json()
@@ -7,6 +8,9 @@ const { postgraphile } = require('postgraphile')
 
 module.exports = function webserver({ pgClient, port }) {
   const app = express()
+
+  // enable all cors requests
+  app.use(cors())
 
   // add logging middleware
   app.use(morgan('combined'))
