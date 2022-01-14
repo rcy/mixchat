@@ -8,31 +8,13 @@ import {
   ApolloClient,
   InMemoryCache,
   ApolloProvider,
-  useQuery,
   gql,
 } from "@apollo/client";
 
 const client = new ApolloClient({
-  uri: 'http://localhost:3010/graphql',
+  uri: 'https://api.djfullmoon.com/graphql',
   cache: new InMemoryCache(),
 });
-
-client
-  .query({
-    query: gql`
-      query AllStations {
-        allStations {
-          edges {
-            node {
-              id
-              slug
-            }
-          }
-        }
-      }
-    `
-  })
-  .then(result => console.log(result));
 
 ReactDOM.render(
   <ApolloProvider client={client}>
