@@ -74,4 +74,4 @@ end
 server.register(namespace="meta",usage="make_station slug",description="Make a station","make_station",make_station_wrapper)
 
 make_station("emb")
-#make_station("tlm")
+make_station("tlm")
