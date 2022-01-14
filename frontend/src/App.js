@@ -1,7 +1,9 @@
 import logo from './banana.png';
-import './App.css';
+//import './App.css';
 import { useQuery, gql } from '@apollo/client';
 import { useEffect, useState } from 'react';
+import { Outlet, Link, Routes, Route } from "react-router-dom";
+import StationPage from './StationPage.js';
 
 function CurrentTrack({ station }) {
   const [track, setTrack] = useState()
@@ -39,6 +41,8 @@ function CurrentTrack({ station }) {
 function App() {
   return (
     <div className="App">
+      <Link to="/emb">emb</Link> | <Link to="/tlm">tlm</Link>
+      <Outlet />
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <h1>
@@ -52,10 +56,10 @@ function App() {
             rel="noopener noreferrer"
           >join the chat</a>
         </p>
-        <audio controls>
-	  <source src="https://stream.djfullmoon.com/emb.ogg" type="audio/ogg" />
- 	  <source src="https://stream.djfullmoon.com/emb.mp3" type="audio/mp3" />
-        </audio>
+        <Routes>
+          <Route path=":slug" element={<StationPage />} />
+        </Routes>
+
         <CurrentTrack station="emb" />
       </header>
     </div>
