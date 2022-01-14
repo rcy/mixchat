@@ -23,7 +23,9 @@ function CurrentTrack({ station }) {
         }
       }
     }
-  `);
+  `, {
+    pollInterval: 10000,
+  });
 
   useEffect(() => {
     if (!loading) {
