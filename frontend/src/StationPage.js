@@ -77,6 +77,8 @@ function StationPage() {
   return (
     <div>
       <h2>{station.slug}</h2>
+      <AudioControl stationSlug={station.slug} />
+      <CurrentTrack stationId={station.id} />
       <p>
         <a
           className="App-link"
@@ -85,9 +87,6 @@ function StationPage() {
           rel="noopener noreferrer"
         >join the {channel} chat</a>
       </p>
-
-      <AudioControl stationSlug={station.slug} />
-      <CurrentTrack stationId={station.id} />
     </div>
   )
 }
