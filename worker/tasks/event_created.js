@@ -10,24 +10,26 @@ module.exports = async ({ id }, helpers) => {
   helpers.logger.info(JSON.stringify(event))
 
   if (event.name === 'IRC_COMMAND') {
-    const args = [...event.data.tokens];
-    const command = args.shift().toLowerCase()
-
-    // ================ dispatch to handlers here
-    const handler = handlers[command]
-    if (handler) {
-      //await insertResult({ message: `Read command !${command}...` })
-      await handler(args, { event, insertResult, helpers })
-      //await insertResult({ message: `Read command !${command}...done` })
-    } else {
-      await insertResult({ message: `Bad command !${command}. Type !help` })
+    const insertResult = async (data) => {
+      return await helpers.query("insert into results (station_id, event_id, name, data) values ($1::integer, $2::integer, $3::text, $4::jsonb) returning id", [event.station_id, event.id, 'IRC_RESPONSE', data])
     }
-  }
-
-  async function insertResult(data) {
-    return await helpers.query("insert into results (station_id, event_id, name, data) values ($1::integer, $2::integer, $3::text, $4::jsonb) returning id", [event.station_id, event.id, 'IRC_RESPONSE', data])
+    await processIrcCommand({ event, helpers, insertResult })
   }
 };
+
+async function processIrcCommand({ event, helpers, insertResult }) {
+  const args = [...event.data.tokens];
+  const command = args.shift().toLowerCase()
+
+  const handler = handlers[command]
+  if (handler) {
+    //await insertResult({ message: `Read command !${command}...` })
+    await handler(args, { event, insertResult, helpers })
+    //await insertResult({ message: `Read command !${command}...done` })
+  } else {
+    await insertResult({ message: `Bad command !${command}. Type !help` })
+  }
+}
 
 const handlers = {
   'help': async function(args, { helpers, insertResult }) {
