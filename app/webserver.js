@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const jsonParser = bodyParser.json()
 const PubSub = require('pubsub-js');
 const { postgraphile } = require('postgraphile')
+const MyPlugin = require('./schema-extension')
 
 module.exports = function webserver({ pgClient, port }) {
   const app = express()
@@ -25,6 +26,8 @@ module.exports = function webserver({ pgClient, port }) {
         graphiql: true,
         enhanceGraphiql: true,
         ownerConnectionString: process.env.ROOT_DATABASE_URL, // to setup watch fixtures
+        appendPlugins: [MyPlugin],
+        dynamicJson: true,
       }
     )
   )

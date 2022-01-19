@@ -48,7 +48,8 @@ select
       console.log({ row })
 
       if (row.result_name !== 'IRC_RESPONSE') {
-        // could be WEB_RESPONSE, we ignore
+        // could be WEB_RESPONSE, ignore for now.
+        // Later broadcast this to irc as a web user adding track
         return
       }
 

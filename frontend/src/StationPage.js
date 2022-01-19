@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery, gql } from '@apollo/client';
 import AudioControl from './AudioControl.js';
 import CurrentTrack from './CurrentTrack.js';
+import AddTrack from './AddTrack.js';
 
 function StationPage() {
   const params = useParams()
@@ -38,7 +39,12 @@ function StationPage() {
         >join the {channel} chat</a>
       </p>
       <AudioControl stationSlug={station.slug} />
+
+      <h3>Now Playing</h3><hr/>
       <CurrentTrack stationId={station.id} />
+
+      <h3>Add Track</h3><hr/>
+      <AddTrack stationId={station.id} />
     </div>
   )
 }
