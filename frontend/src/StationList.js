@@ -29,15 +29,13 @@ function StationList() {
     return "spinner"
   }
 
-  console.log({ data })
-
   return (
     <div>
       <h2>Stations</h2>
       {data.allStations.edges.map(({ node }) => (
         <div key={node.id}>
           <Link to={`/${node.slug}`}>{node.slug}</Link>{' '}
-          {node.trackEventsByStationId.nodes[0].trackByTrackId.filename}
+          {node.trackEventsByStationId.nodes[0]?.trackByTrackId.filename || '---'}
         </div>
       ))}
     </div>

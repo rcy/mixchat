@@ -28,7 +28,7 @@ export default function CurrentTrack({ stationId }) {
 
   useEffect(() => {
     if (!loading && data) {
-      setTrack(data.allTrackEvents.edges[0].node.trackByTrackId)
+      setTrack(data.allTrackEvents.edges[0]?.node.trackByTrackId)
     }
   }, [stationId, data, loading]);
 

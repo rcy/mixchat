@@ -33,7 +33,7 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
         },
       },
       Mutation: {
-        postWebEvent: async (_query, args, context, resolveInfo) => {
+        postWebEvent: async (_query, args, context, _resolveInfo) => {
           const { pgClient } = context;
 
           const { input } = args;
@@ -55,7 +55,12 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
             result: 'OK',
             eventId: event.id,
           }
-        }
+        },
+        makeStation: async (_query, args, context, _resolveInfo) => {
+          const { pgClient } = context;
+
+          const { input } = args;
+        },
       },
     },
   };
