@@ -17,10 +17,10 @@ export default function CreateStation() {
   const [variables, setVariables] = useState({})
 
   async function submit(value) {
-    setVariables({
-      name: value,
-      slug: value.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0,STATION_SLUG_MAX_LENGTH),
-    })
+    const name = value.trim()
+    const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0,STATION_SLUG_MAX_LENGTH)
+
+    setVariables({ name, slug })
     setState('CONFIRM')
   }
 
@@ -46,14 +46,14 @@ export default function CreateStation() {
 
       {state === 'EDIT' &&
        <Form
-         defaultValue={variables.name}
+         defaultValue={variables.name || ''}
          onCancel={cancel}
          onSubmit={submit}
        />}
 
       {state === 'CONFIRM' &&
        <div>
-         Create a new station named "{variables.name}" (with short name <code>{variables.slug}</code>)? {' '}
+         Create a new station named "{variables.name}" (with slug <code>{variables.slug}</code>)? {' '}
       <button onClick={confirm}>confirm</button> {' '}
       <a href="#" onClick={() => setState('EDIT')}>edit</a> {' '}
       <a href="#" onClick={cancel}>cancel</a>
@@ -79,6 +79,12 @@ function Form({ onCancel, onSubmit, defaultValue }) {
     onSubmit(input)
   }
 
+  function keyup(ev) {
+    if (ev.key === 'Escape') {
+      onCancel()
+    }
+  }
+
   useEffect(() => inputEl.current.focus(), [])
 
   return (
@@ -90,8 +96,11 @@ function Form({ onCancel, onSubmit, defaultValue }) {
           placeholder="station name"
           value={input}
           onChange={(ev) => setInput(ev.currentTarget.value)}
+          onKeyUp={keyup}
         />
-        <button>create</button>
+        <button
+          disabled={!input?.trim().length}
+        >create</button>
         {' '}
         <a href="" onClick={handleCancel}>cancel</a>
       </form>
