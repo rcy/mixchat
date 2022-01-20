@@ -99,7 +99,7 @@ function Form({ onCancel, onSubmit, defaultValue }) {
           onKeyUp={keyup}
         />
         <button
-          disabled={!input?.trim().length}
+          disabled={!input?.trim().match(/[a-z0-9]/)}
         >create</button>
         {' '}
         <a href="" onClick={handleCancel}>cancel</a>
