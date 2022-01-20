@@ -582,6 +582,13 @@ CREATE TRIGGER insert_event AFTER INSERT ON public.events FOR EACH ROW EXECUTE F
 
 
 --
+-- Name: stations insert_event; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER insert_event AFTER INSERT ON public.stations FOR EACH ROW EXECUTE FUNCTION public.trigger_job('station_created');
+
+
+--
 -- Name: results insert_result; Type: TRIGGER; Schema: public; Owner: -
 --
 
