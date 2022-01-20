@@ -1,4 +1,5 @@
 import logo from './banana.png';
+import './App.css';
 import { Outlet, Link, Routes, Route } from "react-router-dom";
 import StationPage from './StationPage.js';
 import StationList from './StationList.js';
