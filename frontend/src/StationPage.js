@@ -30,15 +30,9 @@ function StationPage() {
 
   return (
     <div>
-      <h2>{station.slug}</h2>
-      {channel &&
-      <p>
-        <a
-          href={`https://web.libera.chat/${channel}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >join the {channel} chat</a>
-      </p>}
+      <h1>{station.slug}</h1>
+      <hr/>
+
       <AudioControl stationSlug={station.slug} />
 
       <h3>Now Playing</h3><hr/>
