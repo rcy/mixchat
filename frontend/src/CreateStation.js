@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { gql, useMutation} from '@apollo/client';
 
 const CREATE_STATION = gql`
@@ -67,6 +67,8 @@ function Form({ onCancel, onSubmit, defaultValue }) {
   const [input, setInput] = useState(defaultValue)
   const [slug, setSlug] = useState('')
 
+  const inputEl = useRef(null);
+
   function handleCancel(ev) {
     ev.preventDefault()
     onCancel()
@@ -77,10 +79,13 @@ function Form({ onCancel, onSubmit, defaultValue }) {
     onSubmit(input)
   }
 
+  useEffect(() => inputEl.current.focus(), [])
+
   return (
     <div>
       <form onSubmit={submit}>
         <input
+          ref={inputEl}
           type="text"
           placeholder="station name"
           value={input}
