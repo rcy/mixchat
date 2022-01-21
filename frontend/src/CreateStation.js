@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { gql, useMutation} from '@apollo/client';
+import { useNavigate } from 'react-router-dom'
 
 const CREATE_STATION = gql`
   mutation CreateStation($name: String!, $slug: String!) {
@@ -16,6 +17,7 @@ const CREATE_STATION = gql`
 const STATION_SLUG_MAX_LENGTH=20;
 
 export default function CreateStation() {
+  const navigate = useNavigate()
   const [createStation] = useMutation(CREATE_STATION)
   const [state, setState] = useState('START')
   const [variables, setVariables] = useState({})
@@ -42,8 +44,14 @@ export default function CreateStation() {
 
       console.log({ data })
 
+      const { slug } = data.createStation.station
+
+      console.log('created station:', slug)
+
       setVariables({})
       setState('START')
+
+      navigate(`/${slug}`);
     } catch(e) {
       setError(e)
       setState('ERROR')
