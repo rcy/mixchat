@@ -4,7 +4,11 @@ import { gql, useMutation} from '@apollo/client';
 const CREATE_STATION = gql`
   mutation CreateStation($name: String!, $slug: String!) {
     createStation(input: {station: {name: $name, slug: $slug}}) {
-      clientMutationId
+      station {
+        id
+        slug
+        name
+      }
     }
   }
 `
@@ -12,9 +16,10 @@ const CREATE_STATION = gql`
 const STATION_SLUG_MAX_LENGTH=20;
 
 export default function CreateStation() {
-  const [createStation, { data, loading, error }] = useMutation(CREATE_STATION)
+  const [createStation] = useMutation(CREATE_STATION)
   const [state, setState] = useState('START')
   const [variables, setVariables] = useState({})
+  const [error, setError] = useState(null)
 
   async function submit(value) {
     const name = value.trim()
@@ -30,10 +35,18 @@ export default function CreateStation() {
   }
 
   async function confirm() {
-    const result = await createStation({ variables })
-    console.log({ result })
-    if (!error) {
-      cancel()
+    setState('CREATING')
+
+    try {
+      const { data } = await createStation({ variables })
+
+      console.log({ data })
+
+      setVariables({})
+      setState('START')
+    } catch(e) {
+      setError(e)
+      setState('ERROR')
     }
   }
 
@@ -59,13 +72,23 @@ export default function CreateStation() {
       <a href="#" onClick={cancel}>cancel</a>
        </div>
       }
+
+      {state === 'CREATING' &&
+       <div>building {variables.slug}...</div>
+      }
+
+      {state === 'ERROR' &&
+       <div>
+         ERROR: {error.message} {' '}
+         <a href="#" onClick={() => setState('EDIT')}>edit</a> {' '}
+         <a href="#" onClick={cancel}>cancel</a>
+       </div>}
     </div>
   )
 }
 
 function Form({ onCancel, onSubmit, defaultValue }) {
   const [input, setInput] = useState(defaultValue)
-  const [slug, setSlug] = useState('')
 
   const inputEl = useRef(null);
 
