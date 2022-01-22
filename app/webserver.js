@@ -85,7 +85,7 @@ select tracks.id as track_id, stations.id as station_id
       console.error(e);
     }
 
-    PubSub.publish('NOW', { ...req.body, station: req.params.station_slug })
+    PubSub.publish('NOW', { ...req.body, station: req.params.slug })
     res.sendStatus(200)
   });
 
