@@ -37,10 +37,16 @@ def make_station(slug) =
     # Get the first line of my external process
     result = list.hd(default="", get_process_lines("sh ./request.sh " ^ slug))
 
-    print("my_request_function: " ^ result)
+    print("my_request_function (#{slug}): #{result}")
 
-    # Create and return a request using this result
-    [request.create(result)]
+    if result == "500" then
+      []
+    elsif result == "404" then
+      []
+    else
+      # Create and return a request using this result
+      [request.create(result)]
+    end
   end
 
   def track_change(metadata) =
