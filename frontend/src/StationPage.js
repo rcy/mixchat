@@ -40,6 +40,15 @@ function StationPage() {
 
       <h3>Add Track</h3><hr/>
       <AddTrack stationId={station.id} />
+
+      {channel &&
+       <p>
+         <a
+           href={`https://web.libera.chat/${channel}`}
+           target="_blank"
+           rel="noopener noreferrer"
+         >join the {channel} chat</a>
+       </p>}
     </div>
   )
 }
