@@ -64,27 +64,31 @@ select
   pgClient.query("LISTEN result");
 
   PubSub.subscribe('NOW', async function(msg, data) {
-    console.log('RECV', msg, data.station, data.filename)
-    const nowPlayingData = data
-    const count = await countListeners(data.station)
+    try {
+      console.log('RECV', msg, data.station, data.filename)
+      const nowPlayingData = data
+      const count = await countListeners(data.station)
 
-    if (count > 0) {
-      const { rows: [{ channel, id: stationId }] } = await pgClient.query(
-        "select stations.id, channel from irc_channels join stations on stations.id = station_id where slug = $1",
-        [data.station]
-      );
+      if (count > 0) {
+        const { rows: [{ channel, id: stationId }] } = await pgClient.query(
+          "select stations.id, channel from irc_channels join stations on stations.id = station_id where slug = $1",
+          [data.station]
+        );
 
-      const { rows } = await pgClient.query(
-        "select id from tracks where station_id = $1 and filename = $2",
-        [stationId, data.filename]
-      );
-      if (rows.length) {
-        const trackId = rows[0].id
+        const { rows } = await pgClient.query(
+          "select id from tracks where station_id = $1 and filename = $2",
+          [stationId, data.filename]
+        );
+        if (rows.length) {
+          const trackId = rows[0].id
 
-        announceNowPlaying({ client, to: channel, count, nowPlayingData: {...nowPlayingData, trackId} })
-      } else {
-        client.say(channel, `playing system file: ${data.filename} (not in db)`);
+          announceNowPlaying({ client, to: channel, count, nowPlayingData: {...nowPlayingData, trackId} })
+        } else {
+          client.say(channel, `playing system file: ${data.filename} (not in db)`);
+        }
       }
+    } catch(e) {
+      console.error(e)
     }
   })
 
