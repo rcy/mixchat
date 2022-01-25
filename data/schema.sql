@@ -269,7 +269,8 @@ CREATE TABLE public.tracks (
     bucket integer NOT NULL,
     fuzz real DEFAULT 0 NOT NULL,
     event_id integer NOT NULL,
-    station_id integer NOT NULL
+    station_id integer NOT NULL,
+    metadata jsonb
 );
 
 
@@ -599,6 +600,13 @@ CREATE TRIGGER queued_track_due_tg BEFORE INSERT ON public.track_events FOR EACH
 --
 
 CREATE TRIGGER skipped_track_due_tg BEFORE INSERT ON public.track_events FOR EACH ROW WHEN ((new.action = 'skipped'::text)) EXECUTE FUNCTION public.set_track_due_skipped();
+
+
+--
+-- Name: tracks update_track_metadata; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_track_metadata AFTER INSERT ON public.tracks FOR EACH ROW EXECUTE FUNCTION public.trigger_job('update_track_metadata');
 
 
 --
