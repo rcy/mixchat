@@ -36,7 +36,15 @@ export default function AddTrack({ stationId }) {
     <div>
       <form onSubmit={submit}>
         <label>
-          Paste url here to add a track to station: <input type="text" onChange={change} value={url} />
+          Paste url here to add music from youtube, bandcamp, twitter, tiktok, twitter, archive.org, etc:
+          <br/>
+          <input
+            type="text"
+            onChange={change}
+            value={url}
+            placeholder="https://"
+            style={{ width: '300px' }}
+          />
         </label>
         <button>add</button>
       </form>
