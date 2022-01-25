@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery, gql } from '@apollo/client';
+import Metadata from './Metadata.js';
 
 export default function RecentTracks({ stationId }) {
   const { loading, error, data } = useQuery(gql`
@@ -14,6 +15,7 @@ export default function RecentTracks({ stationId }) {
             trackByTrackId {
               id
               filename
+              metadata
             }
           }
         }
@@ -33,9 +35,13 @@ export default function RecentTracks({ stationId }) {
   if (edges.length) {
     return (
       <div>
-        <b>{edges[0].node.trackByTrackId.filename}</b>
+        <b>
+          <Metadata metadata={edges[0].node.trackByTrackId?.metadata} />
+        </b>
         {edges.slice(1).map(({ node }) => (
-          <div key={node.id}>{node.trackByTrackId.filename}</div>
+          <div key={node.id}>
+            <Metadata metadata={node.trackByTrackId?.metadata} />
+          </div>
         ))}
       </div>
     )
