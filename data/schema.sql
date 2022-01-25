@@ -551,14 +551,6 @@ ALTER TABLE ONLY public.track_changes
 
 
 --
--- Name: tracks tracks_filename_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.tracks
-    ADD CONSTRAINT tracks_filename_key UNIQUE (filename);
-
-
---
 -- Name: tracks tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -567,11 +559,11 @@ ALTER TABLE ONLY public.tracks
 
 
 --
--- Name: tracks tracks_unique_filename; Type: CONSTRAINT; Schema: public; Owner: -
+-- Name: tracks tracks_unique_station_filename; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.tracks
-    ADD CONSTRAINT tracks_unique_filename UNIQUE (filename);
+    ADD CONSTRAINT tracks_unique_station_filename UNIQUE (station_id, filename);
 
 
 --
