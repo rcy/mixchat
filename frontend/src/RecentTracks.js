@@ -68,12 +68,13 @@ function MetadataLink({ metadata }) {
   const host = url.host.replace(/^(.+\.)?(.+)\..+$/, '$2')
 
   const shortcode = ({
-    youtube: 'yt',
     bandcamp: 'bc',
     soundcloud: 'sc',
-    twitter: 'tw',
     tiktok: 'tt',
-  })[host]
+    twitter: 'tw',
+    youtube: 'yt',
+    vimeo: 'vm'
+  })[host] || '??';
 
   return (
     <a
