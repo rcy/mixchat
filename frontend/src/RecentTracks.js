@@ -41,6 +41,8 @@ export default function RecentTracks({ stationId }) {
         {edges.slice(1).map(({ node }) => (
           <div key={node.id}>
             <Metadata metadata={node.trackByTrackId?.metadata} />
+            {' '}
+            <MetadataLink metadata={node.trackByTrackId?.metadata} />
           </div>
         ))}
       </div>
@@ -50,3 +52,22 @@ export default function RecentTracks({ stationId }) {
   }
 }
 
+
+function MetadataLink({ metadata }) {
+  const link = metadata?.native?.vorbis?.find(x => x.id === "PURL")?.value
+  if (!link) {
+    return null
+  }
+
+  const url = new URL(link)
+
+  // www.youtube.com -> youtube, etc
+  const host = url.host.replace(/^(.+\.)?(.+)\..+$/, '$2')
+
+  return (
+    <a
+      href={link}
+      target="_blank"
+    >{host}</a>
+  )
+}
