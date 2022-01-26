@@ -46,7 +46,7 @@ function StationPage() {
       <h3>Add Track</h3><hr/>
       <AddTrack stationId={station.id} />
 
-      <h3>Last {count} Tracks</h3><hr/>
+      <h3>Last {count} Plays</h3><hr/>
       <RecentTracks stationId={station.id} count={count} />
     </div>
   )
