@@ -36,7 +36,7 @@ export default function AddTrack({ stationId }) {
     <div>
       <form onSubmit={submit}>
         <label>
-          Paste url here to add music from youtube, bandcamp, twitter, tiktok, twitter, archive.org, etc:
+          Paste url here to add music from youtube, soundcloud, bandcamp, twitter, tiktok, whatever:
           <br/>
           <input
             type="text"
