@@ -3,6 +3,10 @@
 /*     padding: -10px; */
 /* } */
 
+body {
+    font-family: monospace;
+}
+
 header {
     background: black;
     color: yellow;
@@ -19,4 +23,16 @@ h1,h2,h3 {
 
 hr {
     margin-top: 5px;
+}
+
+.track-list-item:hover {
+    background: yellow;
+}
+
+.count-switcher .selected {
+    text-decoration: underline;
+}
+
+.count-switcher:hover span {
+    cursor: pointer;
 }

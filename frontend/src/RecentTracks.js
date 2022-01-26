@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { useQuery, gql } from '@apollo/client';
 import Metadata from './Metadata.js';
 
-export default function RecentTracks({ stationId }) {
+export default function RecentTracks({ stationId, count = 10 }) {
   const { loading, error, data } = useQuery(gql`
-    query RecentlyPlayed($stationId: Int!) {
-      allTrackEvents(condition: { stationId: $stationId, action: "played"}, orderBy: CREATED_AT_DESC, first: 5) {
+    query RecentlyPlayed($stationId: Int!, $count: Int!) {
+      allTrackEvents(condition: { stationId: $stationId, action: "played"}, orderBy: CREATED_AT_DESC, first: $count) {
         edges {
           node {
             createdAt
@@ -23,7 +23,7 @@ export default function RecentTracks({ stationId }) {
     }
   `, {
     pollInterval: 10000,
-    variables: { stationId }
+    variables: { stationId, count }
   });
 
   if (loading) {
@@ -35,14 +35,17 @@ export default function RecentTracks({ stationId }) {
   if (edges.length) {
     return (
       <div>
+        &gt;&gt;&nbsp;
         <b>
           <Metadata metadata={edges[0].node.trackByTrackId?.metadata} />
         </b>
         {edges.slice(1).map(({ node }) => (
           <div key={node.id}>
-            <Metadata metadata={node.trackByTrackId?.metadata} />
-            {' '}
-            <MetadataLink metadata={node.trackByTrackId?.metadata} />
+            <span className="track-list-item">
+              <MetadataLink metadata={node.trackByTrackId?.metadata} />
+              {' '}
+              <Metadata metadata={node.trackByTrackId?.metadata} />
+            </span>
           </div>
         ))}
       </div>
@@ -64,10 +67,18 @@ function MetadataLink({ metadata }) {
   // www.youtube.com -> youtube, etc
   const host = url.host.replace(/^(.+\.)?(.+)\..+$/, '$2')
 
+  const shortcode = ({
+    youtube: 'yt',
+    bandcamp: 'bc',
+    soundcloud: 'sc',
+    twitter: 'tw',
+    tiktok: 'tt',
+  })[host]
+
   return (
     <a
       href={link}
       target="_blank"
-    >{host}</a>
+    >{shortcode}</a>
   )
 }
