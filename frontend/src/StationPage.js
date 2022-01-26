@@ -7,7 +7,7 @@ import AddTrack from './AddTrack.js';
 
 function StationPage() {
   const params = useParams()
-  const [count, setCount] = useState(10)
+  const [count, setCount] = useState(100)
 
   const { loading, error, data } = useQuery(gql`
     query StationBySlug($slug: String!) {
@@ -46,25 +46,10 @@ function StationPage() {
       <h3>Add Track</h3><hr/>
       <AddTrack stationId={station.id} />
 
-      <h3>Last <CountSwitcher count={count} onClick={count => setCount(count)}/> Tracks</h3><hr/>
+      <h3>Last {count} Tracks</h3><hr/>
       <RecentTracks stationId={station.id} count={count} />
     </div>
   )
 }
 
 export default StationPage;
-
-function CountSwitcher({ count, onClick }) {
-  function option(number) {
-    return (
-      <span
-        className={number === count ? 'selected' : `${number}--${count}`}
-        onClick={() => onClick(number)}
-      >{number}</span>
-    )
-  }
-
-  return <span className="count-switcher">
-    {option(10)}/{option(100)}/{option(1000)}
-  </span>
-}
