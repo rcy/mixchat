@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useQuery, gql } from '@apollo/client';
 import Metadata from './Metadata.js';
+import CreateStation from './CreateStation.js';
 
 function StationList() {
   const { loading, error, data } = useQuery(gql`
@@ -40,6 +41,10 @@ function StationList() {
           <Metadata metadata={node.trackEventsByStationId.nodes[0]?.trackByTrackId?.metadata} />
         </div>
       ))}
+
+      <br/>
+
+      <CreateStation />
     </div>
   )
 }

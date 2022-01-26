@@ -3,28 +3,20 @@ import './App.css';
 import { Outlet, Link, Routes, Route } from "react-router-dom";
 import StationPage from './StationPage.js';
 import StationList from './StationList.js';
-import CreateStation from './CreateStation.js';
 
 function App() {
   return (
     <div>
       <header>
         <h1>
-          DJFULLMOON
+          <Link to="/">DJFULLMOON</Link>
         </h1>
       </header>
 
-      <div>
-        <StationList />
-      </div>
-      <div>
-        <CreateStation />
-      </div>
-      <div>
-        <Routes>
-          <Route path=":slug" element={<StationPage />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<StationList />} />
+        <Route path=":slug" element={<StationPage />} />
+      </Routes>
     </div>
   );
 }
