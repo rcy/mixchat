@@ -16,6 +16,7 @@ module.exports = async function youtubeDownload(url) {
     addMetadata: true,
     restrictFilenames: true,
     noPlaylist: true,
+    maxDownloads: 1, // prevent channel downloads for now
     exec: "mv {} /media && echo {}", // output
   })
   console.log(output)
