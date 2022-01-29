@@ -4,7 +4,7 @@ import Metadata from './Metadata.js';
 import CreateStation from './CreateStation.js';
 
 function StationList() {
-  const { loading, error, data } = useQuery(gql`
+  const { error, loading, data } = useQuery(gql`
     query StationList {
       allStations {
 	edges {
@@ -27,6 +27,10 @@ function StationList() {
     }`, {
       pollInterval: 10000,
   });
+
+  if (error) {
+    return error.message
+  }
 
   if (loading) {
     return "spinner"

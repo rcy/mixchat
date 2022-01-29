@@ -21,6 +21,10 @@ function StationPage() {
       }
     }`, { variables: { slug: params.slug } });
 
+  if (error) {
+    return error.message
+  }
+
   if (loading) {
     return "spinner"
   }
