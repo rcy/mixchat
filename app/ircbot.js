@@ -14,6 +14,12 @@ module.exports = function ircBot(host, nick, pgClient, options) {
     console.log('irc error: ', message);
   });
 
+  client.addListener('join', function(channel, nick, message) {
+    if (client.nick !== nick) {
+      client.say(channel, `Hello ${nick}!`)
+    }
+  });
+
   client.addListener('message', async function (from, to, message) {
     console.log(from + ' => ' + to + ': ' + message);
 
