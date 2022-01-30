@@ -1,7 +1,7 @@
 start:
 	foreman start
 
-up: SERVICES=icecast postgres liquidsoap
+up: SERVICES=icecast postgres #liquidsoap
 up:
 	docker-compose --env-file .env.dev build ${SERVICES}
 	docker-compose --env-file .env.dev up ${SERVICES}

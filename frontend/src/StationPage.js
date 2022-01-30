@@ -4,6 +4,8 @@ import { useQuery, gql } from '@apollo/client';
 import AudioControl from './AudioControl.js';
 import RecentTracks from './RecentTracks.js';
 import AddTrack from './AddTrack.js';
+import Chat from './Chat.js';
+import { Outlet, Link, Routes, Route } from "react-router-dom";
 
 function StationPage() {
   const params = useParams()
@@ -34,25 +36,24 @@ function StationPage() {
   const channel = station?.ircChannelByStationId?.channel
 
   return (
-    <div>
-      <h1>{station.slug}</h1>
-      {channel &&
-       <p>
-         <a
-           href={`https://web.libera.chat/${channel}`}
-           target="_blank"
-           rel="noopener noreferrer"
-         >join the {channel} chat</a>
-       </p>}
-      <hr/>
+    <article style={{ height: '100%' }}>
+      <div>
+        <h1>{station.slug}</h1>
+        <AudioControl stationSlug={station.slug} />
 
-      <AudioControl stationSlug={station.slug} />
-      <h3>Add Track</h3><hr/>
-      <AddTrack stationId={station.id} />
+        <h3>Add Track</h3><hr/>
+        <AddTrack stationId={station.id} />
 
-      <h3>Last {count} Plays</h3><hr/>
-      <RecentTracks stationId={station.id} count={count} />
-    </div>
+        <h3>Chat</h3><hr/>
+      </div>
+
+      <main style={{ overflowY: 'hidden' }}>
+        <Chat stationId={station.id} />
+      </main>
+
+      <footer>
+      </footer>
+    </article>
   )
 }
 
