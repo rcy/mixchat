@@ -64,7 +64,7 @@ def make_station(slug) =
   radio = fallback(track_sensitive=false, [live, src, emergency])
   radio = on_track(track_change, radio)
 
-  output.icecast(%vorbis, radio, mount=slug ^ ".ogg", port=icecast_port, host=icecast_host, password=icecast_source_password)
+  #output.icecast(%vorbis, radio, mount=slug ^ ".ogg", port=icecast_port, host=icecast_host, password=icecast_source_password)
   output.icecast(%mp3,    radio, mount=slug ^ ".mp3", port=icecast_port, host=icecast_host, password=icecast_source_password)
 
   add_skip_command(src)
