@@ -17,20 +17,24 @@ async function countListeners(station) {
 }
 
 async function countFormatListeners(station, format) {
-  const url = `${ICECAST_URL}/${station}.${format}.xspf`
-  const xspf = await fetchXspf(url)
+  try {
+    const url = `${ICECAST_URL}/${station}.${format}.xspf`
+    const xspf = await fetchXspf(url)
 
-  const match =
-    xspf.elements[0].elements
-        .find(e => e.name === 'trackList')
-        .elements[0].elements
-        .find(e => e.name === 'annotation')
-        .elements[0].text
-        .split('\n')
-        .find(e => e.match('Current Listeners'))
-        .match(/: (.+)$/)
+    const match =
+      xspf.elements[0].elements
+          .find(e => e.name === 'trackList')
+          .elements[0].elements
+          .find(e => e.name === 'annotation')
+          .elements[0].text
+          .split('\n')
+          .find(e => e.match('Current Listeners'))
+          .match(/: (.+)$/)
 
-  return +match[1]
+    return +match[1]
+  } catch(e) {
+    return 0
+  }
 }
 
 module.exports = {
