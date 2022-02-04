@@ -1,7 +1,7 @@
 drop table if exists messages;
 create table messages (
-    id integer NOT NULL,
-    station_id integer not null,
-    message text,
+    id serial,
+    station_id integer references stations not null,
+    body text,
     nick text
 );

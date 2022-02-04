@@ -76,8 +76,8 @@ export default function CreateStation() {
        <div>
          Create a new station named "{variables.name}" (with slug <code>{variables.slug}</code>)? {' '}
       <button onClick={confirm}>confirm</button> {' '}
-      <a href="#" onClick={() => setState('EDIT')}>edit</a> {' '}
-      <a href="#" onClick={cancel}>cancel</a>
+      <button className="link-button" onClick={() => setState('EDIT')}>edit</button> {' '}
+      <button className="link-button" onClick={cancel}>cancel</button>
        </div>
       }
 
@@ -88,8 +88,8 @@ export default function CreateStation() {
       {state === 'ERROR' &&
        <div>
          ERROR: {error.message} {' '}
-         <a href="#" onClick={() => setState('EDIT')}>edit</a> {' '}
-         <a href="#" onClick={cancel}>cancel</a>
+         <button className="link-button" onClick={() => setState('EDIT')}>edit</button> {' '}
+         <button className="link-button" onClick={cancel}>cancel</button>
        </div>}
     </div>
   )
@@ -133,7 +133,7 @@ function Form({ onCancel, onSubmit, defaultValue }) {
           disabled={!input?.trim().match(/[a-z0-9]/)}
         >create</button>
         {' '}
-        <a href="" onClick={handleCancel}>cancel</a>
+        <button className="link-button" onClick={handleCancel}>cancel</button>
       </form>
     </div>
   )
