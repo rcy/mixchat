@@ -52,7 +52,7 @@ module.exports = function webserver({ pgClient, port }) {
         res.send(`${track.filename}`)
       }
     } catch(e) {
-      console.error(e)
+      console.error(req.path, e)
       res.status(500).send('500')
     }
   })
