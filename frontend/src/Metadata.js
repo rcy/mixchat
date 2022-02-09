@@ -5,5 +5,5 @@ export default function TrackItem({ metadata }) {
   const { common } = metadata
   const { artist, title, year } = common
 
-  return [artist, title, year].join(' / ')
+  return [artist, title].join(' / ')
 }
