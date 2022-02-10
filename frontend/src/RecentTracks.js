@@ -36,18 +36,21 @@ export default function RecentTracks({ stationId, count = 10 }) {
     return (
       <div>
         &gt;&gt;&nbsp;
-        <b>
-          <Metadata metadata={edges[0].node.trackByTrackId?.metadata} />
-        </b>
-        {edges.slice(1).map(({ node }) => (
-          <div key={node.id}>
-            <span className="track-list-item">
-              <MetadataLink metadata={node.trackByTrackId?.metadata} />
-              {' '}
-              <Metadata metadata={node.trackByTrackId?.metadata} />
-            </span>
-          </div>
-        ))}
+      <b>
+        <Metadata metadata={edges[0].node.trackByTrackId?.metadata} />
+      </b>
+      {edges.slice(1).map(({ node }) => (
+        <div key={node.id}>
+          <span className="track-list-item">
+            <MetadataLink metadata={node.trackByTrackId?.metadata} />
+            {' '}
+            [{node.trackByTrackId.id}]
+            {' '}
+            <Metadata metadata={node.trackByTrackId?.metadata} />
+            {' '}
+          </span>
+        </div>
+      ))}
       </div>
     )
   } else {
