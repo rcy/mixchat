@@ -7,4 +7,4 @@ COPY ./404.ogg /work/
 COPY ./start.liq /work/
 COPY ./request.sh /work/
 
-ENTRYPOINT ["liquidsoap", "/work/start.liq"]
+ENTRYPOINT ["liquidsoap", "--force-start", "/work/start.liq"]
