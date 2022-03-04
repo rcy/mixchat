@@ -67,14 +67,15 @@ order by plays.created_at DESC limit 1
     } catch(e) {
       console.error(e)
 
+      await insertResult({ status: 'error', error: e, message: e.stderr.split('. ')[0] })
+
       // these 403s seem to work after retrying
-      if (e.error.stderr.match('HTTP Error 403')) {
+      if (e.stderr?.match('HTTP Error 403')) {
         await insertResult({ status: 'error', error: e, message: "403 (will retry)" })
         throw e
       }
 
-      // any other error we'll surface and quit
-      await insertResult({ status: 'error', error: e, message: e.stderr.split('. ')[0] })
+      // any other error we ignore and stop processing
       return
     }
 
