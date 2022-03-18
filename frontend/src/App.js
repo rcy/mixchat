@@ -6,10 +6,10 @@ import StationList from './StationList.js';
 
 function App() {
   return (
-    <article style={{ height: '100vh' }}>
+    <article style={{ height: '100%' }}>
       <header>
         <h1>
-          <Link to="/">DJFULLMOON</Link>
+          <Link to="/">mixchat</Link>
         </h1>
       </header>
 
@@ -21,11 +21,6 @@ function App() {
       </main>
 
       <footer>
-        <p style={{ float: 'right' }}>
-          <a href="https://twitter.com/rcyeske" target="_blank">tw</a>
-          {'/'}
-          <a href="https://github.com/rcy/djfullmoon" target="_blank">gh</a>
-        </p>
       </footer>
     </article>
   );

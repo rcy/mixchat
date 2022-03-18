@@ -1,9 +1,9 @@
-import { gql, useMutation, useQuery} from '@apollo/client';
-import { useState } from 'react'
+import { gql, useMutation, useQuery, useSubscription } from '@apollo/client';
+import { useState, useEffect, useRef } from 'react'
 
 const STATION_MESSAGES = gql`
   query StationMessages($stationId: Int!) {
-    allMessages(condition: { stationId: $stationId }) {
+    allMessages(condition: { stationId: $stationId }, last: 100) {
       edges {
         node {
           id
@@ -14,6 +14,21 @@ const STATION_MESSAGES = gql`
     }
   }
 `
+
+const STATION_MESSAGES_SUBSCRIPTION = gql`
+  subscription TopicStationMessages($topic: String!) {
+    listen(topic: $topic) {
+      relatedNodeId
+      relatedNode {
+        ... on Message {
+          id
+          body
+          nick
+        }
+      }
+    }
+  }
+`;
 
 const POST_STATION_MESSAGE = gql`
   mutation PostStationMessage($stationId: Int!, $body: String!, $nick: String!) {
@@ -27,50 +42,91 @@ const POST_STATION_MESSAGE = gql`
   }
 `
 
-export default function Chat({ stationId }) {
+function ChatInput({ onSubmit }) {
+  const inputEl = useRef(null)
   const [input, setInput] = useState('')
 
-  const { data, loading, error } = useQuery(STATION_MESSAGES, { variables: { stationId } })
-  const [ postMessage ] = useMutation(POST_STATION_MESSAGE, { variables: { stationId } })
-
-  if (loading) {
-    return null
-  }
-
-  const messages = data.allMessages.edges
-  console.log(messages)
+  useEffect(() => inputEl.current.focus(), [])
 
   function change(ev) {
     setInput(ev.target.value)
   }
 
-  async function submit(ev) {
+  function submit(ev) {
     ev.preventDefault()
-    console.log('submit')
-    const result = await postMessage({ variables: { nick: 'bob', body: input } })
-    console.log('post result', result)
+    onSubmit(input)
     setInput('')
+  }
+
+  return (
+    <form onSubmit={submit}>
+      <input
+        type="text"
+        onChange={change}
+        value={input}
+        ref={inputEl}
+      />
+    </form>
+  )
+}
+
+export default function Chat({ stationId }) {
+  const messagesEl = useRef(null)
+
+  const { data, loading, subscribeToMore } = useQuery(STATION_MESSAGES, { variables: { stationId } })
+  const [ postMessage ] = useMutation(POST_STATION_MESSAGE, { variables: { stationId } })
+
+  useEffect(() => {
+    messagesEl?.current?.scrollTo(100000,100000)
+  }, [data])
+  
+  useEffect(() => {
+    subscribeToMore({
+      document: STATION_MESSAGES_SUBSCRIPTION,
+      variables: { topic: `station:${stationId}:messages` },
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data.listen.relatedNode) return prev;
+        const newNode = subscriptionData.data.listen.relatedNode;
+        const prevEdges = prev.allMessages.edges
+        return Object.assign({}, prev, {
+          allMessages: {
+            edges: [
+              ...prevEdges,
+              {
+                ___typename: 'MessagesEdge',
+                node: newNode,
+              }
+            ]
+          }
+        });
+      }
+    })
+  }, [subscribeToMore])
+  
+  if (loading) {
+    return null
+  }
+
+  const messages = data.allMessages.edges
+
+  async function submit(input) {
+    await postMessage({ variables: { nick: 'bob', body: input } })
   }
 
   return (
     <article style={{ height: '100%' }}>
       <header>
+        foo
       </header>
 
-      <main style={{overflowY: 'scroll' }}>
+      <main style={{overflowY: 'scroll' }} ref={messagesEl} className="messages">
         {messages.map(({node}) => (
           <div key={node.id}><b>{node.nick}</b>: {node.body}</div>
         ))}
       </main>
 
       <footer>
-        <form onSubmit={submit}>
-          <input
-            type="text"
-            onChange={change}
-            value={input}
-          />
-        </form>
+        <ChatInput onSubmit={submit} />
       </footer>
     </article>
   )

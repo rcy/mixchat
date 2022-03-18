@@ -35,22 +35,34 @@ function StationPage() {
 
   const channel = station?.ircChannelByStationId?.channel
 
+  // return (
+  //   <article style={{ height: '100%' }}>
+  //     <div>
+  //       <h1>{station.slug}</h1>
+  //       <AudioControl stationSlug={station.slug} />
+  // 
+  //       <h3>Add Track</h3><hr/>
+  //       <AddTrack stationId={station.id} />
+  // 
+  //       <h3>Chat</h3><hr/>
+  //     </div>
+  // 
+  //     <main style={{ overflowY: 'hidden' }}>
+  //       <Chat stationId={station.id} />
+  //     </main>
+  // 
+  //     <footer>
+  //     </footer>
+  //   </article>
+  // )
   return (
     <article style={{ height: '100%' }}>
-      <div>
-        <h1>{station.slug}</h1>
+      <header>
         <AudioControl stationSlug={station.slug} />
-
-        <h3>Add Track</h3><hr/>
-        <AddTrack stationId={station.id} />
-
-        <h3>Chat</h3><hr/>
-      </div>
-
+      </header>
       <main style={{ overflowY: 'hidden' }}>
         <Chat stationId={station.id} />
       </main>
-
       <footer>
       </footer>
     </article>
