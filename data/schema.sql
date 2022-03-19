@@ -130,6 +130,26 @@ $$;
 
 
 --
+-- Name: trigger_notify_insert_station_relation_row(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.trigger_notify_insert_station_relation_row() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+  perform pg_notify(
+    'postgraphile:station:' || new.station_id || ':' || tg_argv[0],
+    json_build_object(
+      '__node__',
+      json_build_array(tg_argv[0], new.id)
+    )::text
+  );
+  return new;
+end
+$$;
+
+
+--
 -- Name: update_track_bucket(integer, integer); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -211,6 +231,39 @@ CREATE SEQUENCE public.irc_channels_id_seq
 --
 
 ALTER SEQUENCE public.irc_channels_id_seq OWNED BY public.irc_channels.id;
+
+
+--
+-- Name: messages; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.messages (
+    id integer NOT NULL,
+    station_id integer NOT NULL,
+    body text,
+    nick text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: messages_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.messages_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: messages_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.messages_id_seq OWNED BY public.messages.id;
 
 
 --
@@ -453,6 +506,13 @@ ALTER TABLE ONLY public.irc_channels ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
+-- Name: messages id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.messages ALTER COLUMN id SET DEFAULT nextval('public.messages_id_seq'::regclass);
+
+
+--
 -- Name: results id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -520,6 +580,14 @@ ALTER TABLE ONLY public.irc_channels
 
 
 --
+-- Name: messages messages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.messages
+    ADD CONSTRAINT messages_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: track_events plays_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -582,6 +650,13 @@ CREATE TRIGGER insert_event AFTER INSERT ON public.stations FOR EACH ROW EXECUTE
 
 
 --
+-- Name: messages insert_message_notify; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER insert_message_notify AFTER INSERT ON public.messages FOR EACH ROW EXECUTE FUNCTION public.trigger_notify_insert_station_relation_row('messages');
+
+
+--
 -- Name: results insert_result; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -638,6 +713,14 @@ ALTER TABLE ONLY public.results
 
 ALTER TABLE ONLY public.irc_channels
     ADD CONSTRAINT irc_channels_station_id_fkey FOREIGN KEY (station_id) REFERENCES public.stations(id);
+
+
+--
+-- Name: messages messages_station_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.messages
+    ADD CONSTRAINT messages_station_id_fkey FOREIGN KEY (station_id) REFERENCES public.stations(id);
 
 
 --
