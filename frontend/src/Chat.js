@@ -1,5 +1,7 @@
 import { gql, useMutation, useQuery, useSubscription } from '@apollo/client';
 import { useState, useEffect, useRef } from 'react'
+import useLocalStorage from 'react-localstorage-hook'
+import { uniqueNamesGenerator, adjectives, colors, animals, names, languages } from 'unique-names-generator'
 
 const STATION_MESSAGES = gql`
   query StationMessages($stationId: Int!) {
@@ -65,6 +67,7 @@ function ChatInput({ onSubmit }) {
         onChange={change}
         value={input}
         ref={inputEl}
+        placeholder='Type your message here...'
       />
     </form>
   )
@@ -75,6 +78,7 @@ export default function Chat({ stationId }) {
 
   const { data, loading, subscribeToMore } = useQuery(STATION_MESSAGES, { variables: { stationId } })
   const [ postMessage ] = useMutation(POST_STATION_MESSAGE, { variables: { stationId } })
+  const [nick, setNick] = useLocalStorage('nick', null)
 
   useEffect(() => {
     messagesEl?.current?.scrollTo(100000,100000)
@@ -110,7 +114,7 @@ export default function Chat({ stationId }) {
   const messages = data.allMessages.edges
 
   async function submit(input) {
-    await postMessage({ variables: { nick: 'bob', body: input } })
+    await postMessage({ variables: { nick, body: input } })
   }
 
   return (
@@ -125,8 +129,49 @@ export default function Chat({ stationId }) {
       </main>
 
       <footer>
-        <ChatInput onSubmit={submit} />
+        {nick ? <ChatInput onSubmit={submit} /> : <SetNick onSubmit={setNick} />}
       </footer>
     </article>
+  )
+}
+
+const shortAdjectives = adjectives.filter(a => a.length <= 5)
+const shortAnimals = animals.filter(a => a.length <= 5)
+
+console.log(shortAnimals.length * shortAdjectives.length)
+
+function gennick() {
+  const nick = uniqueNamesGenerator({
+    dictionaries: [shortAdjectives, shortAnimals],
+    length: 2,
+    separator: '',
+    style: 'lowercase'
+  })
+  return nick
+}
+
+function SetNick({ onSubmit }) {
+  const [nicks, setNicks] = useState([])
+
+  function shuffle(ev) {
+    ev?.preventDefault()
+    setNicks([gennick(), gennick(), gennick()])
+  }
+
+  useEffect(shuffle, [])
+
+  return (
+    <div>
+      <b>To start chatting, choose your nickname: </b>
+      {
+        nicks.map(n => (
+          <span key={n}>
+            <a href="" onClick={(ev) => { ev.preventDefault(); onSubmit(n) }}>{n}</a>
+            {' '}
+          </span>
+        ))
+      }
+      <a onClick={shuffle} href="">[more]</a>
+    </div>
   )
 }
