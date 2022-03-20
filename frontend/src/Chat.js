@@ -1,7 +1,7 @@
 import { gql, useMutation, useQuery, useSubscription } from '@apollo/client';
 import { useState, useEffect, useRef } from 'react'
 import useLocalStorage from 'react-localstorage-hook'
-import { uniqueNamesGenerator, adjectives, colors, animals, names, languages } from 'unique-names-generator'
+import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'
 import Linkify from 'linkify-react';
 
 const STATION_MESSAGES = gql`
@@ -128,6 +128,7 @@ export default function Chat({ stationId, stationSlug }) {
   return (
     <article style={{ height: '100%' }}>
       <header>
+        <ColorTest />
       </header>
 
       <main style={{overflowY: 'scroll' }} ref={messagesEl} className="messages">
@@ -205,11 +206,28 @@ function SetNick3({ onSubmit }) {
   )
 }
 
+// from https://sashamaps.net/docs/resources/20-colors/
+const colors0 = ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4', '#f032e6', '#bfef45', '#fabed4', '#469990', '#dcbeff', '#9A6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9', '#ffffff', '#000000']
+const colors = ['#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#42d4f4', '#f032e6', '#bfef45', '#fabed4', '#469990', '#9A6324', '#800000', '#000075', '#a9a9a9', '#000000']
+
+function ColorTest() {
+  return colors.map(c => <span key={c} style={{ color: c }}>{c} </span>)
+}
+
+function hashString(s, max) {
+  let total = 0
+  for (let i = 0; i < s.length; i++) {
+    total += s.charCodeAt(i)
+  }
+  return max ? total % max : total
+}
+
 function Nick({ message, prevMessage }) {
   if (message.nick === prevMessage?.nick) {
     return <span>&nbsp;</span>;
   }
-  return (<span><b>{message.nick}</b></span>)
+  const color = colors[hashString(message.nick, colors.length)]
+  return (<span style={{ color }}><b>{message.nick}</b></span>)
 }
 
 function Time({ message, prevMessage }) {
