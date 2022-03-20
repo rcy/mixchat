@@ -58,8 +58,11 @@ function ChatInput({ onSubmit, target }) {
 
   function submit(ev) {
     ev.preventDefault()
-    onSubmit(input)
-    setInput('')
+    const submission = input.trim()
+    if (submission.length) {
+      onSubmit(submission)
+      setInput('')
+    }
   }
 
   return (
