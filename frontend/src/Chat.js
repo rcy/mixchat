@@ -2,6 +2,7 @@ import { gql, useMutation, useQuery, useSubscription } from '@apollo/client';
 import { useState, useEffect, useRef } from 'react'
 import useLocalStorage from 'react-localstorage-hook'
 import { uniqueNamesGenerator, adjectives, colors, animals, names, languages } from 'unique-names-generator'
+import Linkify from 'linkify-react';
 
 const STATION_MESSAGES = gql`
   query StationMessages($stationId: Int!) {
@@ -133,7 +134,9 @@ export default function Chat({ stationId, stationSlug }) {
         {messages.map(({node}) => {
           const result = (
             <div key={node.id} className="message">
-              <Time message={node} prevMessage={prevNode} /> <Nick message={node} prevMessage={prevNode}/> {node.body}
+              <Time message={node} prevMessage={prevNode} /> {' '}
+              <Nick message={node} prevMessage={prevNode}/> {' '}
+              <Body message={node} />
             </div>
           )
           prevNode = node
@@ -145,6 +148,14 @@ export default function Chat({ stationId, stationSlug }) {
         {nick ? <ChatInput onSubmit={submit} target={stationSlug} /> : <SetNick onSubmit={setNick} />}
       </footer>
     </article>
+  )
+}
+
+function Body({ message }) {
+  return (
+    <Linkify options={{target: "_blank"}}>
+      {message.body}
+    </Linkify>
   )
 }
 
