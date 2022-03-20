@@ -164,6 +164,11 @@ function gennick() {
 }
 
 function SetNick({ onSubmit }) {
+  useEffect(() => { onSubmit(gennick()) }, [])
+  return null
+}
+
+function SetNick3({ onSubmit }) {
   const [nicks, setNicks] = useState([])
 
   function shuffle(ev) {
