@@ -129,8 +129,8 @@ export default function Chat({ stationId }) {
       <main style={{overflowY: 'scroll' }} ref={messagesEl} className="messages">
         {messages.map(({node}) => {
           const result = (
-            <div key={node.id}>
-              <Time message={node} prevMessage={prevNode} /> <b>{node.nick}</b>: {node.body}
+            <div key={node.id} className="message">
+              <Time message={node} prevMessage={prevNode} /> <Nick message={node} prevMessage={prevNode}/> {node.body}
             </div>
           )
           prevNode = node
@@ -186,6 +186,13 @@ function SetNick({ onSubmit }) {
   )
 }
 
+function Nick({ message, prevMessage }) {
+  if (message.nick === prevMessage?.nick) {
+    return <span>&nbsp;</span>;
+  }
+  return (<span><b>{message.nick}</b></span>)
+}
+
 function Time({ message, prevMessage }) {
   const md = new Date(message.createdAt)
   const pd = prevMessage && new Date(prevMessage?.createdAt)
@@ -193,11 +200,17 @@ function Time({ message, prevMessage }) {
   const mt = new Intl.DateTimeFormat("en", { timeStyle: 'short' }).format(md);
   const pt = pd && new Intl.DateTimeFormat("en", { timeStyle: 'short' }).format(pd);
 
+  const newTime = mt !== pt
+  const newNick = message.nick !== prevMessage?.nick
+
+  const show = newNick //|| newTime
+
   return <span
            style={{
              opacity: '50%',
-             visibility: mt === pt ? 'hidden' : 'visible',
-             fontSize: '30%',
+             //visibility: mt === pt ? 'hidden' : 'visible',
+             visibility: show ? 'visible' : 'hidden',
+             //fontSize: '30%',
            }}
          >{mt}</span>
 }

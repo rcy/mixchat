@@ -76,3 +76,7 @@ input {
 .messages {
     word-wrap: break-word;
 }
+
+.message {
+    margin-bottom: .5em;
+}
