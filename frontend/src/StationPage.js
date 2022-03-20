@@ -6,6 +6,7 @@ import RecentTracks from './RecentTracks.js';
 import AddTrack from './AddTrack.js';
 import Chat from './Chat.js';
 import { Outlet, Link, Routes, Route } from "react-router-dom";
+import { isMobile } from 'react-device-detect';
 
 function StationPage() {
   const params = useParams()
@@ -64,6 +65,7 @@ function StationPage() {
         <Chat stationId={station.id} />
       </main>
       <footer>
+        {isMobile || <div style={{height: '50px'}}/>}
       </footer>
     </article>
   )

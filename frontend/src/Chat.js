@@ -11,6 +11,7 @@ const STATION_MESSAGES = gql`
           id
 	  body
           nick
+          createdAt
         }
       }
     }
@@ -26,6 +27,7 @@ const STATION_MESSAGES_SUBSCRIPTION = gql`
           id
           body
           nick
+          createdAt
         }
       }
     }
@@ -117,15 +119,23 @@ export default function Chat({ stationId }) {
     await postMessage({ variables: { nick, body: input } })
   }
 
+  let prevNode = null
+
   return (
     <article style={{ height: '100%' }}>
       <header>
       </header>
 
       <main style={{overflowY: 'scroll' }} ref={messagesEl} className="messages">
-        {messages.map(({node}) => (
-          <div key={node.id}><b>{node.nick}</b>: {node.body}</div>
-        ))}
+        {messages.map(({node}) => {
+          const result = (
+            <div key={node.id}>
+              <Time message={node} prevMessage={prevNode} /> <b>{node.nick}</b>: {node.body}
+            </div>
+          )
+          prevNode = node
+          return result
+        })}
       </main>
 
       <footer>
@@ -174,4 +184,20 @@ function SetNick({ onSubmit }) {
       <a onClick={shuffle} href="">[more]</a>
     </div>
   )
+}
+
+function Time({ message, prevMessage }) {
+  const md = new Date(message.createdAt)
+  const pd = prevMessage && new Date(prevMessage?.createdAt)
+
+  const mt = new Intl.DateTimeFormat("en", { timeStyle: 'short' }).format(md);
+  const pt = pd && new Intl.DateTimeFormat("en", { timeStyle: 'short' }).format(pd);
+
+  return <span
+           style={{
+             opacity: '50%',
+             visibility: mt === pt ? 'hidden' : 'visible',
+             fontSize: '30%',
+           }}
+         >{mt}</span>
 }
