@@ -116,7 +116,6 @@ export default function Chat({ stationId }) {
   return (
     <article style={{ height: '100%' }}>
       <header>
-        foo
       </header>
 
       <main style={{overflowY: 'scroll' }} ref={messagesEl} className="messages">
