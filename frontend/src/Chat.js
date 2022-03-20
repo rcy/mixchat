@@ -223,7 +223,7 @@ function hashString(s, max) {
 
 function Nick({ message, prevMessage }) {
   if (message.nick === prevMessage?.nick) {
-    return <span>&nbsp;</span>;
+    return <span>&zwj;</span>;
   }
   const color = colors[hashString(message.nick, colors.length)]
   return (<span style={{ color }}><b>{message.nick}</b></span>)
