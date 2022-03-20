@@ -46,7 +46,7 @@ const POST_STATION_MESSAGE = gql`
   }
 `
 
-function ChatInput({ onSubmit }) {
+function ChatInput({ onSubmit, target }) {
   const inputEl = useRef(null)
   const [input, setInput] = useState('')
 
@@ -69,13 +69,13 @@ function ChatInput({ onSubmit }) {
         onChange={change}
         value={input}
         ref={inputEl}
-        placeholder='Type your message here...'
+        placeholder={`Message ${target}`}
       />
     </form>
   )
 }
 
-export default function Chat({ stationId }) {
+export default function Chat({ stationId, stationSlug }) {
   const messagesEl = useRef(null)
 
   const { data, loading, subscribeToMore } = useQuery(STATION_MESSAGES, { variables: { stationId } })
@@ -139,7 +139,7 @@ export default function Chat({ stationId }) {
       </main>
 
       <footer>
-        {nick ? <ChatInput onSubmit={submit} /> : <SetNick onSubmit={setNick} />}
+        {nick ? <ChatInput onSubmit={submit} target={stationSlug} /> : <SetNick onSubmit={setNick} />}
       </footer>
     </article>
   )

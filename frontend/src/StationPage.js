@@ -62,7 +62,7 @@ function StationPage() {
         <AudioControl stationSlug={station.slug} />
       </header>
       <main style={{ overflowY: 'hidden' }}>
-        <Chat stationId={station.id} />
+        <Chat stationId={station.id} stationSlug={station.slug} />
       </main>
       <footer>
         {isMobile || <div style={{height: '50px'}}/>}
