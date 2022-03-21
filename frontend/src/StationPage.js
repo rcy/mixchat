@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useQuery, gql } from '@apollo/client';
 import AudioControl from './AudioControl.js';
 import RecentTracks from './RecentTracks.js';
@@ -10,6 +10,8 @@ import { isMobile } from 'react-device-detect';
 
 function StationPage() {
   const params = useParams()
+  const [search] = useSearchParams()
+
   const [count, setCount] = useState(100)
 
   const { loading, error, data } = useQuery(gql`
@@ -32,6 +34,8 @@ function StationPage() {
     return "spinner"
   }
   
+  const audio = search.get('noaudio') !== "1"
+
   const station = data.stationBySlug
 
   const channel = station?.ircChannelByStationId?.channel
@@ -59,7 +63,7 @@ function StationPage() {
   return (
     <article style={{ height: '100%' }}>
       <header>
-        <AudioControl stationSlug={station.slug} />
+        {audio && <AudioControl stationSlug={station.slug} />}
       </header>
       <main style={{ overflowY: 'hidden' }}>
         <Chat stationId={station.id} stationSlug={station.slug} />
