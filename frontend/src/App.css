@@ -78,10 +78,11 @@ header {
     padding: 0;
 }
 
+/* https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-container/ */
 .wrap {
-    word-wrap: break-word;
-    white-space: normal;
-    word-break: break-all;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .messages {
