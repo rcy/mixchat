@@ -69,6 +69,7 @@ function ChatInput({ onSubmit, target }) {
   return (
     <form onSubmit={submit}>
       <input
+        className="chat"
         type="text"
         onChange={change}
         value={input}

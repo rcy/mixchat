@@ -122,3 +122,7 @@ input {
     background: white;
     color: black;
 }
+
+input.chat {
+    padding: .5em;
+}
