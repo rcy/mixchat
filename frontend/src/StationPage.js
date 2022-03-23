@@ -34,7 +34,7 @@ function StationPage() {
     return "spinner"
   }
   
-  const showAudio = search.get('hide_audio') !== '1'
+  const showAudio = search.get('noaudio') !== '1'
 
   const station = data.stationBySlug
 
@@ -63,9 +63,9 @@ function StationPage() {
   return (
     <article style={{ height: '100%' }}>
       <div>
-        <header>
+        <div>
           {showAudio && <AudioControl stationSlug={station.slug} />}
-        </header>
+        </div>
       </div>
       <main style={{ overflowY: 'hidden' }}>
         <Chat stationId={station.id} stationSlug={station.slug} />
