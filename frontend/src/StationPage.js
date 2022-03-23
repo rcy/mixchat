@@ -87,7 +87,6 @@ function StationPage() {
         </div>
       </div>
       <main style={{ overflowY: 'hidden' }}>
-        <h1>{tab}</h1>
         <Tab active={tab} id="chat">
           <Chat stationId={station.id} stationSlug={station.slug} />
         </Tab>
