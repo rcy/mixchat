@@ -133,17 +133,22 @@ export default function Chat({ stationId, stationSlug }) {
       </header>
 
       <main style={{overflowY: 'scroll' }} ref={messagesEl} className="messages">
-        {messages.map(({node}) => {
-          const result = (
-            <div key={node.id} className="message">
-              <Time message={node} prevMessage={prevNode} /> {' '}
-              <Nick message={node} prevMessage={prevNode}/> {' '}
-              <Body message={node} />
-            </div>
-          )
-          prevNode = node
-          return result
-        })}
+        <table>
+          <tbody>
+            {messages.map(({node}) => {
+              const result = (
+                <tr key={node.id} className="message">
+                  <td><Time message={node} prevMessage={prevNode} /></td>
+                  <td>
+                    <Nick message={node} prevMessage={prevNode}/> <Body message={node} />
+                  </td>
+                </tr>
+              )
+              prevNode = node
+              return result
+            })}
+          </tbody>
+        </table>
       </main>
 
       <footer>
