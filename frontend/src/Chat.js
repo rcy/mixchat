@@ -138,8 +138,8 @@ export default function Chat({ stationId, stationSlug }) {
             {messages.map(({node}) => {
               const result = (
                 <tr key={node.id} className="message">
-                  <td class="timestamp"><Time message={node} prevMessage={prevNode} /></td>
-                  <td>
+                  <td className="timestamp"><Time message={node} prevMessage={prevNode} /></td>
+                  <td className="wrap">
                     <Nick message={node} prevMessage={prevNode}/> <Body message={node} />
                   </td>
                 </tr>

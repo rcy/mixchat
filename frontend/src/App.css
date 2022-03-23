@@ -78,6 +78,12 @@ header {
     padding: 0;
 }
 
+.wrap {
+    word-wrap: break-word;
+    white-space: normal;
+    word-break: break-all;
+}
+
 .messages {
     word-wrap: break-word;
 }
