@@ -34,7 +34,7 @@ function StationPage() {
     return "spinner"
   }
   
-  const embed = search.get('embed')
+  const embed = search.get('embed') === 1
 
   const station = data.stationBySlug
 
