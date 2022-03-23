@@ -81,6 +81,7 @@ function StationPage() {
           <a href="#mix" onClick={clickTab}>mix</a>
           <a href="#add" onClick={clickTab}>add</a>
         </div>
+        <div className="banner">NEXT SHOW: ((( Interesting Music ))) Saturday 8PM</div>
       </div>
       <main style={{ overflowY: 'hidden' }}>
         <h1>{tab}</h1>

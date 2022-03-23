@@ -109,3 +109,11 @@ input {
 .menubar a.active {
     background: lime;
 }
+
+.banner {
+    background: black;
+    color: red;
+    border: 2px solid orange;
+    text-align: center;
+    font-weight: bold;
+}
