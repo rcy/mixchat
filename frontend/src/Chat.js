@@ -225,7 +225,7 @@ function hashString(s, max) {
 
 function Nick({ message, prevMessage }) {
   if (message.nick === prevMessage?.nick) {
-    return <span>&zwj;</span>;
+    return null;//<span>&zwj;</span>;
   }
   const color = colors[hashString(message.nick, colors.length)]
   return (<span style={{ color }}><b>{message.nick}</b></span>)
@@ -243,7 +243,7 @@ function Time({ message, prevMessage }) {
 
   const show = newNick //|| newTime
 
-  return <span
+  return show && <span
            style={{
              opacity: '50%',
              //visibility: mt === pt ? 'hidden' : 'visible',
