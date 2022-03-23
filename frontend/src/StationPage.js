@@ -27,6 +27,8 @@ function StationPage() {
       }
     }`, { variables: { slug: params.slug } });
 
+  const [tab,setTab] = useState('chat')
+
   if (error) {
     return error.message
   }
@@ -61,6 +63,12 @@ function StationPage() {
   //     </footer>
   //   </article>
   // )
+
+  function clickTab(ev) {
+    ev.preventDefault();
+    setTab(ev.target.href.split('#')[1])
+  }
+  
   return (
     <article style={{ height: '100%' }}>
       <div>
@@ -69,39 +77,44 @@ function StationPage() {
         </div>
 
         <div className="menubar">
-          <Link to="chat">chat</Link>
-          <Link to="mix">mix</Link>
-          <Link to="add">add</Link>
+          <a href="#chat" onClick={clickTab}>chat</a>
+          <a href="#mix" onClick={clickTab}>mix</a>
+          <a href="#add" onClick={clickTab}>add</a>
         </div>
       </div>
       <main style={{ overflowY: 'hidden' }}>
-        <Routes>
-          <Route path="chat" element={ <Chat stationId={station.id} stationSlug={station.slug} /> } />
-          <Route path="mix" element={
-            <article style={{height: '100%' }}>
-              <div></div>
-              <div style={{ overflowY: 'scroll' }}>
-                <RecentTracks stationId={station.id} count={100} />
-              </div>
-              <div></div>
-            </article>
-          }/>
-          <Route path="add" element={
-            <article style={{height: '100%' }}>
-              <div></div>
-              <div style={{ overflowY: 'scroll' }}>
-                <AddTrack stationId={station.id} />
-              </div>
-              <div></div>
-            </article>
-          }/>
-        </Routes>
+        <h1>{tab}</h1>
+        <Tab active={tab} id="chat">
+          <Chat stationId={station.id} stationSlug={station.slug} />
+        </Tab>
+        <Tab active={tab} id="mix">
+          <article style={{height: '100%' }}>
+            <div></div>
+            <div style={{ overflowY: 'scroll' }}>
+              <RecentTracks stationId={station.id} count={100} />
+            </div>
+            <div></div>
+          </article>
+        </Tab>
+        <Tab active={tab} id="add">
+          <article style={{height: '100%' }}>
+            <div></div>
+            <div style={{ overflowY: 'scroll' }}>
+              <AddTrack stationId={station.id} />
+            </div>
+            <div></div>
+          </article>
+        </Tab>
       </main>
       <footer>
         {isMobile || <div style={{height: '50px'}}/>}
       </footer>
     </article>
   )
+}
+
+function Tab({ children, active, id }) {
+  return <div style={{display: active === id ? 'inline' : 'none'}}>{children}</div>
 }
 
 export default StationPage;
