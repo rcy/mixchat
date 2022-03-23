@@ -86,6 +86,12 @@ header {
     margin-bottom: .5em;
 }
 
+.message .timestamp {
+    padding-right: .5em;
+    text-align: right;
+    white-space: nowrap;
+}
+
 .menubar {
     padding: 5px;
     border-bottom: 1px solid black;
