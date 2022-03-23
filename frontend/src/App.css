@@ -78,10 +78,6 @@ header {
     padding: 0;
 }
 
-input {
-    width: 100%;
-}
-
 .messages {
     word-wrap: break-word;
 }
@@ -123,6 +119,7 @@ input {
     color: black;
 }
 
-input.chat {
+.chat-input {
+    width: 100%;
     padding: .5em;
 }

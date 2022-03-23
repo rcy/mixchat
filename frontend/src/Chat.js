@@ -67,15 +67,16 @@ function ChatInput({ onSubmit, target }) {
   }
 
   return (
-    <form onSubmit={submit}>
+    <form onSubmit={submit} style={{ display: 'flex' }}>
       <input
-        className="chat"
+        className="chat-input"
         type="text"
         onChange={change}
         value={input}
         ref={inputEl}
         placeholder={`Message ${target}`}
       />
+      <button>&nbsp;&#x27a4;&nbsp;</button>
     </form>
   )
 }
