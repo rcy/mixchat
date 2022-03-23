@@ -3,6 +3,16 @@
 /*     padding: -10px; */
 /* } */
 
+html {
+  box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
 html, body {
     height: 100%;
     overflow: hidden;
@@ -69,7 +79,6 @@ header {
 }
 
 input {
-    box-sizing: border-box;
     width: 100%;
 }
 
@@ -79,4 +88,24 @@ input {
 
 .message {
     margin-bottom: .5em;
+}
+
+.menubar {
+    padding: 5px;
+    border-bottom: 1px solid black;
+}
+.menubar a {
+    margin-right: 1em;
+    padding: 1px;
+    border: 1px solid black;
+    border-radius: 5px;
+    background: white;
+}
+
+.menubar a:hover {
+    background: yellow;
+}
+
+.menubar a.active {
+    background: lime;
 }

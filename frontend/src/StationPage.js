@@ -5,8 +5,9 @@ import AudioControl from './AudioControl.js';
 import RecentTracks from './RecentTracks.js';
 import AddTrack from './AddTrack.js';
 import Chat from './Chat.js';
-import { Outlet, Link, Routes, Route } from "react-router-dom";
+import { Outlet, Routes, Route } from "react-router-dom";
 import { isMobile } from 'react-device-detect';
+import Link from './Link'
 
 function StationPage() {
   const params = useParams()
@@ -66,9 +67,35 @@ function StationPage() {
         <div>
           {showAudio && <AudioControl stationSlug={station.slug} />}
         </div>
+
+        <div className="menubar">
+          <Link to="chat">chat</Link>
+          <Link to="mix">mix</Link>
+          <Link to="add">add</Link>
+        </div>
       </div>
       <main style={{ overflowY: 'hidden' }}>
-        <Chat stationId={station.id} stationSlug={station.slug} />
+        <Routes>
+          <Route path="chat" element={ <Chat stationId={station.id} stationSlug={station.slug} /> } />
+          <Route path="mix" element={
+            <article style={{height: '100%' }}>
+              <div></div>
+              <div style={{ overflowY: 'scroll' }}>
+                <RecentTracks stationId={station.id} count={100} />
+              </div>
+              <div></div>
+            </article>
+          }/>
+          <Route path="add" element={
+            <article style={{height: '100%' }}>
+              <div></div>
+              <div style={{ overflowY: 'scroll' }}>
+                <AddTrack stationId={station.id} />
+              </div>
+              <div></div>
+            </article>
+          }/>
+        </Routes>
       </main>
       <footer>
         {isMobile || <div style={{height: '50px'}}/>}

@@ -9,7 +9,7 @@ function App() {
     <article style={{ height: '100%' }}>
       <header>
         <h1>
-          <Link to="/">mixchat</Link>
+          mixchat
         </h1>
       </header>
 
