@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { useQuery, gql } from '@apollo/client';
 import Metadata from './Metadata.js';
 
-export default function RecentTracks({ stationId, count = 10 }) {
+export default function NowPlaying({ stationId }) {
   const { loading, error, data } = useQuery(gql`
-    query RecentlyPlayed($stationId: Int!, $count: Int!) {
-      allTrackEvents(condition: { stationId: $stationId, action: "played"}, orderBy: CREATED_AT_DESC, first: $count) {
+    query NowPlaying($stationId: Int!) {
+      allTrackEvents(condition: { stationId: $stationId, action: "played"}, orderBy: CREATED_AT_DESC, first: 1) {
         edges {
           node {
             createdAt
@@ -23,28 +23,18 @@ export default function RecentTracks({ stationId, count = 10 }) {
     }
   `, {
     pollInterval: 10000,
-    variables: { stationId, count }
+    variables: { stationId }
   });
 
   if (loading) {
-    return 'spinner'
+    return '---'
   }
 
   const { edges } = data.allTrackEvents
 
   if (edges.length) {
     return (
-      <div>
-        {edges.slice(1).map(({ node }) => (
-          <div key={node.id}>
-            <span className="track-list-item">
-              <MetadataLink metadata={node.trackByTrackId?.metadata} />
-              {' '}
-              <Metadata metadata={node.trackByTrackId?.metadata} />
-            </span>
-          </div>
-        ))}
-      </div>
+      <Metadata metadata={edges[0].node.trackByTrackId?.metadata} />
     )
   } else {
     return 'no edges'

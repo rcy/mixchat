@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { useQuery, gql } from '@apollo/client';
 import AudioControl from './AudioControl.js';
 import RecentTracks from './RecentTracks.js';
+import NowPlaying from './NowPlaying.js';
 import AddTrack from './AddTrack.js';
 import Chat from './Chat.js';
 import { Outlet, Routes, Route } from "react-router-dom";
@@ -76,12 +77,14 @@ function StationPage() {
           {showAudio && <AudioControl stationSlug={station.slug} />}
         </div>
 
+        <h3 className="banner">TASTESLIKEME NEXT SHOW: ((( Interesting Music ))) Saturday 8PM</h3>
+        <div className="now-playing">Now Playing: <NowPlaying stationId={station.id} /></div>
+
         <div className="menubar">
           <a href="#chat" onClick={clickTab}>chat</a>
           <a href="#mix" onClick={clickTab}>mix</a>
           <a href="#add" onClick={clickTab}>add</a>
         </div>
-        <div className="banner">NEXT SHOW: ((( Interesting Music ))) Saturday 8PM</div>
       </div>
       <main style={{ overflowY: 'hidden' }}>
         <h1>{tab}</h1>

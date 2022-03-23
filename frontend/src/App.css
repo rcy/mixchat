@@ -93,6 +93,7 @@ input {
 .menubar {
     padding: 5px;
     border-bottom: 1px solid black;
+    border-top: 1px solid black;
 }
 .menubar a {
     margin-right: 1em;
@@ -111,9 +112,13 @@ input {
 }
 
 .banner {
-    background: black;
-    color: red;
-    border: 2px solid orange;
-    text-align: center;
+    background: white;
+    color: black;
     font-weight: bold;
+}
+
+
+.now-playing {
+    background: white;
+    color: black;
 }
