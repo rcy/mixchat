@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from "react-router-dom";
 import { useQuery, gql } from '@apollo/client';
 import AudioControl from './AudioControl.js';
-import RecentTracks from './RecentTracks.js';
+import RecentPlayedTracks from './RecentPlayedTracks.js';
+import RecentAddedTracks from './RecentAddedTracks.js';
 import NowPlaying from './NowPlaying.js';
 import AddTrack from './AddTrack.js';
 import Chat from './Chat.js';
@@ -79,22 +80,27 @@ function StationPage() {
 
         <h3 className="banner">TASTESLIKEME NEXT SHOW: ((( Interesting Music ))) Saturday 8PM</h3>
         <div className="now-playing">Now Playing: <NowPlaying stationId={station.id} /></div>
-
         <div className="menubar">
           <a href="#chat" onClick={clickTab}>chat</a>
-          <a href="#mix" onClick={clickTab}>mix</a>
-          <a href="#add" onClick={clickTab}>add</a>
+          <a href="#library" onClick={clickTab}>library</a>
         </div>
       </div>
       <main style={{ overflowY: 'hidden' }}>
         <Tab active={tab} id="chat">
           <Chat stationId={station.id} stationSlug={station.slug} />
         </Tab>
-        <Tab active={tab} id="mix">
+        <Tab active={tab} id="library">
           <article style={{height: '100%' }}>
             <div></div>
             <div style={{ overflowY: 'scroll' }}>
-              <RecentTracks stationId={station.id} count={100} />
+              <h1>Recently Played</h1>
+              <RecentPlayedTracks stationId={station.id} count={25} />
+
+              <h1>Recently Added</h1>
+              <RecentAddedTracks stationId={station.id} count={25} />
+
+              <h1>Add track to library</h1>
+              <AddTrack stationId={station.id} />
             </div>
             <div></div>
           </article>

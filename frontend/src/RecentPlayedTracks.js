@@ -38,6 +38,8 @@ export default function RecentTracks({ stationId, count = 10 }) {
         {edges.slice(1).map(({ node }) => (
           <div key={node.id}>
             <span className="track-list-item">
+              <span className="timestamp">{new Intl.DateTimeFormat("en", { timeStyle: 'short' }).format(new Date(node.createdAt))}</span>
+              {' '}
               <MetadataLink metadata={node.trackByTrackId?.metadata} />
               {' '}
               <Metadata metadata={node.trackByTrackId?.metadata} />

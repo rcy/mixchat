@@ -138,7 +138,7 @@ export default function Chat({ stationId, stationSlug }) {
             {messages.map(({node}) => {
               const result = (
                 <tr key={node.id} className="message">
-                  <td className="timestamp"><Time message={node} prevMessage={prevNode} /></td>
+                  <td><Time message={node} prevMessage={prevNode} /></td>
                   <td className="wrap">
                     <Nick message={node} prevMessage={prevNode}/> <Body message={node} />
                   </td>
@@ -249,11 +249,11 @@ function Time({ message, prevMessage }) {
   const show = newNick //|| newTime
 
   return show && <span
-           style={{
-             opacity: '50%',
-             //visibility: mt === pt ? 'hidden' : 'visible',
-             visibility: show ? 'visible' : 'hidden',
-             //fontSize: '30%',
-           }}
-         >{mt}</span>
+                   className="timestamp"
+                   style={{
+                     //visibility: mt === pt ? 'hidden' : 'visible',
+                     visibility: show ? 'visible' : 'hidden',
+                     //fontSize: '30%',
+                   }}
+                 >{mt}</span>
 }
