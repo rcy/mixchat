@@ -47,6 +47,38 @@ const POST_STATION_MESSAGE = gql`
   }
 `
 
+function UnreadIndicator({ defaultTitle = 'mixchat', message }) {
+  const [messages, setMessages] = useState([])
+
+  const incUnread = () => {
+    if (!messages.find(m => m.id === message.id)) {
+      setMessages([...messages, message])
+    }
+  }
+
+  useEffect(() => {
+    window.onfocus = function() {
+      setMessages([])
+    }
+  }, [])
+
+  useEffect(() => {
+    if (message && !document.hasFocus()) {
+      incUnread()
+    }
+  }, [message])
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      document.title = `${messages.length} • ${defaultTitle}`
+    } else {
+      document.title = defaultTitle
+    }
+  }, [messages])
+
+  return null
+}
+
 function ChatInput({ onSubmit, target }) {
   const inputEl = useRef(null)
   const [input, setInput] = useState('')
@@ -87,6 +119,7 @@ export default function Chat({ stationId, stationSlug }) {
   const { data, loading, subscribeToMore } = useQuery(STATION_MESSAGES, { variables: { stationId } })
   const [ postMessage ] = useMutation(POST_STATION_MESSAGE, { variables: { stationId } })
   const [nick, setNick] = useLocalStorage('nick', null)
+  const [lastMessage, setLastMessage] = useState(null)
 
   useEffect(() => {
     messagesEl?.current?.scrollTo(100000,100000)
@@ -100,6 +133,7 @@ export default function Chat({ stationId, stationSlug }) {
         if (!subscriptionData.data.listen.relatedNode) return prev;
         const newNode = subscriptionData.data.listen.relatedNode;
         const prevEdges = prev.allMessages.edges
+        setLastMessage(newNode)
         return Object.assign({}, prev, {
           allMessages: {
             edges: [
@@ -130,6 +164,7 @@ export default function Chat({ stationId, stationSlug }) {
   return (
     <article style={{ height: '100%' }}>
       <header>
+        <UnreadIndicator message={lastMessage} defaultTitle={`${stationSlug} | mixchat`}/>
       </header>
 
       <main style={{overflowY: 'scroll' }} ref={messagesEl} className="messages">
