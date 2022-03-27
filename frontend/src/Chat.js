@@ -122,9 +122,18 @@ export default function Chat({ stationId, stationSlug }) {
   const [nick, setNick] = useLocalStorage('nick', null)
   const [lastMessage, setLastMessage] = useState(null)
 
-  useEffect(() => {
+  function scroll() {
     messagesEl?.current?.scrollTo(100000,100000)
-  }, [data])
+  }
+
+  // scroll when new messages come in
+  useEffect(scroll, [data])
+
+  // scroll when window resizes
+  useEffect(() => {
+    window.addEventListener("resize", scroll);
+    return () => window.removeEventListener("resize", scroll);
+  }, [])
   
   useEffect(() => {
     subscribeToMore({
