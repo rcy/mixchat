@@ -1,17 +1,31 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from "react-router-dom";
-import { useQuery, gql } from '@apollo/client';
+import { useQuery, useMutation, gql } from '@apollo/client';
 import AudioControl from './AudioControl.js';
 import RecentPlayedTracks from './RecentPlayedTracks.js';
 import RecentAddedTracks from './RecentAddedTracks.js';
 import NowPlaying from './NowPlaying.js';
+import Settings from './Settings.js';
 import AddTrack from './AddTrack.js';
 import Chat from './Chat.js';
 import { Outlet, Routes, Route } from "react-router-dom";
 import { isMobile } from 'react-device-detect';
 import Link from './Link'
 
+const POST_STATION_MESSAGE = gql`
+  mutation PostStationMessage($stationId: Int!, $body: String!, $nick: String!) {
+    createMessage(
+      input: { message: {stationId: $stationId, body: $body, nick: $nick}}
+    ) {
+      message {
+        id
+      }
+    }
+  }
+`
+
 function StationPage() {
+  const [ postMessage ] = useMutation(POST_STATION_MESSAGE)
   const params = useParams()
   const [search] = useSearchParams()
 
@@ -83,11 +97,12 @@ function StationPage() {
         <div className="menubar">
           <a href="#chat" onClick={clickTab}>chat</a>
           <a href="#library" onClick={clickTab}>library</a>
+          <a href="#settings" onClick={clickTab}>settings</a>
         </div>
       </div>
       <main style={{ overflowY: 'hidden' }}>
         <Tab active={tab} id="chat">
-          <Chat stationId={station.id} stationSlug={station.slug} />
+          <Chat stationId={station.id} stationSlug={station.slug} postMessage={postMessage} />
         </Tab>
         <Tab active={tab} id="library">
           <article style={{height: '100%' }}>
@@ -110,6 +125,15 @@ function StationPage() {
             <div></div>
             <div style={{ overflowY: 'scroll' }}>
               <AddTrack stationId={station.id} />
+            </div>
+            <div></div>
+          </article>
+        </Tab>
+        <Tab active={tab} id="settings">
+          <article style={{height: '100%' }}>
+            <div></div>
+            <div style={{ overflowY: 'scroll' }}>
+              <Settings stationId={station.id} postMessage={postMessage} />
             </div>
             <div></div>
           </article>

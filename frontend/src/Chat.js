@@ -1,4 +1,4 @@
-import { gql, useMutation, useQuery, useSubscription } from '@apollo/client';
+import { gql, useQuery, useSubscription } from '@apollo/client';
 import { useState, useEffect, useRef } from 'react'
 import useLocalStorage from 'react-localstorage-hook'
 import { uniqueNamesGenerator, adjectives, animals } from 'unique-names-generator'
@@ -34,18 +34,6 @@ const STATION_MESSAGES_SUBSCRIPTION = gql`
     }
   }
 `;
-
-const POST_STATION_MESSAGE = gql`
-  mutation PostStationMessage($stationId: Int!, $body: String!, $nick: String!) {
-    createMessage(
-      input: { message: {stationId: $stationId, body: $body, nick: $nick}}
-    ) {
-      message {
-        id
-      }
-    }
-  }
-`
 
 function UnreadIndicator({ defaultTitle = 'mixchat', message }) {
   const [messages, setMessages] = useState([])
@@ -114,11 +102,10 @@ function ChatInput({ onSubmit, target, nick }) {
   )
 }
 
-export default function Chat({ stationId, stationSlug }) {
+export default function Chat({ postMessage, stationId, stationSlug }) {
   const messagesEl = useRef(null)
 
   const { data, loading, subscribeToMore } = useQuery(STATION_MESSAGES, { variables: { stationId } })
-  const [ postMessage ] = useMutation(POST_STATION_MESSAGE, { variables: { stationId } })
   const [nick, setNick] = useLocalStorage('nick', null)
   const [lastMessage, setLastMessage] = useState(null)
 
@@ -171,7 +158,7 @@ export default function Chat({ stationId, stationSlug }) {
     if (cmd === 'nick') {
       const newNick = args[0]
       if (newNick.length > 0) {
-        await postMessage({ variables: { nick, body: `[[ is now known as ${newNick} ]]` } })
+        await postMessage({ variables: { stationId, nick, body: `[[ is now known as ${newNick} ]]` } })
         setNick(args[0])
       }
     }
@@ -181,7 +168,7 @@ export default function Chat({ stationId, stationSlug }) {
     if (input[0] === '/') {
       handleCommand(input.slice(1))
     } else {
-      await postMessage({ variables: { nick, body: input } })
+      await postMessage({ variables: { stationId, nick, body: input } })
     }
   }
 
