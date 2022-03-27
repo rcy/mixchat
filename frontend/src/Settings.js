@@ -36,7 +36,7 @@ function NickSettings({ stationId, postMessage }) {
         Nickname:
         <input type="text" placeholder="new nick" defaultValue={nick} onChange={change}/>
       </label>
-      {nick !== input && <button>Submit</button>}
+      {input && input !== nick && <button>Submit</button>}
     </form>
   )
 }
