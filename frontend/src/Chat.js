@@ -79,7 +79,7 @@ function UnreadIndicator({ defaultTitle = 'mixchat', message }) {
   return null
 }
 
-function ChatInput({ onSubmit, target }) {
+function ChatInput({ onSubmit, target, nick }) {
   const inputEl = useRef(null)
   const [input, setInput] = useState('')
 
@@ -107,7 +107,7 @@ function ChatInput({ onSubmit, target }) {
         onChange={change}
         value={input}
         ref={inputEl}
-        placeholder={`Message ${target}`}
+        placeholder={`Send as ${nick} (use "/nick newnick" to change)`}
       />
       <button>&nbsp;&#x27a4;&nbsp;</button>
     </form>
@@ -165,8 +165,24 @@ export default function Chat({ stationId, stationSlug }) {
 
   const messages = data.allMessages.edges
 
+  async function handleCommand(str) {
+    let [cmd, ...args] = str.split(/\s+/)
+    console.log('handleCommand', {str, cmd, args}, args[0])
+    if (cmd === 'nick') {
+      const newNick = args[0]
+      if (newNick.length > 0) {
+        await postMessage({ variables: { nick, body: `[[ is now known as ${newNick} ]]` } })
+        setNick(args[0])
+      }
+    }
+  }
+
   async function submit(input) {
-    await postMessage({ variables: { nick, body: input } })
+    if (input[0] === '/') {
+      handleCommand(input.slice(1))
+    } else {
+      await postMessage({ variables: { nick, body: input } })
+    }
   }
 
   let prevNode = null
@@ -197,7 +213,7 @@ export default function Chat({ stationId, stationSlug }) {
       </main>
 
       <footer>
-        {nick ? <ChatInput onSubmit={submit} target={stationSlug} /> : <SetNick onSubmit={setNick} />}
+        {nick ? <ChatInput onSubmit={submit} target={stationSlug} nick={nick} /> : <SetNick onSubmit={setNick} />}
       </footer>
     </article>
   )
