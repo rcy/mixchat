@@ -95,6 +95,7 @@ function ChatInput({ onSubmit, target }) {
     if (submission.length) {
       onSubmit(submission)
       setInput('')
+      inputEl.current.focus()
     }
   }
 
