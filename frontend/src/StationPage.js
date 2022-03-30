@@ -92,7 +92,7 @@ function StationPage() {
           {showAudio && <AudioControl stationSlug={station.slug} />}
         </div>
 
-        <h3 className="banner">TASTESLIKEME NEXT SHOW: ((( Interesting Music ))) Saturday 8PM</h3>
+        {/* <h3 className="banner">TASTESLIKEME NEXT SHOW: ((( Interesting Music ))) Saturday 8PM</h3> */}
         <div className="now-playing">Now Playing: <NowPlaying stationId={station.id} /></div>
         <div className="menubar">
           <a href="#chat" onClick={clickTab}>chat</a>
