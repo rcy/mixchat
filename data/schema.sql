@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 13.3 (Debian 13.3-1.pgdg100+1)
--- Dumped by pg_dump version 13.2
+-- Dumped by pg_dump version 13.7
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -633,6 +633,13 @@ ALTER TABLE ONLY public.tracks
 
 ALTER TABLE ONLY public.tracks
     ADD CONSTRAINT tracks_unique_station_filename UNIQUE (station_id, filename);
+
+
+--
+-- Name: track_events broadcast_track_event; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER broadcast_track_event AFTER INSERT ON public.track_events FOR EACH ROW EXECUTE FUNCTION public.trigger_job('broadcast_track_event');
 
 
 --
