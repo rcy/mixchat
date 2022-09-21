@@ -636,10 +636,10 @@ ALTER TABLE ONLY public.tracks
 
 
 --
--- Name: track_events broadcast_track_event; Type: TRIGGER; Schema: public; Owner: -
+-- Name: tracks broadcast_track; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER broadcast_track_event AFTER INSERT ON public.track_events FOR EACH ROW EXECUTE FUNCTION public.trigger_job('broadcast_track_event');
+CREATE TRIGGER broadcast_track AFTER INSERT ON public.tracks FOR EACH ROW EXECUTE FUNCTION public.trigger_job('broadcast_track');
 
 
 --
