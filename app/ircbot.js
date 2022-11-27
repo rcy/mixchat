@@ -16,7 +16,7 @@ module.exports = function ircBot(host, nick, pgClient, options) {
 
   client.addListener('join', function(channel, nick, message) {
     if (client.nick !== nick) {
-      client.say(channel, `Hello ${nick}!`)
+      setTimeout(() => client.say(channel, `Hello ${nick}!`), 1000 * (10 + 50 * Math.random()))
     }
   });
 

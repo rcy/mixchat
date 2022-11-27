@@ -1,4 +1,4 @@
-# DJFullMoon
+# Mixchat
 
 Control an icecast server via IRC!
 

@@ -1,4 +1,3 @@
-const { execSync } = require('child_process')
 const { handlers } = require('../lib/handlers.js')
 
 module.exports = async ({ id }, helpers) => {
