@@ -11,10 +11,10 @@ function App() {
         <p style={{ float: 'right' }}>
           <a href="https://twitter.com/rcyeske" target="_blank">tw</a>
           {'/'}
-          <a href="https://github.com/rcy/djfullmoon" target="_blank">gh</a>
+          <a href="https://github.com/rcy/mixchat" target="_blank">gh</a>
         </p>
         <h1>
-          <Link to="/">DJFULLMOON</Link>
+          <Link to="/">MIXCHAT</Link>
         </h1>
       </header>
 
