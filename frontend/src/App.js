@@ -9,9 +9,7 @@ function App() {
     <div>
       <header>
         <p style={{ float: 'right' }}>
-          <a href="https://twitter.com/rcyeske" target="_blank">tw</a>
-          {'/'}
-          <a href="https://github.com/rcy/mixchat" target="_blank">gh</a>
+          <a href="https://github.com/rcy/mixchat" target="_blank">github</a>
         </p>
         <h1>
           <Link to="/">MIXCHAT</Link>
