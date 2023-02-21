@@ -20,5 +20,6 @@ module.exports = async function youtubeDownload(url) {
     exec: "mv {} /media && echo {}", // output
   })
   console.log(output)
-  return `/media/${output}`
+  const basename = output.split('/').pop()
+  return `/media/${basename}`
 }
