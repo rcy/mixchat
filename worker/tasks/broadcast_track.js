@@ -16,7 +16,7 @@ module.exports = async ({ id }, helpers) => {
     throw new Error('FLAPPER_URL not set');
   }
 
-  const fetch = import('node-fetch')
+  const { default: fetch } = await import('node-fetch')
 
   const result = await fetch(process.env.FLAPPER_URL, {
     method: "POST",
