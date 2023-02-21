@@ -1,4 +1,3 @@
-const fetch = require('node-fetch')
 const util = require('util');
 
 module.exports = async ({ id }, helpers) => {
@@ -16,6 +15,8 @@ module.exports = async ({ id }, helpers) => {
   if (!process.env.FLAPPER_URL) {
     throw new Error('FLAPPER_URL not set');
   }
+
+  const fetch = import('node-fetch')
 
   const result = await fetch(process.env.FLAPPER_URL, {
     method: "POST",
