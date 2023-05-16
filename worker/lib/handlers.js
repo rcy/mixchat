@@ -68,16 +68,9 @@ order by plays.created_at DESC limit 1
     } catch(e) {
       console.error(e)
 
-      await insertResult({ status: 'error', error: e, message: e.stderr?.split('. ')[0] })
+      await insertResult({ status: 'error', error: e, message: "something bad happened, will retry"})
 
-      // these 403s seem to work after retrying
-      if (e.stderr?.match('HTTP Error 403')) {
-        await insertResult({ status: 'error', error: e, message: "403 (will retry)" })
-        throw e
-      }
-
-      // any other error we ignore and stop processing
-      return
+      throw e
     }
 
     // add track to db
