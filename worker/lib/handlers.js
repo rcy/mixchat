@@ -68,7 +68,7 @@ order by plays.created_at DESC limit 1
     } catch(e) {
       console.error(e)
 
-      await insertResult({ status: 'error', error: e, message: "something bad happened, will retry"})
+      await insertResult({ status: 'error', error: e, message: e.message || "something bad happened, will retry"})
 
       throw e
     }
