@@ -98,6 +98,14 @@ order by plays.created_at DESC limit 1
       insertResult({ status: 'error', message: e.message, error: e, code: e.code, detail: e.detail })
     }
   },
+  version: async function(_args, { insertResult }) {
+    try {
+      const message = execSync('yt-dlp --version').toString()
+      insertResult({ message })
+    } catch(e) {
+      insertResult({ status: 'error', message: e.message, error: e, code: e.code, detail: e.detail })
+    }
+  },
 }
 
 module.exports = {
