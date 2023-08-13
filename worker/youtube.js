@@ -1,7 +1,8 @@
-const youtubedl = require('youtube-dl-exec')
+const { create } = require('youtube-dl-exec')
+const youtubedl = create('/usr/local/bin/yt-dlp')
 
 module.exports = async function youtubeDownload(url) {
-  const output = await youtubedl(url, {
+    const output = await youtubedl(url, {
     quiet: true,
     extractAudio: true,
     audioFormat: 'vorbis',
