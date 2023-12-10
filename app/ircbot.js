@@ -62,7 +62,7 @@ select
       //const message = `${row.event_data.from}: ${row.event_id}.${row.result_id} ${JSON.stringify(row.result_data)}`
       let message = `${row.event_data.from}: ${row.result_data.message}`
       if (row.result_data.error) {
-        message += ` !error ${row.result_id}`
+        message += ` id=${row.event_id} !error ${row.result_id}`
       }
       client.say(row.event_data.to, message)
     }
