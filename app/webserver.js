@@ -2,7 +2,6 @@ const express = require('express')
 const cors = require('cors')
 const morgan = require('morgan')
 const bodyParser = require('body-parser')
-const jsonParser = bodyParser.json()
 const PubSub = require('pubsub-js');
 const { postgraphile, makePluginHook } = require('postgraphile')
 const { default: PgPubsub } = require("@graphile/pg-pubsub");
@@ -62,11 +61,9 @@ module.exports = function webserver({ pgClient, port }) {
     }
   })
 
-  app.post('/now/:slug', jsonParser, async (req, res) => {
-    console.log('SENT NOW', req.params, req.body.filename)
-
+  app.post('/now/:slug', bodyParser.urlencoded({ extended: false }), async (req, res) => {
     const { slug } = req.params;
-    const { filename } = req.body;
+    const filename = req.body.filename;
 
     try {
       const { rows } = await pgClient.query(`
@@ -84,13 +81,15 @@ select tracks.id as track_id, stations.id as station_id
      action
   ) values ($1, $2, 'played')
         `, [rows[0].station_id, rows[0].track_id]);
+      } else {
+        throw `couldn't find filename ${filename}`
       }
     } catch(e) {
       // TODO: handle better
       console.error(e);
     }
 
-    PubSub.publish('NOW', { ...req.body, station: req.params.slug })
+    PubSub.publish('NOW', { station: slug, filename })
     res.sendStatus(200)
   });
 

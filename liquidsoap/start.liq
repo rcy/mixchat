@@ -34,8 +34,7 @@ end
 
 def make_station(slug) =
   def my_request_function() =
-    # Get the first line of my external process
-    result = list.hd(default="", get_process_lines("sh ./request.sh " ^ slug))
+    result = http.get(api_base ^ "/next/" ^ slug)
 
     print("my_request_function (#{slug}): #{result}")
 
@@ -49,20 +48,14 @@ def make_station(slug) =
     end
   end
 
-  def track_change(metadata) =
-    print("track_change")
-    filename = metadata["filename"]
-    duration = request.duration(filename)
-    metadata = list.append(metadata, [("duration", string_of(int_of_float(duration)))])
-    print(metadata)
-    result = http.post(api_base ^ "/now/" ^ slug, data=json_of(metadata), headers=[("Content-Type","application/json")])
-    print(result)
+  def track_change(m) =
+    result = http.post(api_base ^ "/now/" ^ slug, data="filename=" ^ m["filename"], headers=[("Content-Type","application/x-www-form-urlencoded")])
   end
 
   live = input.harbor("live/" ^ slug, port=8000, password=liquidsoap_broadcast_password)
   src = request.dynamic.list(my_request_function, id="dynlist_" ^ slug)
   radio = fallback(track_sensitive=false, [live, src, emergency])
-  radio = on_track(track_change, radio)
+  radio.on_track(track_change)
 
   #output.icecast(%vorbis, radio, mount=slug ^ ".ogg", port=icecast_port, host=icecast_host, password=icecast_source_password)
   output.icecast(%mp3,    radio, mount=slug ^ ".mp3", port=icecast_port, host=icecast_host, password=icecast_source_password)
@@ -78,3 +71,6 @@ def make_station_wrapper(slug) =
   "Station created: " ^ slug
 end
 server.register(namespace="meta",usage="make_station slug",description="Make a station","make_station",make_station_wrapper)
+
+make_station("emb")
+make_station("tlm")
