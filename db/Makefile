@@ -23,3 +23,9 @@ create:
 init:
 	npx graphile-migrate init
 
+dump:
+	bash ./dump.sh
+
+restore:
+	bash ./restore.sh
+
