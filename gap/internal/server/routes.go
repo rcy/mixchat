@@ -13,17 +13,36 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	r.Get("/", s.HelloWorldHandler)
 	r.Get("/health", s.healthHandler)
+	r.Get("/stations", s.stationsHandler)
+	r.Get("/{slug}", s.stationHandler)
 
 	return r
 }
 
-func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
-	resp := make(map[string]string)
-	resp["message"] = "Hello World"
+func (s *Server) stationsHandler(w http.ResponseWriter, r *http.Request) {
+	stations, err := s.db.Q().Stations(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	jsonResp, err := json.Marshal(resp)
+	jsonResp, err := json.Marshal(stations)
+	if err != nil {
+		log.Fatalf("error handling JSON marshal. Err: %v", err)
+	}
+
+	_, _ = w.Write(jsonResp)
+}
+
+func (s *Server) stationHandler(w http.ResponseWriter, r *http.Request) {
+	stations, err := s.db.Q().Station(r.Context(), chi.URLParam(r, "slug"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	jsonResp, err := json.Marshal(stations)
 	if err != nil {
 		log.Fatalf("error handling JSON marshal. Err: %v", err)
 	}

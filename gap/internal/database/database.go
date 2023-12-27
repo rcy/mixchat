@@ -2,22 +2,25 @@ package database
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+	"gap/db"
 	"log"
 	"os"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/joho/godotenv/autoload"
 )
 
 type Service interface {
 	Health() map[string]string
+	Q() *db.Queries
 }
 
 type service struct {
-	db *sql.DB
+	conn    *pgxpool.Pool
+	queries *db.Queries
 }
 
 var (
@@ -30,19 +33,24 @@ var (
 
 func New() Service {
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
-	db, err := sql.Open("pgx", connStr)
+	conn, err := pgxpool.New(context.TODO(), connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	s := &service{db: db}
+	queries := db.New(conn)
+	s := &service{conn: conn, queries: queries}
 	return s
+}
+
+func (s *service) Q() *db.Queries {
+	return s.queries
 }
 
 func (s *service) Health() map[string]string {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	err := s.db.PingContext(ctx)
+	err := s.conn.Ping(ctx)
 	if err != nil {
 		log.Fatalf(fmt.Sprintf("db down: %v", err))
 	}
