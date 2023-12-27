@@ -72,7 +72,6 @@ select
   PubSub.subscribe('NOW', async function(msg, data) {
     try {
       console.log('RECV', msg, data.station, data.filename)
-      const nowPlayingData = data
       const count = await countListeners(data.station)
 
       if (count > 0) {
@@ -82,13 +81,18 @@ select
         );
 
         const { rows } = await pgClient.query(
-          "select id from tracks where station_id = $1 and filename = $2",
+          "select id, metadata->'common'->>'artist' artist, metadata->'common'->>'title' title, metadata->'format'->>'duration' duration from tracks where station_id = $1 and filename = $2",
           [stationId, data.filename]
         );
         if (rows.length) {
           const trackId = rows[0].id
 
-          announceNowPlaying({ client, to: channel, count, nowPlayingData: {...nowPlayingData, trackId} })
+          announceNowPlaying({ client, to: channel, count, nowPlayingData: {
+            artist: rows[0].artist,
+            title: rows[0].title,
+            duration: rows[0].duration,
+            trackId,
+          } })
         } else {
           client.say(channel, `playing system file: ${data.filename} (not in db)`);
         }
@@ -106,7 +110,7 @@ function ifString(x) {
 }
 
 async function announceNowPlaying({ client, to, count, nowPlayingData }) {
-  const { artist, album, title, duration, station, trackId } = nowPlayingData
+  const { artist, title, duration, trackId } = nowPlayingData
 
   const str = [
     `${count} listener${count === 1 ? "" : "s"}:`,
