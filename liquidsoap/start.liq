@@ -19,6 +19,8 @@ print("ICECAST_PORT: " ^ string_of(icecast_port))
 print("ICECAST_SOURCE_PASSWORD: " ^ icecast_source_password)
 print("LIQUIDSOAP_BROADCAST_PASSWORD: " ^ liquidsoap_broadcast_password)
 
+enable_replaygain_metadata()
+
 def add_skip_command(s) =
   # A command to skip
   def skip(_) =
@@ -44,18 +46,19 @@ def make_station(slug) =
       []
     else
       # Create and return a request using this result
-      [request.create(result)]
+      [request.create("replaygain:" ^ result)]
     end
   end
 
   def track_change(m) =
+    print("track_change: " ^ m["filename"] ^ " -- " ^ m["replaygain_track_gain"])
     result = http.post(api_base ^ "/now/" ^ slug, data="filename=" ^ m["filename"], headers=[("Content-Type","application/x-www-form-urlencoded")])
   end
 
   live = input.harbor("live/" ^ slug, port=8000, password=liquidsoap_broadcast_password)
-  src = request.dynamic.list(my_request_function, id="dynlist_" ^ slug)
-  radio = fallback(track_sensitive=false, [live, src, emergency])
-  radio.on_track(track_change)
+  src = replaygain(request.dynamic.list(my_request_function, id="dynlist_" ^ slug))
+  src.on_track(track_change)
+  radio = fallback(track_sensitive=false, [live, crossfade(src), emergency])
 
   #output.icecast(%vorbis, radio, mount=slug ^ ".ogg", port=icecast_port, host=icecast_host, password=icecast_source_password)
   output.icecast(%mp3,    radio, mount=slug ^ ".mp3", port=icecast_port, host=icecast_host, password=icecast_source_password)
