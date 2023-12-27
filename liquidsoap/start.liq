@@ -56,9 +56,9 @@ def make_station(slug) =
   end
 
   live = input.harbor("live/" ^ slug, port=8000, password=liquidsoap_broadcast_password)
-  src = replaygain(request.dynamic.list(my_request_function, id="dynlist_" ^ slug))
+  src = request.dynamic.list(my_request_function, id="dynlist_" ^ slug)
   src.on_track(track_change)
-  radio = fallback(track_sensitive=false, [live, crossfade(blank.eat(src)), emergency])
+  radio = fallback(track_sensitive=false, [live, crossfade(blank.eat(replaygain(src))), emergency])
 
   #output.icecast(%vorbis, radio, mount=slug ^ ".ogg", port=icecast_port, host=icecast_host, password=icecast_source_password)
   output.icecast(%mp3,    radio, mount=slug ^ ".mp3", port=icecast_port, host=icecast_host, password=icecast_source_password)
