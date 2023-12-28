@@ -27,5 +27,5 @@ from track_events te
 join tracks t on t.id = te.track_id
 where te.station_id = $1
   and te.action = 'played'
-order by te.created_at desc
+order by te.id desc
 limit 1;
