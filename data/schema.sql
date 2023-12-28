@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 13.3 (Debian 13.3-1.pgdg100+1)
--- Dumped by pg_dump version 13.7
+-- Dumped by pg_dump version 13.10
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -416,7 +416,8 @@ CREATE TABLE public.stations (
     id integer NOT NULL,
     slug text NOT NULL,
     name text,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    active boolean DEFAULT false
 );
 
 

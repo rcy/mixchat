@@ -7,30 +7,16 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const station = `-- name: Station :one
-select id, slug, name, created_at from stations where slug = $1
+const activeStations = `-- name: ActiveStations :many
+select id, slug, name, created_at, active from stations where active = true
 `
 
-func (q *Queries) Station(ctx context.Context, slug string) (Station, error) {
-	row := q.db.QueryRow(ctx, station, slug)
-	var i Station
-	err := row.Scan(
-		&i.ID,
-		&i.Slug,
-		&i.Name,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
-const stations = `-- name: Stations :many
-select id, slug, name, created_at from stations
-`
-
-func (q *Queries) Stations(ctx context.Context) ([]Station, error) {
-	rows, err := q.db.Query(ctx, stations)
+func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
+	rows, err := q.db.Query(ctx, activeStations)
 	if err != nil {
 		return nil, err
 	}
@@ -42,6 +28,128 @@ func (q *Queries) Stations(ctx context.Context) ([]Station, error) {
 			&i.ID,
 			&i.Slug,
 			&i.Name,
+			&i.CreatedAt,
+			&i.Active,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const currentTrack = `-- name: CurrentTrack :one
+select
+        coalesce(t.metadata->'common'->>'title', '')::text title,
+        coalesce(t.metadata->'common'->>'artist', '')::text artist
+from track_events te
+join tracks t on t.id = te.track_id
+where te.station_id = $1
+  and te.action = 'played'
+order by te.created_at desc
+limit 1
+`
+
+type CurrentTrackRow struct {
+	Title  string
+	Artist string
+}
+
+func (q *Queries) CurrentTrack(ctx context.Context, stationID int32) (CurrentTrackRow, error) {
+	row := q.db.QueryRow(ctx, currentTrack, stationID)
+	var i CurrentTrackRow
+	err := row.Scan(&i.Title, &i.Artist)
+	return i, err
+}
+
+const recentPlays = `-- name: RecentPlays :many
+select
+        t.filename,
+        te.created_at,
+        coalesce(t.metadata->'common'->>'title', '')::text title,
+        coalesce(t.metadata->'common'->>'artist', '')::text artist
+from track_events te
+join tracks t on t.id = te.track_id
+where te.station_id = $1
+  and te.action = 'played'
+  and te.created_at > $2
+`
+
+type RecentPlaysParams struct {
+	StationID int32
+	CreatedAt pgtype.Timestamptz
+}
+
+type RecentPlaysRow struct {
+	Filename  string
+	CreatedAt pgtype.Timestamptz
+	Title     string
+	Artist    string
+}
+
+func (q *Queries) RecentPlays(ctx context.Context, arg RecentPlaysParams) ([]RecentPlaysRow, error) {
+	rows, err := q.db.Query(ctx, recentPlays, arg.StationID, arg.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []RecentPlaysRow
+	for rows.Next() {
+		var i RecentPlaysRow
+		if err := rows.Scan(
+			&i.Filename,
+			&i.CreatedAt,
+			&i.Title,
+			&i.Artist,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const station = `-- name: Station :one
+select id, slug, name, created_at, active from stations where slug = $1
+`
+
+func (q *Queries) Station(ctx context.Context, slug string) (Station, error) {
+	row := q.db.QueryRow(ctx, station, slug)
+	var i Station
+	err := row.Scan(
+		&i.ID,
+		&i.Slug,
+		&i.Name,
+		&i.CreatedAt,
+		&i.Active,
+	)
+	return i, err
+}
+
+const stationMessages = `-- name: StationMessages :many
+select id, station_id, body, nick, created_at from messages where station_id = $1 order by id desc limit 100
+`
+
+func (q *Queries) StationMessages(ctx context.Context, stationID int32) ([]Message, error) {
+	rows, err := q.db.Query(ctx, stationMessages, stationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Message
+	for rows.Next() {
+		var i Message
+		if err := rows.Scan(
+			&i.ID,
+			&i.StationID,
+			&i.Body,
+			&i.Nick,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err

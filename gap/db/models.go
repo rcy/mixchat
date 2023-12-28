@@ -77,6 +77,7 @@ type Station struct {
 	Slug      string
 	Name      pgtype.Text
 	CreatedAt pgtype.Timestamptz
+	Active    pgtype.Bool
 }
 
 type Track struct {
