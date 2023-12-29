@@ -9,98 +9,30 @@ import (
 )
 
 type Event struct {
-	ID        int32
-	Name      pgtype.Text
-	Data      []byte
+	EventID   string
+	EventType string
 	CreatedAt pgtype.Timestamptz
-	StationID int32
+	Payload   []byte
 }
 
-type IrcChannel struct {
-	ID        int32
-	StationID int32
-	CreatedAt pgtype.Timestamptz
-	Server    string
-	Channel   string
-}
-
-type Message struct {
-	ID        int32
-	StationID int32
-	Body      pgtype.Text
-	Nick      pgtype.Text
-	CreatedAt pgtype.Timestamptz
-}
-
-type Play struct {
-	ID        int32
-	TrackID   int32
-	CreatedAt pgtype.Timestamptz
-	Action    string
-}
-
-type RecentlyAdded struct {
-	ID       int32
-	Filename string
-	AddedAt  pgtype.Timestamptz
-	EventID  int32
-	Name     pgtype.Text
-	Data     []byte
-}
-
-type RecentlyPlayed struct {
-	ID        int32
-	TrackID   int32
-	CreatedAt pgtype.Timestamptz
-	PlayedAt  pgtype.Timestamptz
-	Filename  string
-	EventID   int32
-	Action    string
-}
-
-type Result struct {
-	ID        int32
-	Name      pgtype.Text
-	Data      []byte
-	EventID   int32
-	StationID int32
-}
-
-type Skip struct {
-	ID      int32
-	TrackID int32
-	Ts      pgtype.Timestamptz
+type SchemaVersion struct {
+	Version int32
 }
 
 type Station struct {
-	ID        int32
+	StationID string
+	CreatedAt pgtype.Timestamptz
 	Slug      string
-	Name      pgtype.Text
-	CreatedAt pgtype.Timestamptz
-	Active    pgtype.Bool
+	Name      string
+	Active    bool
 }
 
-type Track struct {
-	ID        int32
-	Filename  string
-	CreatedAt pgtype.Timestamptz
-	Bucket    int32
-	Fuzz      float32
-	EventID   int32
-	StationID int32
-	Metadata  []byte
-}
-
-type TrackChange struct {
-	ID        int32
-	TrackID   int32
-	CreatedAt pgtype.Timestamptz
-}
-
-type TrackEvent struct {
-	ID        int32
-	TrackID   int32
-	CreatedAt pgtype.Timestamptz
-	Action    string
-	StationID int32
+type StationMessage struct {
+	StationMessageID string
+	CreatedAt        pgtype.Timestamptz
+	Type             string
+	StationID        string
+	ParentID         string
+	Nick             string
+	Body             string
 }

@@ -3,6 +3,8 @@
     <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:,">
+
     <!-- <style>
          :nth-child(1 of .playing) {
          background-color: blue;
@@ -17,10 +19,15 @@
     <div class="container mx-auto">
       <h1 class="text-4xl">Stations</h1>
 
+      <form action="create-station" method="post">
+        <input class="text-black" type="text" name="slug">
+        <button class="border rounded bg-blue-500" type="submit">create</button>
+      </form>
+
       <div class="flex gap-2">
         {{range .Stations}}
           <a href="{{.Slug}}" class="flex items-center gap-2 hover:bg-green-900 p-2">
-            <img height="32" width="32" src="https://api.dicebear.com/7.x/rings/svg?seed={{.ID}}">
+            <img height="32" width="32" src="https://api.dicebear.com/7.x/rings/svg?seed={{.StationID}}">
             {{.Slug}}
           </a>
         {{end}}
@@ -29,13 +36,14 @@
   </body>
 {{end}}
 
+
 {{define "station"}}
   {{template "head"}}
   <body class="bg-black text-white" style="height:100vh">
     <div class="container mx-auto flex flex-col h-full">
       <div class="flex sm:flex-row flex-col justify-between content-center mb-4">
         <h1 class="text-4xl">
-          {{or .Station.Name.String .Station.Slug}}
+          {{or .Station.Name .Station.Slug}}
         </h1>
         <div>
           {{template "player" .Station}}
@@ -43,17 +51,21 @@
       </div>
 
       <div class="p-2 bg-red-500">
-        Live Show: 4th Annual David Bowie Tribute Show Jan 16th 5pm PT
+        {.Announcement}
       </div>
 
       <div class="p-2 bg-blue-200 text-black">
-        Now Playing: {{.CurrentTrack.Artist}} {{.CurrentTrack.Title}}
+        Now Playing: {.CurrentTrack.Artist} {.CurrentTrack.Title}
       </div>
 
       {{template "chat" .}}
 
       <div>
-        <input class="bg-black text-white w-full my-2 border rounded border-white" type="text">
+        <form hx-post="/{{.Station.Slug}}/chat">
+          <input class="bg-black text-white w-full my-2 border rounded border-white"
+                 type="text"
+                 name="body">
+        </form>
       </div>
     </div>
   </body>
@@ -62,20 +74,20 @@
 {{define "chat"}}
   <div id="chat-container"
        class="flex-1 flex flex-col-reverse"
-       hx-trigger="every 1s"
+       hx-trigger="every 60s"
        hx-get="/{{.Station.Slug}}/chat"
        hx-select="#chat-container .message"
        style="overflow-y: scroll">
-    {{range .ChatMessages}}
+    {{range .Messages}}
       {{if .Nick}}
         <div class="message text-blue-200 flex gap-2">
-          <div class="text-gray-500">{{.SentAt}}</div>
+          <div class="text-gray-500">{{.CreatedAt.Value}}</div>
           <div>{{.Nick}}</div>
           <div>{{.Body}}</div>
         </div>
       {{else}}
         <div class="message playing flex gap-2">
-          <div class="text-gray-500">{{.SentAt}}</div>
+          <div class="text-gray-500">{{.CreatedAt.Value}}</div>
           <div>{{.Body}}</div>
         </div>
       {{end}}

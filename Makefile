@@ -29,4 +29,4 @@ deploy:
 	${DC} --env-file .env.prod up -d worker
 
 psql:
-	psql postgres://djfm:djfm@localhost:54322/djfullmoon_development
+	psql postgres://app:app@localhost:54322/mixchat_development

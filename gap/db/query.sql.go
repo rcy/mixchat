@@ -7,12 +7,10 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const activeStations = `-- name: ActiveStations :many
-select id, slug, name, created_at, active from stations where active = true
+select station_id, created_at, slug, name, active from stations where active = true
 `
 
 func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
@@ -25,10 +23,10 @@ func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
 	for rows.Next() {
 		var i Station
 		if err := rows.Scan(
-			&i.ID,
+			&i.StationID,
+			&i.CreatedAt,
 			&i.Slug,
 			&i.Name,
-			&i.CreatedAt,
 			&i.Active,
 		); err != nil {
 			return nil, err
@@ -41,116 +39,140 @@ func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
 	return items, nil
 }
 
-const currentTrack = `-- name: CurrentTrack :one
-select
-        coalesce(t.metadata->'common'->>'title', '')::text title,
-        coalesce(t.metadata->'common'->>'artist', '')::text artist
-from track_events te
-join tracks t on t.id = te.track_id
-where te.station_id = $1
-  and te.action = 'played'
-order by te.id desc
-limit 1
+const createEvent = `-- name: CreateEvent :one
+insert into events(event_id, event_type, payload) values ($1, $2, $3) returning event_id, event_type, created_at, payload
 `
 
-type CurrentTrackRow struct {
-	Title  string
-	Artist string
+type CreateEventParams struct {
+	EventID   string
+	EventType string
+	Payload   []byte
 }
 
-func (q *Queries) CurrentTrack(ctx context.Context, stationID int32) (CurrentTrackRow, error) {
-	row := q.db.QueryRow(ctx, currentTrack, stationID)
-	var i CurrentTrackRow
-	err := row.Scan(&i.Title, &i.Artist)
+func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error) {
+	row := q.db.QueryRow(ctx, createEvent, arg.EventID, arg.EventType, arg.Payload)
+	var i Event
+	err := row.Scan(
+		&i.EventID,
+		&i.EventType,
+		&i.CreatedAt,
+		&i.Payload,
+	)
 	return i, err
 }
 
-const recentPlays = `-- name: RecentPlays :many
-select
-        t.filename,
-        te.created_at,
-        coalesce(t.metadata->'common'->>'title', '')::text title,
-        coalesce(t.metadata->'common'->>'artist', '')::text artist
-from track_events te
-join tracks t on t.id = te.track_id
-where te.station_id = $1
-  and te.action = 'played'
-  and te.created_at > $2
+const createStation = `-- name: CreateStation :one
+insert into stations(station_id, slug, active) values($1, $2, $3) returning station_id, created_at, slug, name, active
 `
 
-type RecentPlaysParams struct {
-	StationID int32
-	CreatedAt pgtype.Timestamptz
+type CreateStationParams struct {
+	StationID string
+	Slug      string
+	Active    bool
 }
 
-type RecentPlaysRow struct {
-	Filename  string
-	CreatedAt pgtype.Timestamptz
-	Title     string
-	Artist    string
+func (q *Queries) CreateStation(ctx context.Context, arg CreateStationParams) (Station, error) {
+	row := q.db.QueryRow(ctx, createStation, arg.StationID, arg.Slug, arg.Active)
+	var i Station
+	err := row.Scan(
+		&i.StationID,
+		&i.CreatedAt,
+		&i.Slug,
+		&i.Name,
+		&i.Active,
+	)
+	return i, err
 }
 
-func (q *Queries) RecentPlays(ctx context.Context, arg RecentPlaysParams) ([]RecentPlaysRow, error) {
-	rows, err := q.db.Query(ctx, recentPlays, arg.StationID, arg.CreatedAt)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []RecentPlaysRow
-	for rows.Next() {
-		var i RecentPlaysRow
-		if err := rows.Scan(
-			&i.Filename,
-			&i.CreatedAt,
-			&i.Title,
-			&i.Artist,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+const createStationMessage = `-- name: CreateStationMessage :one
+insert into station_messages(station_message_id, type, station_id, nick, body, parent_id) values($1, $2, $3, $4, $5, $6) returning station_message_id, created_at, type, station_id, parent_id, nick, body
+`
+
+type CreateStationMessageParams struct {
+	StationMessageID string
+	Type             string
+	StationID        string
+	Nick             string
+	Body             string
+	ParentID         string
+}
+
+func (q *Queries) CreateStationMessage(ctx context.Context, arg CreateStationMessageParams) (StationMessage, error) {
+	row := q.db.QueryRow(ctx, createStationMessage,
+		arg.StationMessageID,
+		arg.Type,
+		arg.StationID,
+		arg.Nick,
+		arg.Body,
+		arg.ParentID,
+	)
+	var i StationMessage
+	err := row.Scan(
+		&i.StationMessageID,
+		&i.CreatedAt,
+		&i.Type,
+		&i.StationID,
+		&i.ParentID,
+		&i.Nick,
+		&i.Body,
+	)
+	return i, err
+}
+
+const event = `-- name: Event :one
+select event_id, event_type, created_at, payload from events where event_id = $1
+`
+
+func (q *Queries) Event(ctx context.Context, eventID string) (Event, error) {
+	row := q.db.QueryRow(ctx, event, eventID)
+	var i Event
+	err := row.Scan(
+		&i.EventID,
+		&i.EventType,
+		&i.CreatedAt,
+		&i.Payload,
+	)
+	return i, err
 }
 
 const station = `-- name: Station :one
-select id, slug, name, created_at, active from stations where slug = $1
+select station_id, created_at, slug, name, active from stations where slug = $1
 `
 
 func (q *Queries) Station(ctx context.Context, slug string) (Station, error) {
 	row := q.db.QueryRow(ctx, station, slug)
 	var i Station
 	err := row.Scan(
-		&i.ID,
+		&i.StationID,
+		&i.CreatedAt,
 		&i.Slug,
 		&i.Name,
-		&i.CreatedAt,
 		&i.Active,
 	)
 	return i, err
 }
 
 const stationMessages = `-- name: StationMessages :many
-select id, station_id, body, nick, created_at from messages where station_id = $1 order by id desc limit 100
+select station_message_id, created_at, type, station_id, parent_id, nick, body from station_messages where station_id = $1 order by station_message_id desc limit 5
 `
 
-func (q *Queries) StationMessages(ctx context.Context, stationID int32) ([]Message, error) {
+func (q *Queries) StationMessages(ctx context.Context, stationID string) ([]StationMessage, error) {
 	rows, err := q.db.Query(ctx, stationMessages, stationID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Message
+	var items []StationMessage
 	for rows.Next() {
-		var i Message
+		var i StationMessage
 		if err := rows.Scan(
-			&i.ID,
-			&i.StationID,
-			&i.Body,
-			&i.Nick,
+			&i.StationMessageID,
 			&i.CreatedAt,
+			&i.Type,
+			&i.StationID,
+			&i.ParentID,
+			&i.Nick,
+			&i.Body,
 		); err != nil {
 			return nil, err
 		}
