@@ -2,13 +2,13 @@ include ../../.env
 
 TERNCMD=`go env GOPATH`/bin/tern
 
-new:
-	${TERNCMD} new "migration"
-
 migrate:
 	${TERNCMD} migrate
 
 rollback:
 	${TERNCMD} migrate --destination -1
+
+new:
+	${TERNCMD} new "migration"
 
 .PHONY: new migrate rollback
