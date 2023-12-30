@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
@@ -25,6 +26,7 @@ func (s *Server) pullHandler(w http.ResponseWriter, r *http.Request) {
 	if errors.Is(err, pgx.ErrNoRows) {
 		track, err = s.db.Q().RandomTrack(ctx, station.StationID)
 		if errors.Is(err, pgx.ErrNoRows) {
+			time.Sleep(time.Second)
 			http.NotFound(w, r)
 			return
 		}
