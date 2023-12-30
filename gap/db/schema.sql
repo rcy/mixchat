@@ -78,6 +78,27 @@ CREATE TABLE public.stations (
 ALTER TABLE public.stations OWNER TO app;
 
 --
+-- Name: tracks; Type: TABLE; Schema: public; Owner: app
+--
+
+CREATE TABLE public.tracks (
+    track_id text NOT NULL,
+    station_id text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    artist text NOT NULL,
+    title text NOT NULL,
+    raw_metadata jsonb NOT NULL,
+    rotation integer NOT NULL,
+    queues integer DEFAULT 0 NOT NULL,
+    plays integer DEFAULT 0 NOT NULL,
+    skips integer DEFAULT 0 NOT NULL,
+    playing boolean DEFAULT false NOT NULL
+);
+
+
+ALTER TABLE public.tracks OWNER TO app;
+
+--
 -- Name: events events_pkey; Type: CONSTRAINT; Schema: public; Owner: app
 --
 
@@ -107,6 +128,14 @@ ALTER TABLE ONLY public.stations
 
 ALTER TABLE ONLY public.stations
     ADD CONSTRAINT stations_slug_key UNIQUE (slug);
+
+
+--
+-- Name: tracks tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: app
+--
+
+ALTER TABLE ONLY public.tracks
+    ADD CONSTRAINT tracks_pkey PRIMARY KEY (track_id);
 
 
 --

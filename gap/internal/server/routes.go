@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"gap/db"
+	"gap/internal/ids"
 	"html/template"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5"
-	"github.com/oklog/ulid/v2"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -30,9 +30,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Get("/{slug}", s.stationHandler)
 	r.Get("/{slug}/chat", s.stationHandler)
 	r.Post("/{slug}/chat", s.postChatMessage)
+	r.Post("/{slug}/requests", s.postRequest)
 
 	// liquidsoap endpoints
-	r.Get("/{slug}/liq/next", s.nextHandler)
+	r.Post("/{slug}/liq/pull", s.pullHandler)
+	r.Post("/{slug}/liq/trackchange", s.trackChangeHandler)
 
 	return r
 }
@@ -137,13 +139,6 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(jsonResp)
 }
 
-type ChatEvent struct {
-	ChatID    string
-	Nick      string
-	Body      string
-	StationID string
-}
-
 func (s *Server) postChatMessage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	slug := chi.URLParam(r, "slug")
@@ -154,23 +149,11 @@ func (s *Server) postChatMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	event := ChatEvent{
-		ChatID:    MakeID("chat"),
-		StationID: station.StationID,
-		Nick:      "Todo",
-		Body:      r.FormValue("body"),
-	}
-
-	payload, err := json.Marshal(event)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	_, err = s.db.Q().CreateEvent(r.Context(), db.CreateEventParams{
-		EventID:   MakeID("evt"),
-		EventType: "ChatMessageSent",
-		Payload:   payload,
+	err = s.db.CreateEvent(ctx, "ChatMessageSent", map[string]string{
+		"StationID": station.StationID,
+		"ChatID":    ids.Make("chat"),
+		"Nick":      "Todo",
+		"Body":      r.FormValue("body"),
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -178,30 +161,42 @@ func (s *Server) postChatMessage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type StationEvent struct {
+type CreateStationEvent struct {
 	StationID string
 	Slug      string
 }
 
-func MakeID(prefix string) string {
-	return prefix + "_" + ulid.Make().String()
-}
-
 func (s *Server) postCreateStation(w http.ResponseWriter, r *http.Request) {
-	payload, err := json.Marshal(StationEvent{
-		StationID: MakeID("stn"),
-		Slug:      r.FormValue("slug"),
+	err := s.db.CreateEvent(r.Context(), "StationCreated", map[string]string{
+		"StationID": ids.Make("stn"),
+		"Slug":      r.FormValue("slug"),
 	})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	_, err = s.db.Q().CreateEvent(r.Context(), db.CreateEventParams{EventID: MakeID("evt"), EventType: "StationCreated", Payload: payload})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (s *Server) postRequest(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	slug := chi.URLParam(r, "slug")
+	url := r.FormValue("url")
+
+	station, err := s.db.Q().Station(ctx, slug)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = s.db.CreateEvent(ctx, "TrackRequested", map[string]string{
+		"StationID": station.StationID,
+		"TrackID":   ids.Make("trk"),
+		"URL":       url,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

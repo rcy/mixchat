@@ -40,8 +40,8 @@ end
 
 def make_station(slug) =
   def my_request_function() =
-    url = "#{api_base}/#{slug}/liq/next"
-    result = http.get(headers=[], url)
+    url = "#{api_base}/#{slug}/liq/pull"
+    result = http.post(headers=[], url)
 
     # print("#{result}")
     print("my_request_function [#{url}] (#{slug}): #{result.status_code} #{result}")
@@ -55,7 +55,7 @@ def make_station(slug) =
 
   def track_change(m) =
     print("track_change: " ^ m["filename"] ^ " -- " ^ m["replaygain_track_gain"])
-    result = http.post(api_base ^ "/" ^ slug ^ "/trackchange", data="filename=" ^ m["filename"], headers=[("Content-Type","application/x-www-form-urlencoded")])
+    result = http.post(api_base ^ "/" ^ slug ^ "/liq/trackchange", data="filename=" ^ m["filename"], headers=[("Content-Type","application/x-www-form-urlencoded")])
   end
 
   live = input.harbor("live/" ^ slug, port=8000, password=liquidsoap_broadcast_password)

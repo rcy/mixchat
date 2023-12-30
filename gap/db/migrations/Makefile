@@ -2,9 +2,6 @@ include ../../.env
 
 TERNCMD=`go env GOPATH`/bin/tern
 
-echo:
-	env
-
 new:
 	${TERNCMD} new "migration"
 

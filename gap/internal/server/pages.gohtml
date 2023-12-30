@@ -74,7 +74,7 @@
 {{define "chat"}}
   <div id="chat-container"
        class="flex-1 flex flex-col-reverse"
-       hx-trigger="every 60s"
+       hx-trigger="every 10s"
        hx-get="/{{.Station.Slug}}/chat"
        hx-select="#chat-container .message"
        style="overflow-y: scroll">

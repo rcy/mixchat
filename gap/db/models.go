@@ -36,3 +36,17 @@ type StationMessage struct {
 	Nick             string
 	Body             string
 }
+
+type Track struct {
+	TrackID     string
+	StationID   string
+	CreatedAt   pgtype.Timestamptz
+	Artist      string
+	Title       string
+	RawMetadata []byte
+	Rotation    int32
+	Queues      int32
+	Plays       int32
+	Skips       int32
+	Playing     bool
+}

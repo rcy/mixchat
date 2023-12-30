@@ -39,28 +39,6 @@ func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
 	return items, nil
 }
 
-const createEvent = `-- name: CreateEvent :one
-insert into events(event_id, event_type, payload) values ($1, $2, $3) returning event_id, event_type, created_at, payload
-`
-
-type CreateEventParams struct {
-	EventID   string
-	EventType string
-	Payload   []byte
-}
-
-func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) (Event, error) {
-	row := q.db.QueryRow(ctx, createEvent, arg.EventID, arg.EventType, arg.Payload)
-	var i Event
-	err := row.Scan(
-		&i.EventID,
-		&i.EventType,
-		&i.CreatedAt,
-		&i.Payload,
-	)
-	return i, err
-}
-
 const createStation = `-- name: CreateStation :one
 insert into stations(station_id, slug, active) values($1, $2, $3) returning station_id, created_at, slug, name, active
 `
@@ -119,6 +97,45 @@ func (q *Queries) CreateStationMessage(ctx context.Context, arg CreateStationMes
 	return i, err
 }
 
+const createTrack = `-- name: CreateTrack :one
+insert into tracks(track_id, station_id, artist, title, raw_metadata, rotation)
+values($1,$2,$3,$4,$5, (coalesce((select min(rotation) from tracks where station_id = $2), 0)))
+returning track_id, station_id, created_at, artist, title, raw_metadata, rotation, queues, plays, skips, playing
+`
+
+type CreateTrackParams struct {
+	TrackID     string
+	StationID   string
+	Artist      string
+	Title       string
+	RawMetadata []byte
+}
+
+func (q *Queries) CreateTrack(ctx context.Context, arg CreateTrackParams) (Track, error) {
+	row := q.db.QueryRow(ctx, createTrack,
+		arg.TrackID,
+		arg.StationID,
+		arg.Artist,
+		arg.Title,
+		arg.RawMetadata,
+	)
+	var i Track
+	err := row.Scan(
+		&i.TrackID,
+		&i.StationID,
+		&i.CreatedAt,
+		&i.Artist,
+		&i.Title,
+		&i.RawMetadata,
+		&i.Rotation,
+		&i.Queues,
+		&i.Plays,
+		&i.Skips,
+		&i.Playing,
+	)
+	return i, err
+}
+
 const event = `-- name: Event :one
 select event_id, event_type, created_at, payload from events where event_id = $1
 `
@@ -131,6 +148,102 @@ func (q *Queries) Event(ctx context.Context, eventID string) (Event, error) {
 		&i.EventType,
 		&i.CreatedAt,
 		&i.Payload,
+	)
+	return i, err
+}
+
+const incrementTrackPlays = `-- name: IncrementTrackPlays :exec
+update tracks set plays = plays + 1 where track_id = $1
+`
+
+func (q *Queries) IncrementTrackPlays(ctx context.Context, trackID string) error {
+	_, err := q.db.Exec(ctx, incrementTrackPlays, trackID)
+	return err
+}
+
+const incrementTrackRotation = `-- name: IncrementTrackRotation :exec
+update tracks set rotation = rotation + 1 where track_id = $1
+`
+
+func (q *Queries) IncrementTrackRotation(ctx context.Context, trackID string) error {
+	_, err := q.db.Exec(ctx, incrementTrackRotation, trackID)
+	return err
+}
+
+const insertEvent = `-- name: InsertEvent :one
+insert into events(event_id, event_type, payload) values ($1, $2, $3) returning event_id, event_type, created_at, payload
+`
+
+type InsertEventParams struct {
+	EventID   string
+	EventType string
+	Payload   []byte
+}
+
+func (q *Queries) InsertEvent(ctx context.Context, arg InsertEventParams) (Event, error) {
+	row := q.db.QueryRow(ctx, insertEvent, arg.EventID, arg.EventType, arg.Payload)
+	var i Event
+	err := row.Scan(
+		&i.EventID,
+		&i.EventType,
+		&i.CreatedAt,
+		&i.Payload,
+	)
+	return i, err
+}
+
+const oldestUnplayedTrack = `-- name: OldestUnplayedTrack :one
+select track_id, station_id, created_at, artist, title, raw_metadata, rotation, queues, plays, skips, playing from tracks
+where tracks.station_id = $1
+and plays = 0
+and rotation = (select min(rotation) from tracks where station_id = $1)
+order by track_id asc
+limit 1
+`
+
+func (q *Queries) OldestUnplayedTrack(ctx context.Context, stationID string) (Track, error) {
+	row := q.db.QueryRow(ctx, oldestUnplayedTrack, stationID)
+	var i Track
+	err := row.Scan(
+		&i.TrackID,
+		&i.StationID,
+		&i.CreatedAt,
+		&i.Artist,
+		&i.Title,
+		&i.RawMetadata,
+		&i.Rotation,
+		&i.Queues,
+		&i.Plays,
+		&i.Skips,
+		&i.Playing,
+	)
+	return i, err
+}
+
+const randomTrack = `-- name: RandomTrack :one
+select track_id, station_id, created_at, artist, title, raw_metadata, rotation, queues, plays, skips, playing from tracks
+where tracks.station_id = $1
+and plays > 0
+and rotation = (select min(rotation) from tracks where station_id = $1)
+order by random()
+limit 1
+`
+
+func (q *Queries) RandomTrack(ctx context.Context, stationID string) (Track, error) {
+	row := q.db.QueryRow(ctx, randomTrack, stationID)
+	var i Track
+	err := row.Scan(
+		&i.TrackID,
+		&i.StationID,
+		&i.CreatedAt,
+		&i.Artist,
+		&i.Title,
+		&i.RawMetadata,
+		&i.Rotation,
+		&i.Queues,
+		&i.Plays,
+		&i.Skips,
+		&i.Playing,
 	)
 	return i, err
 }
@@ -153,7 +266,7 @@ func (q *Queries) Station(ctx context.Context, slug string) (Station, error) {
 }
 
 const stationMessages = `-- name: StationMessages :many
-select station_message_id, created_at, type, station_id, parent_id, nick, body from station_messages where station_id = $1 order by station_message_id desc limit 5
+select station_message_id, created_at, type, station_id, parent_id, nick, body from station_messages where station_id = $1 order by station_message_id desc limit 500
 `
 
 func (q *Queries) StationMessages(ctx context.Context, stationID string) ([]StationMessage, error) {

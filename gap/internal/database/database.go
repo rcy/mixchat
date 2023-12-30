@@ -2,8 +2,10 @@ package database
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"gap/db"
+	"gap/internal/ids"
 	"log"
 	"os"
 	"time"
@@ -17,6 +19,7 @@ type Service interface {
 	Health() map[string]string
 	Q() *db.Queries
 	P() *pgxpool.Pool
+	CreateEvent(ctx context.Context, eventType string, payloadMap map[string]string) error
 }
 
 type service struct {
@@ -49,6 +52,22 @@ func (s *service) Q() *db.Queries {
 
 func (s *service) P() *pgxpool.Pool {
 	return s.pool
+}
+
+func (s *service) CreateEvent(ctx context.Context, eventType string, payloadMap map[string]string) error {
+	payload, err := json.Marshal(payloadMap)
+	if err != nil {
+		return err
+	}
+	_, err = s.Q().InsertEvent(ctx, db.InsertEventParams{
+		EventID:   ids.Make("evt"),
+		EventType: eventType,
+		Payload:   payload,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *service) Health() map[string]string {

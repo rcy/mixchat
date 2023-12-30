@@ -10,6 +10,7 @@ require (
 )
 
 require (
+	github.com/dhowden/tag v0.0.0-20230630033851-978a0926ee25 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect

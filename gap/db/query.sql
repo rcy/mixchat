@@ -1,4 +1,4 @@
--- name: CreateEvent :one
+-- name: InsertEvent :one
 insert into events(event_id, event_type, payload) values ($1, $2, $3) returning *;
 
 -- name: Event :one
@@ -17,30 +17,31 @@ insert into stations(station_id, slug, active) values($1, $2, $3) returning *;
 insert into station_messages(station_message_id, type, station_id, nick, body, parent_id) values($1, $2, $3, $4, $5, $6) returning *;
 
 -- name: StationMessages :many
-select * from station_messages where station_id = $1 order by station_message_id desc limit 5;
+select * from station_messages where station_id = $1 order by station_message_id desc limit 500;
 
--- -- name: StationMessages :many
--- select * from messages where station_id = $1 order by id desc limit 100;
+-- name: CreateTrack :one
+insert into tracks(track_id, station_id, artist, title, raw_metadata, rotation)
+values($1,$2,$3,$4,$5, (coalesce((select min(rotation) from tracks where station_id = $2), 0)))
+returning *;
 
--- -- name: RecentPlays :many
--- select
---         t.filename,
---         te.created_at,
---         coalesce(t.metadata->'common'->>'title', '')::text title,
---         coalesce(t.metadata->'common'->>'artist', '')::text artist
--- from track_events te
--- join tracks t on t.id = te.track_id
--- where te.station_id = $1
---   and te.action = 'played'
---   and te.created_at > $2;
+-- name: OldestUnplayedTrack :one
+select * from tracks
+where tracks.station_id = $1
+and plays = 0
+and rotation = (select min(rotation) from tracks where station_id = $1)
+order by track_id asc
+limit 1;
 
--- -- name: CurrentTrack :one
--- select
---         coalesce(t.metadata->'common'->>'title', '')::text title,
---         coalesce(t.metadata->'common'->>'artist', '')::text artist
--- from track_events te
--- join tracks t on t.id = te.track_id
--- where te.station_id = $1
---   and te.action = 'played'
--- order by te.id desc
--- limit 1;
+-- name: RandomTrack :one
+select * from tracks
+where tracks.station_id = $1
+and plays > 0
+and rotation = (select min(rotation) from tracks where station_id = $1)
+order by random()
+limit 1;
+
+-- name: IncrementTrackRotation :exec
+update tracks set rotation = rotation + 1 where track_id = $1;
+
+-- name: IncrementTrackPlays :exec
+update tracks set plays = plays + 1 where track_id = $1;
