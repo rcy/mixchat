@@ -23,6 +23,15 @@ func (s *Server) RegisterRoutes() http.Handler {
 	})
 
 	r.Get("/health", s.healthHandler)
+	r.Get("/player", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`
+        <html>
+        <audio id="audio" controls>
+          <source src="http://localhost:8010/dummy.mp3" type="audio/mp3" />
+        </audio>
+        </html>
+`))
+	})
 
 	r.Post("/create-station", s.postCreateStation)
 
@@ -30,12 +39,14 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Get("/{slug}", s.stationHandler)
 	r.Get("/{slug}/chat", s.stationHandler)
 	r.Post("/{slug}/chat", s.postChatMessage)
-	r.Get("/{slug}/add-track", s.addTrackHandler)
+	r.Get("/{slug}/audio-test-1", s.audioTest1)
+	r.Get("/{slug}/audio-test-2", s.audioTest2)
 	r.Post("/{slug}/requests", s.postRequest)
 
 	// liquidsoap endpoints
 	r.Post("/{slug}/liq/pull", s.pullHandler)
 	r.Post("/{slug}/liq/trackchange", s.trackChangeHandler)
+	r.Get("/{slug}/add-track", s.addTrackHandler)
 
 	return r
 }
@@ -203,7 +214,36 @@ func (s *Server) postRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) addTrackHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := s.db.Q().ActiveStations(r.Context())
+	ctx := r.Context()
+	slug := chi.URLParam(r, "slug")
+
+	station, err := s.db.Q().Station(ctx, slug)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = tpl.ExecuteTemplate(w, "add-track", struct {
+		Station db.Station
+	}{
+		Station: station,
+	})
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (s *Server) audioTest1(w http.ResponseWriter, r *http.Request) {
+	err := tpl.ExecuteTemplate(w, "audio-test-1", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (s *Server) audioTest2(w http.ResponseWriter, r *http.Request) {
+	err := tpl.ExecuteTemplate(w, "audio-test-2", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

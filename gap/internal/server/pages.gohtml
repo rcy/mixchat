@@ -2,14 +2,10 @@
   <head>
     <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/idiomorph@0.3.0"></script>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="data:,">
-
-    <!-- <style>
-         :nth-child(1 of .playing) {
-         background-color: blue;
-         }
-         </style> -->
   </head>
 {{end}}
 
@@ -62,6 +58,7 @@
           </div>
           <button class="text-white bg-blue-500 border rounded p-2 w-32"
                   hx-get="{{.Station.Slug}}/add-track"
+                  hx-swap="outerHTML"
           >
             Add Track
           </button>
@@ -115,4 +112,82 @@
 
 {{define "recent"}}
   recent
+{{end}}
+
+
+{{define "add-track"}}
+  <style>
+   body {
+       background-image: linear-gradient(
+           45deg,
+           magenta,
+           rebeccapurple,
+           dodgerblue,
+           green
+       );
+       opacity: 0.75;
+   }
+  </style>
+
+  <dialog open>
+    <p>Paste a youtube link below to add a track to the jukebox</p>
+    <form hx-post="/{{.Station.Slug}}/requests">
+      <input type="text" name="url">
+      <button>Submit</button>
+    </form>
+  </dialog>
+{{end}}
+
+{{define "audio-test-1"}}
+  <html>
+    <head>
+      <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+      <script src="https://unpkg.com/idiomorph/dist/idiomorph-ext.min.js"></script>
+    </head>
+    <body hx-boost="true">
+      <div id="container" hx-ext="morph">
+        hi
+        <iframe id="dxBSrMmBocN7NyZT" src="/player" width="200" height="100"></iframe>
+        <!-- <audio id="audio" controls autoplay xclass="w-full">
+             <source src="http://localhost:8010/dummy.mp3" type="audio/mp3" />
+             </audio>
+        -->
+        <iframe id="iframe" width="360" height="315" src="https://www.youtube.com/embed/piTvLuHWLyg?si=kCJ71MYzxqohF5Pz" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <button
+          hx-get="audio-test-2"
+          hx-swap="morph"
+          hx-target="#container"
+          hx-select="#container"
+          hx-push-url="true"
+        >audio-test-1</button>
+      </div>
+    </body>
+  </html>
+{{end}}
+
+{{define "audio-test-2"}}
+  <html>
+    <head>
+      <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+      <script src="https://unpkg.com/idiomorph/dist/idiomorph-ext.min.js"></script>
+    </head>
+    <body hx-boost="true">
+      <div id="container" hx-ext="morph">
+        hi
+        <iframe id="dxBSrMmBocN7NyZT" src="/player" width="200" height="100"></iframe>
+        <!-- <audio id="audio" controls autoplay xclass="w-full">
+             <source src="http://localhost:8010/dummy.mp3" type="audio/mp3" />
+             </audio>
+        -->
+        <iframe id="iframe" width="560" height="315" src="https://www.youtube.com/embed/piTvLuHWLyg?si=kCJ71MYzxqohF5Pz" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <button
+          hx-get="audio-test-1"
+          hx-swap="morph"
+          hx-target="#container"
+          hx-select="#container"
+          hx-push-url="true"
+        >audio-test-1</button>
+      </div>
+    </body>
+  </html>
 {{end}}
