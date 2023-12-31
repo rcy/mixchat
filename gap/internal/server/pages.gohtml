@@ -39,9 +39,10 @@
 
 {{define "station"}}
   {{template "head"}}
-  <body class="bg-black text-white" style="height:100vh">
+  <body class="bg-black text-white h-screen">
     <div class="container mx-auto flex flex-col h-full">
-      <div class="flex sm:flex-row flex-col justify-between content-center mb-4 items-center mt-2">
+
+      <div class="flex sm:flex-row flex-col justify-between content-center mb-4 items-center h-10">
         <h1 class="text-4xl">
           {{or .Station.Name .Station.Slug}}
         </h1>
@@ -50,12 +51,12 @@
         </div>
       </div>
 
-      <main class="h-full flex flex-col">
-        <div class="p-2 bg-red-500">
+      <main class="h-10 flex-1 flex flex-col">
+        <div class="p-2 bg-red-500 h-10">
           {.Announcement}
         </div>
 
-        <div class="p-2 bg-blue-200 text-black flex justify-between items-center">
+        <div class="bg-blue-200 text-black flex justify-between items-center h-20">
           <div>
             Now Playing: {.CurrentTrack.Artist} {.CurrentTrack.Title}
           </div>
@@ -66,27 +67,29 @@
           </button>
         </div>
 
-        {{template "chat" .}}
+        <div class="flex-1 h-full overflow-y-scroll flex flex-col-reverse">
+          {{template "chat" .}}
+        </div>
 
-        <div>
-          <form hx-post="/{{.Station.Slug}}/chat">
-            <input class="bg-black text-white w-full my-2 border rounded border-white"
+        <div class="h-10">
+          <form hx-post="/{{.Station.Slug}}/chat" hx-swap="none">
+            <input class="bg-black text-white w-full border rounded border-white"
                    type="text"
                    name="body">
           </form>
         </div>
       </main>
+
     </div>
   </body>
 {{end}}
 
 {{define "chat"}}
   <div id="chat-container"
-       class="flex-1 flex flex-col-reverse"
+       class="flex flex-col-reverse"
        hx-trigger="every 10s"
        hx-get="/{{.Station.Slug}}/chat"
-       hx-select="#chat-container .message"
-       style="overflow-y: scroll">
+       hx-select="#chat-container .message">
     {{range .Messages}}
       {{if .Nick}}
         <div class="message text-blue-200 flex gap-2">
