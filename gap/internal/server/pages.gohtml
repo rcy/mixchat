@@ -41,7 +41,7 @@
   {{template "head"}}
   <body class="bg-black text-white" style="height:100vh">
     <div class="container mx-auto flex flex-col h-full">
-      <div class="flex sm:flex-row flex-col justify-between content-center mb-4">
+      <div class="flex sm:flex-row flex-col justify-between content-center mb-4 items-center mt-2">
         <h1 class="text-4xl">
           {{or .Station.Name .Station.Slug}}
         </h1>
@@ -50,23 +50,32 @@
         </div>
       </div>
 
-      <div class="p-2 bg-red-500">
-        {.Announcement}
-      </div>
+      <main class="h-full flex flex-col">
+        <div class="p-2 bg-red-500">
+          {.Announcement}
+        </div>
 
-      <div class="p-2 bg-blue-200 text-black">
-        Now Playing: {.CurrentTrack.Artist} {.CurrentTrack.Title}
-      </div>
+        <div class="p-2 bg-blue-200 text-black flex justify-between items-center">
+          <div>
+            Now Playing: {.CurrentTrack.Artist} {.CurrentTrack.Title}
+          </div>
+          <button class="text-white bg-blue-500 border rounded p-2 w-32"
+                  hx-get="{{.Station.Slug}}/add-track"
+          >
+            Add Track
+          </button>
+        </div>
 
-      {{template "chat" .}}
+        {{template "chat" .}}
 
-      <div>
-        <form hx-post="/{{.Station.Slug}}/chat">
-          <input class="bg-black text-white w-full my-2 border rounded border-white"
-                 type="text"
-                 name="body">
-        </form>
-      </div>
+        <div>
+          <form hx-post="/{{.Station.Slug}}/chat">
+            <input class="bg-black text-white w-full my-2 border rounded border-white"
+                   type="text"
+                   name="body">
+          </form>
+        </div>
+      </main>
     </div>
   </body>
 {{end}}

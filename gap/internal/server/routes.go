@@ -30,6 +30,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Get("/{slug}", s.stationHandler)
 	r.Get("/{slug}/chat", s.stationHandler)
 	r.Post("/{slug}/chat", s.postChatMessage)
+	r.Get("/{slug}/add-track", s.addTrackHandler)
 	r.Post("/{slug}/requests", s.postRequest)
 
 	// liquidsoap endpoints
@@ -195,6 +196,14 @@ func (s *Server) postRequest(w http.ResponseWriter, r *http.Request) {
 		"TrackID":   ids.Make("trk"),
 		"URL":       url,
 	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (s *Server) addTrackHandler(w http.ResponseWriter, r *http.Request) {
+	_, err := s.db.Q().ActiveStations(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
