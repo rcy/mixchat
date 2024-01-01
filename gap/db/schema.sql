@@ -89,7 +89,6 @@ CREATE TABLE public.tracks (
     title text NOT NULL,
     raw_metadata jsonb NOT NULL,
     rotation integer NOT NULL,
-    queues integer DEFAULT 0 NOT NULL,
     plays integer DEFAULT 0 NOT NULL,
     skips integer DEFAULT 0 NOT NULL,
     playing boolean DEFAULT false NOT NULL

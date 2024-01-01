@@ -100,7 +100,7 @@ func (q *Queries) CreateStationMessage(ctx context.Context, arg CreateStationMes
 const createTrack = `-- name: CreateTrack :one
 insert into tracks(track_id, station_id, artist, title, raw_metadata, rotation)
 values($1,$2,$3,$4,$5, (coalesce((select min(rotation) from tracks where station_id = $2), 0)))
-returning track_id, station_id, created_at, artist, title, raw_metadata, rotation, queues, plays, skips, playing
+returning track_id, station_id, created_at, artist, title, raw_metadata, rotation, plays, skips, playing
 `
 
 type CreateTrackParams struct {
@@ -128,7 +128,6 @@ func (q *Queries) CreateTrack(ctx context.Context, arg CreateTrackParams) (Track
 		&i.Title,
 		&i.RawMetadata,
 		&i.Rotation,
-		&i.Queues,
 		&i.Plays,
 		&i.Skips,
 		&i.Playing,
@@ -193,7 +192,7 @@ func (q *Queries) InsertEvent(ctx context.Context, arg InsertEventParams) (Event
 }
 
 const oldestUnplayedTrack = `-- name: OldestUnplayedTrack :one
-select track_id, station_id, created_at, artist, title, raw_metadata, rotation, queues, plays, skips, playing from tracks
+select track_id, station_id, created_at, artist, title, raw_metadata, rotation, plays, skips, playing from tracks
 where tracks.station_id = $1
 and plays = 0
 and rotation = (select min(rotation) from tracks where station_id = $1)
@@ -212,7 +211,6 @@ func (q *Queries) OldestUnplayedTrack(ctx context.Context, stationID string) (Tr
 		&i.Title,
 		&i.RawMetadata,
 		&i.Rotation,
-		&i.Queues,
 		&i.Plays,
 		&i.Skips,
 		&i.Playing,
@@ -221,7 +219,7 @@ func (q *Queries) OldestUnplayedTrack(ctx context.Context, stationID string) (Tr
 }
 
 const randomTrack = `-- name: RandomTrack :one
-select track_id, station_id, created_at, artist, title, raw_metadata, rotation, queues, plays, skips, playing from tracks
+select track_id, station_id, created_at, artist, title, raw_metadata, rotation, plays, skips, playing from tracks
 where tracks.station_id = $1
 and plays > 0
 and rotation = (select min(rotation) from tracks where station_id = $1)
@@ -240,7 +238,6 @@ func (q *Queries) RandomTrack(ctx context.Context, stationID string) (Track, err
 		&i.Title,
 		&i.RawMetadata,
 		&i.Rotation,
-		&i.Queues,
 		&i.Plays,
 		&i.Skips,
 		&i.Playing,

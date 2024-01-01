@@ -45,7 +45,6 @@ type Track struct {
 	Title       string
 	RawMetadata []byte
 	Rotation    int32
-	Queues      int32
 	Plays       int32
 	Skips       int32
 	Playing     bool
