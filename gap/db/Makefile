@@ -6,3 +6,9 @@ dump:
 
 schema:
 	${MAKE} -s dump > schema.sql
+
+migrate:
+	${MAKE} -C migrations migrate
+
+rollback:
+	${MAKE} -C migrations rollback
