@@ -33,6 +33,8 @@ func AudioTrackFromURL(ctx context.Context, url string) (*AudioTrack, error) {
 	}
 	defer os.RemoveAll(dir)
 
+	fmt.Printf("ripping %s into %s\n", url, dir)
+
 	destination := fmt.Sprintf("%s/track", dir)
 
 	args := []string{
@@ -60,6 +62,9 @@ func AudioTrackFromURL(ctx context.Context, url string) (*AudioTrack, error) {
 
 	metadata, err := tag.ReadFrom(file)
 	if err != nil {
+		return nil, err
+	}
+	if _, err = file.Seek(0, io.SeekStart); err != nil {
 		return nil, err
 	}
 
