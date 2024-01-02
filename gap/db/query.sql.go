@@ -7,10 +7,12 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const activeStations = `-- name: ActiveStations :many
-select station_id, created_at, slug, name, active from stations where active = true
+select station_id, created_at, slug, name, active, current_track_id from stations where active = true
 `
 
 func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
@@ -28,6 +30,7 @@ func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
 			&i.Slug,
 			&i.Name,
 			&i.Active,
+			&i.CurrentTrackID,
 		); err != nil {
 			return nil, err
 		}
@@ -88,7 +91,7 @@ func (q *Queries) CreateSearch(ctx context.Context, arg CreateSearchParams) erro
 }
 
 const createStation = `-- name: CreateStation :one
-insert into stations(station_id, slug, active) values($1, $2, $3) returning station_id, created_at, slug, name, active
+insert into stations(station_id, slug, active) values($1, $2, $3) returning station_id, created_at, slug, name, active, current_track_id
 `
 
 type CreateStationParams struct {
@@ -106,6 +109,7 @@ func (q *Queries) CreateStation(ctx context.Context, arg CreateStationParams) (S
 		&i.Slug,
 		&i.Name,
 		&i.Active,
+		&i.CurrentTrackID,
 	)
 	return i, err
 }
@@ -346,8 +350,22 @@ func (q *Queries) Search(ctx context.Context, searchID string) (Search, error) {
 	return i, err
 }
 
+const setStationCurrentTrack = `-- name: SetStationCurrentTrack :exec
+update stations set current_track_id = $1 where station_id = $2
+`
+
+type SetStationCurrentTrackParams struct {
+	CurrentTrackID pgtype.Text
+	StationID      string
+}
+
+func (q *Queries) SetStationCurrentTrack(ctx context.Context, arg SetStationCurrentTrackParams) error {
+	_, err := q.db.Exec(ctx, setStationCurrentTrack, arg.CurrentTrackID, arg.StationID)
+	return err
+}
+
 const station = `-- name: Station :one
-select station_id, created_at, slug, name, active from stations where slug = $1
+select station_id, created_at, slug, name, active, current_track_id from stations where slug = $1
 `
 
 func (q *Queries) Station(ctx context.Context, slug string) (Station, error) {
@@ -359,6 +377,29 @@ func (q *Queries) Station(ctx context.Context, slug string) (Station, error) {
 		&i.Slug,
 		&i.Name,
 		&i.Active,
+		&i.CurrentTrackID,
+	)
+	return i, err
+}
+
+const stationCurrentTrack = `-- name: StationCurrentTrack :one
+select tracks.track_id, tracks.station_id, tracks.created_at, tracks.artist, tracks.title, tracks.raw_metadata, tracks.rotation, tracks.plays, tracks.skips, tracks.playing from stations join tracks on stations.current_track_id = tracks.track_id where stations.station_id = $1
+`
+
+func (q *Queries) StationCurrentTrack(ctx context.Context, stationID string) (Track, error) {
+	row := q.db.QueryRow(ctx, stationCurrentTrack, stationID)
+	var i Track
+	err := row.Scan(
+		&i.TrackID,
+		&i.StationID,
+		&i.CreatedAt,
+		&i.Artist,
+		&i.Title,
+		&i.RawMetadata,
+		&i.Rotation,
+		&i.Plays,
+		&i.Skips,
+		&i.Playing,
 	)
 	return i, err
 }

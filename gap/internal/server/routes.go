@@ -91,12 +91,20 @@ func (s *Server) stationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	currentTrack, err := s.db.Q().StationCurrentTrack(ctx, station.StationID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	err = tpl.ExecuteTemplate(w, "station", struct {
-		Station  db.Station
-		Messages []db.StationMessage
+		Station      db.Station
+		Messages     []db.StationMessage
+		CurrentTrack db.Track
 	}{
-		Station:  station,
-		Messages: messages,
+		Station:      station,
+		Messages:     messages,
+		CurrentTrack: currentTrack,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

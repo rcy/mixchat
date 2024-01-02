@@ -13,6 +13,12 @@ select * from stations where slug = $1;
 -- name: CreateStation :one
 insert into stations(station_id, slug, active) values($1, $2, $3) returning *;
 
+-- name: SetStationCurrentTrack :exec
+update stations set current_track_id = $1 where station_id = $2;
+
+-- name: StationCurrentTrack :one
+select tracks.* from stations join tracks on stations.current_track_id = tracks.track_id where stations.station_id = $1;
+
 -- name: CreateStationMessage :one
 insert into station_messages(station_message_id, type, station_id, nick, body, parent_id) values($1, $2, $3, $4, $5, $6) returning *;
 

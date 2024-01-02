@@ -107,7 +107,8 @@ CREATE TABLE public.stations (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     slug text NOT NULL,
     name text DEFAULT ''::text NOT NULL,
-    active boolean NOT NULL
+    active boolean NOT NULL,
+    current_track_id text
 );
 
 
@@ -194,6 +195,14 @@ ALTER TABLE ONLY public.tracks
 --
 
 CREATE TRIGGER events_after_insert AFTER INSERT ON public.events FOR EACH ROW EXECUTE FUNCTION public.notify_event_insert();
+
+
+--
+-- Name: stations stations_current_track_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: app
+--
+
+ALTER TABLE ONLY public.stations
+    ADD CONSTRAINT stations_current_track_id_fkey FOREIGN KEY (current_track_id) REFERENCES public.tracks(track_id);
 
 
 --

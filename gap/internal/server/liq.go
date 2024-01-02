@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"fmt"
+	"gap/db"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func (s *Server) pullHandler(w http.ResponseWriter, r *http.Request) {
@@ -71,6 +73,15 @@ func (s *Server) trackChangeHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Should be done by event processor?
 	err = s.db.Q().IncrementTrackPlays(ctx, trackID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = s.db.Q().SetStationCurrentTrack(ctx, db.SetStationCurrentTrackParams{
+		StationID:      station.StationID,
+		CurrentTrackID: pgtype.Text{String: trackID, Valid: true},
+	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -49,13 +49,12 @@
       </div>
 
       <main class="h-10 flex-1 flex flex-col">
-        <div class="p-2 bg-red-500 h-10">
-          {.Announcement}
+        <div class="bg-orange-500">
         </div>
 
-        <div id="add-track-target" class="bg-blue-200 text-black flex justify-between items-center">
+        <div id="add-track-target" class="p-2 bg-black text-gray-300 border rounded flex justify-between items-center">
           <div>
-            Now Playing: {.CurrentTrack.Artist} {.CurrentTrack.Title}
+            Now Playing: {{.CurrentTrack.Artist}}, {{.CurrentTrack.Title}}
           </div>
           <div>
             <button class="text-white bg-blue-500 border rounded p-1"
@@ -113,9 +112,15 @@
           <div>{{.Body}}</div>
         </div>
       {{else}}
-        <div class="message playing flex gap-1 items-center text-xs text-gray-500 hover:text-white self-end">
-          <div>{{.Body}} {{ago .CreatedAt.Value}}</div>
-        </div>
+        {{if (eq $.Station.CurrentTrackID.String .ParentID)}}
+          <div class="message text-xs text-white hover:text-white self-end">
+            <div>🎵 {{.Body}} {{ago .CreatedAt.Value}}</div>
+          </div>
+        {{else}}
+          <div class="message flex gap-1 items-center text-xs text-gray-500 hover:text-white self-end">
+            <div>{{.Body}} {{ago .CreatedAt.Value}}</div>
+          </div>
+        {{end}}
       {{end}}
     {{end}}
   </div>
