@@ -31,7 +31,9 @@ func AudioTrackFromURL(ctx context.Context, url string) (*AudioTrack, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer os.RemoveAll(dir)
+	if os.Getenv("KEEP_TEMP") != "true" {
+		defer os.RemoveAll(dir)
+	}
 
 	fmt.Printf("ripping %s into %s\n", url, dir)
 
@@ -96,7 +98,9 @@ func Search(ctx context.Context, query string) ([]Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer os.RemoveAll(dir)
+	if os.Getenv("KEEP_TEMP") != "true" {
+		defer os.RemoveAll(dir)
+	}
 
 	args := []string{
 		"--no-download",
