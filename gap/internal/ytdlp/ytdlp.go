@@ -102,6 +102,10 @@ func Search(ctx context.Context, query string) ([]Result, error) {
 		defer os.RemoveAll(dir)
 	}
 
+	if err = os.MkdirAll(filepath.Join(dir, "tracks"), os.ModePerm); err != nil {
+		return nil, err
+	}
+
 	args := []string{
 		"--no-download",
 		"--write-info-json",
