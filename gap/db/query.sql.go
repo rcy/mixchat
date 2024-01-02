@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const activeStations = `-- name: ActiveStations :many
@@ -37,6 +39,52 @@ func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const createResult = `-- name: CreateResult :exec
+insert into results(result_id, search_id, station_id, extern_id, url, thumbnail, title, duration, views) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+`
+
+type CreateResultParams struct {
+	ResultID  string
+	SearchID  string
+	StationID string
+	ExternID  string
+	Url       string
+	Thumbnail pgtype.Text
+	Title     pgtype.Text
+	Duration  pgtype.Int4
+	Views     pgtype.Int8
+}
+
+func (q *Queries) CreateResult(ctx context.Context, arg CreateResultParams) error {
+	_, err := q.db.Exec(ctx, createResult,
+		arg.ResultID,
+		arg.SearchID,
+		arg.StationID,
+		arg.ExternID,
+		arg.Url,
+		arg.Thumbnail,
+		arg.Title,
+		arg.Duration,
+		arg.Views,
+	)
+	return err
+}
+
+const createSearch = `-- name: CreateSearch :exec
+insert into searches(search_id, station_id, query) values($1,$2,$3)
+`
+
+type CreateSearchParams struct {
+	SearchID  string
+	StationID string
+	Query     string
+}
+
+func (q *Queries) CreateSearch(ctx context.Context, arg CreateSearchParams) error {
+	_, err := q.db.Exec(ctx, createSearch, arg.SearchID, arg.StationID, arg.Query)
+	return err
 }
 
 const createStation = `-- name: CreateStation :one
@@ -241,6 +289,58 @@ func (q *Queries) RandomTrack(ctx context.Context, stationID string) (Track, err
 		&i.Plays,
 		&i.Skips,
 		&i.Playing,
+	)
+	return i, err
+}
+
+const results = `-- name: Results :many
+select result_id, search_id, station_id, created_at, extern_id, url, thumbnail, title, duration, views from results where search_id = $1
+`
+
+func (q *Queries) Results(ctx context.Context, searchID string) ([]Result, error) {
+	rows, err := q.db.Query(ctx, results, searchID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Result
+	for rows.Next() {
+		var i Result
+		if err := rows.Scan(
+			&i.ResultID,
+			&i.SearchID,
+			&i.StationID,
+			&i.CreatedAt,
+			&i.ExternID,
+			&i.Url,
+			&i.Thumbnail,
+			&i.Title,
+			&i.Duration,
+			&i.Views,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const search = `-- name: Search :one
+select search_id, station_id, created_at, query, status from searches where search_id = $1
+`
+
+func (q *Queries) Search(ctx context.Context, searchID string) (Search, error) {
+	row := q.db.QueryRow(ctx, search, searchID)
+	var i Search
+	err := row.Scan(
+		&i.SearchID,
+		&i.StationID,
+		&i.CreatedAt,
+		&i.Query,
+		&i.Status,
 	)
 	return i, err
 }

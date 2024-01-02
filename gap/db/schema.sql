@@ -35,6 +35,26 @@ CREATE TABLE public.events (
 ALTER TABLE public.events OWNER TO app;
 
 --
+-- Name: results; Type: TABLE; Schema: public; Owner: app
+--
+
+CREATE TABLE public.results (
+    result_id text NOT NULL,
+    search_id text NOT NULL,
+    station_id text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    extern_id text NOT NULL,
+    url text NOT NULL,
+    thumbnail text,
+    title text,
+    duration integer,
+    views bigint
+);
+
+
+ALTER TABLE public.results OWNER TO app;
+
+--
 -- Name: schema_version; Type: TABLE; Schema: public; Owner: app
 --
 
@@ -44,6 +64,21 @@ CREATE TABLE public.schema_version (
 
 
 ALTER TABLE public.schema_version OWNER TO app;
+
+--
+-- Name: searches; Type: TABLE; Schema: public; Owner: app
+--
+
+CREATE TABLE public.searches (
+    search_id text NOT NULL,
+    station_id text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    query text NOT NULL,
+    status text DEFAULT 'pending'::text NOT NULL
+);
+
+
+ALTER TABLE public.searches OWNER TO app;
 
 --
 -- Name: station_messages; Type: TABLE; Schema: public; Owner: app
@@ -103,6 +138,22 @@ ALTER TABLE public.tracks OWNER TO app;
 
 ALTER TABLE ONLY public.events
     ADD CONSTRAINT events_pkey PRIMARY KEY (event_id);
+
+
+--
+-- Name: results results_pkey; Type: CONSTRAINT; Schema: public; Owner: app
+--
+
+ALTER TABLE ONLY public.results
+    ADD CONSTRAINT results_pkey PRIMARY KEY (result_id);
+
+
+--
+-- Name: searches searches_pkey; Type: CONSTRAINT; Schema: public; Owner: app
+--
+
+ALTER TABLE ONLY public.searches
+    ADD CONSTRAINT searches_pkey PRIMARY KEY (search_id);
 
 
 --

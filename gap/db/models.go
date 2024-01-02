@@ -15,8 +15,29 @@ type Event struct {
 	Payload   []byte
 }
 
+type Result struct {
+	ResultID  string
+	SearchID  string
+	StationID string
+	CreatedAt pgtype.Timestamptz
+	ExternID  string
+	Url       string
+	Thumbnail pgtype.Text
+	Title     pgtype.Text
+	Duration  pgtype.Int4
+	Views     pgtype.Int8
+}
+
 type SchemaVersion struct {
 	Version int32
+}
+
+type Search struct {
+	SearchID  string
+	StationID string
+	CreatedAt pgtype.Timestamptz
+	Query     string
+	Status    string
 }
 
 type Station struct {

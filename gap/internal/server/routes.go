@@ -42,6 +42,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Get("/{slug}/audio-test-1", s.audioTest1)
 	r.Get("/{slug}/audio-test-2", s.audioTest2)
 	r.Post("/{slug}/requests", s.postRequest)
+	r.Post("/{slug}/search", s.postSearch)
+	r.Get("/{slug}/search/{searchID}", s.searchResults)
 
 	// liquidsoap endpoints
 	r.Post("/{slug}/liq/pull", s.pullHandler)
@@ -207,6 +209,70 @@ func (s *Server) postRequest(w http.ResponseWriter, r *http.Request) {
 		"TrackID":   ids.Make("trk"),
 		"URL":       url,
 	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (s *Server) postSearch(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	slug := chi.URLParam(r, "slug")
+	query := r.FormValue("query")
+
+	station, err := s.db.Q().Station(ctx, slug)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	searchID := ids.Make("srch")
+	err = s.db.CreateEvent(ctx, "SearchSubmitted", map[string]string{
+		"SearchID":  searchID,
+		"StationID": station.StationID,
+		"Query":     query,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, r.URL.Path+"/"+searchID, http.StatusSeeOther)
+}
+
+func (s *Server) searchResults(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	searchID := chi.URLParam(r, "searchID")
+	slug := chi.URLParam(r, "slug")
+
+	station, err := s.db.Q().Station(ctx, slug)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	search, err := s.db.Q().Search(ctx, searchID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	results, err := s.db.Q().Results(ctx, searchID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = tpl.ExecuteTemplate(w, "search-results", struct {
+		Station db.Station
+		Search  db.Search
+		Results []db.Result
+	}{
+		Station: station,
+		Search:  search,
+		Results: results,
+	})
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -52,16 +52,15 @@
           {.Announcement}
         </div>
 
-        <div class="bg-blue-200 text-black flex justify-between items-center h-20">
+        <div id="add-track-target" class="bg-blue-200 text-black flex justify-between items-center h-10">
           <div>
             Now Playing: {.CurrentTrack.Artist} {.CurrentTrack.Title}
           </div>
-          <button class="text-white bg-blue-500 border rounded p-2 w-32"
-                  hx-get="{{.Station.Slug}}/add-track"
-                  hx-swap="outerHTML"
-          >
-            Add Track
-          </button>
+          <div>
+            <a href="{{.Station.Slug}}/add-track" class="text-white bg-blue-500 border rounded p-2 w-32">
+              Add Track
+            </a>
+          </div>
         </div>
 
         <div class="flex-1 h-full overflow-y-scroll flex flex-col-reverse">
@@ -116,78 +115,50 @@
 
 
 {{define "add-track"}}
-  <style>
-   body {
-       background-image: linear-gradient(
-           45deg,
-           magenta,
-           rebeccapurple,
-           dodgerblue,
-           green
-       );
-       opacity: 0.75;
-   }
-  </style>
+  {{template "head"}}
+  <body class="bg-black text-white h-screen">
+    <div class="container mx-auto flex flex-col h-full">
+      <main>
+        <p>Search by artist or track, or paste a link below</p>
+        <form action="/{{.Station.Slug}}/search" method="post">
+          <input class="text-black" type="text" name="query" placeholder="Search..." autofocus>
+          <button class="rounded border bg-blue-300">Submit</button>
+        </form>
 
-  <dialog open>
-    <p>Paste a youtube link below to add a track to the jukebox</p>
-    <form hx-post="/{{.Station.Slug}}/requests">
-      <input type="text" name="url">
-      <button>Submit</button>
-    </form>
-  </dialog>
+        <p>DEPRECATED direct add track</p>
+        <form hx-post="/{{.Station.Slug}}/requests">
+          <input class="text-black" type="text" name="url" placeholder="url goes here" autofocus>
+          <button class="rounded border bg-blue-300">Submit</button>
+        </form>
+
+      </main>
+    </div>
+  </body>
 {{end}}
 
-{{define "audio-test-1"}}
-  <html>
-    <head>
-      <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-      <script src="https://unpkg.com/idiomorph/dist/idiomorph-ext.min.js"></script>
-    </head>
-    <body hx-boost="true">
-      <div id="container" hx-ext="morph">
-        hi
-        <iframe id="dxBSrMmBocN7NyZT" src="/player" width="200" height="100"></iframe>
-        <!-- <audio id="audio" controls autoplay xclass="w-full">
-             <source src="http://localhost:8010/dummy.mp3" type="audio/mp3" />
-             </audio>
-        -->
-        <iframe id="iframe" width="360" height="315" src="https://www.youtube.com/embed/piTvLuHWLyg?si=kCJ71MYzxqohF5Pz" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-        <button
-          hx-get="audio-test-2"
-          hx-swap="morph"
-          hx-target="#container"
-          hx-select="#container"
-          hx-push-url="true"
-        >audio-test-1</button>
-      </div>
-    </body>
-  </html>
-{{end}}
-
-{{define "audio-test-2"}}
-  <html>
-    <head>
-      <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-      <script src="https://unpkg.com/idiomorph/dist/idiomorph-ext.min.js"></script>
-    </head>
-    <body hx-boost="true">
-      <div id="container" hx-ext="morph">
-        hi
-        <iframe id="dxBSrMmBocN7NyZT" src="/player" width="200" height="100"></iframe>
-        <!-- <audio id="audio" controls autoplay xclass="w-full">
-             <source src="http://localhost:8010/dummy.mp3" type="audio/mp3" />
-             </audio>
-        -->
-        <iframe id="iframe" width="560" height="315" src="https://www.youtube.com/embed/piTvLuHWLyg?si=kCJ71MYzxqohF5Pz" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-        <button
-          hx-get="audio-test-1"
-          hx-swap="morph"
-          hx-target="#container"
-          hx-select="#container"
-          hx-push-url="true"
-        >audio-test-1</button>
-      </div>
-    </body>
-  </html>
+{{define "search-results"}}
+  {{template "head"}}
+  <body>
+    <h1>{{.Station.Slug}}</h1>
+    <h2>{{.Search.Query}} -- {{.Search.Status}}</h2>
+    <div class="flex flex-col gap-10">
+      {{range .Results}}
+        <div>
+          <h2>{{.Title}} {{.Duration}}</h2>
+          <button class="rounded border bg-blue-300"
+                  hx-post="/{{$.Station.Slug}}/requests"
+                  hx-vals='{"url":"{{.Url}}"}'
+          >Add To Jukebox</button>
+          <!-- <iframe
+               width="560"
+               height="315"
+               src="https://www.youtube.com/embed/{{.ExternID}}"
+               >
+               </iframe> -->
+          <img width="300" src="{{.Thumbnail.String}}">
+          <hr>
+        </div>
+      {{end}}
+    </div>
+  </body>
 {{end}}
