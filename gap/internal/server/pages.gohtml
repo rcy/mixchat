@@ -109,11 +109,6 @@
   </audio>
 {{end}}
 
-{{define "recent"}}
-  recent
-{{end}}
-
-
 {{define "add-track"}}
   {{template "head"}}
   <body class="bg-black text-white h-screen">
@@ -124,13 +119,6 @@
           <input class="text-black" type="text" name="query" placeholder="Search..." autofocus>
           <button class="rounded border bg-blue-300">Submit</button>
         </form>
-
-        <p>DEPRECATED direct add track</p>
-        <form hx-post="/{{.Station.Slug}}/requests">
-          <input class="text-black" type="text" name="url" placeholder="url goes here" autofocus>
-          <button class="rounded border bg-blue-300">Submit</button>
-        </form>
-
       </main>
     </div>
   </body>
