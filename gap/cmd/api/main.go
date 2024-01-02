@@ -70,7 +70,7 @@ func process(ctx context.Context, database database.Service) {
 		case "ChatMessageSent":
 			_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
 				StationMessageID: ids.Make("sm"),
-				Type:             "chat",
+				Type:             "ChatMessageSent",
 				StationID:        payload["StationID"],
 				Nick:             payload["Nick"],
 				Body:             payload["Body"],
@@ -82,9 +82,10 @@ func process(ctx context.Context, database database.Service) {
 		case "TrackRequested":
 			_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
 				StationMessageID: ids.Make("sm"),
-				Type:             "station",
+				Type:             "TrackRequested",
 				StationID:        payload["StationID"],
-				Body:             payload["URL"] + " was requested by TODO FIXME",
+				Body:             payload["URL"],
+				Nick:             payload["Nick"],
 				ParentID:         payload["TrackID"],
 			})
 			if err != nil {
@@ -109,16 +110,22 @@ func process(ctx context.Context, database database.Service) {
 				"StationID": payload["StationID"],
 				"TrackID":   payload["TrackID"],
 				"URL":       payload["URL"],
+				"Nick":      payload["Nick"],
 			})
 			if err != nil {
 				panic(err)
 			}
 		case "TrackDownloaded":
+			track, err := database.Q().Track(ctx, payload["TrackID"])
+			if err != nil {
+				panic(err)
+			}
 			_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
 				StationMessageID: ids.Make("sm"),
-				Type:             "station",
+				Type:             "TrackDownloaded",
 				StationID:        payload["StationID"],
-				Body:             payload["URL"] + " was added to the jukedownloaded by TODO FIXME",
+				Body:             fmt.Sprintf("%s, %s", track.Artist, track.Title),
+				Nick:             payload["Nick"],
 				ParentID:         payload["TrackID"],
 			})
 			if err != nil {
@@ -127,9 +134,10 @@ func process(ctx context.Context, database database.Service) {
 		case "TrackDownloadFailed":
 			_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
 				StationMessageID: ids.Make("sm"),
-				Type:             "station",
+				Type:             "TrackDownloadFailed",
 				StationID:        payload["StationID"],
-				Body:             fmt.Sprintf("Error adding %s: %s", payload["URL"], payload["Error"]),
+				Body:             fmt.Sprintf("Error adding %s (%s)", payload["URL"], event.EventID),
+				Nick:             payload["Nick"],
 				ParentID:         payload["TrackID"],
 			})
 			if err != nil {
@@ -143,7 +151,7 @@ func process(ctx context.Context, database database.Service) {
 
 			_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
 				StationMessageID: ids.Make("sm"),
-				Type:             "station",
+				Type:             "TrackStarted",
 				StationID:        payload["StationID"],
 				Body:             fmt.Sprintf("%s, %s", track.Artist, track.Title),
 				ParentID:         track.TrackID,

@@ -172,6 +172,7 @@ func (s *Server) postRequest(w http.ResponseWriter, r *http.Request) {
 		"StationID": station.StationID,
 		"TrackID":   ids.Make("trk"),
 		"URL":       url,
+		"Nick":      "Todo",
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

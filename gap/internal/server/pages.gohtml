@@ -107,13 +107,13 @@
        hx-get="/{{.Station.Slug}}/chat"
        hx-select="#chat-container .message">
     {{range .Messages}}
-      {{if .Nick}}
+      {{if (eq .Type "ChatMessageSent")}}
         <div class="message flex items-center">
           <div class="font-bold text-pink-500">{{.Nick}}</div>
           <div class="pr-1">:</div>
           <div>{{.Body}}</div>
         </div>
-      {{else}}
+      {{else if (eq .Type "TrackStarted")}}
         {{if (eq $.Station.CurrentTrackID.String .ParentID)}}
           <div class="message text-xs text-white hover:text-white self-end">
             <div>🎵 {{.Body}} {{ago .CreatedAt.Value}}</div>
@@ -123,6 +123,22 @@
             <div>{{.Body}} {{ago .CreatedAt.Value}}</div>
           </div>
         {{end}}
+      {{else if (eq .Type "TrackRequested")}}
+        <div class="message flex gap-1 text-xs text-gray-500 hover:text-white self-end">
+          <div class="text-pink-500">{{.Nick}}</div>
+          <div>requested a track...</div>
+          <div>{{ago .CreatedAt.Value}}</div>
+        </div>
+      {{else if (eq .Type "TrackDownloaded")}}
+        <div class="message flex gap-1 text-xs text-gray-500 hover:text-white self-end">
+          <div class="text-pink-500">{{.Nick}}</div>
+          <div>added {{.Body}}</div>
+          <div>{{ago .CreatedAt.Value}}</div>
+        </div>
+      {{else}}
+        <div class="message bg-red-500">
+          UNHANDLED {{.Type}} UNHANDLED
+        </div>
       {{end}}
     {{end}}
   </div>
