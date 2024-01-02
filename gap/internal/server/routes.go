@@ -85,65 +85,18 @@ func (s *Server) stationHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// type ChatMessage struct {
-	// 	CreatedAt time.Time
-	// 	SentAt    string
-	// 	Nick      string
-	// 	Body      string
-	// }
-	// chatMessages := []ChatMessage{}
-
-	//messages := chat.Fetch(station.Slug) //  s.db.Q().StationMessages(ctx, station.ID)
 	messages, err := s.db.Q().StationMessages(ctx, station.StationID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// for _, m := range messages {
-	// 	chatMessages = append(chatMessages, ChatMessage{
-	// 		CreatedAt: m.CreatedAt,
-	// 		SentAt:    m.CreatedAt.Format(time.TimeOnly),
-	// 		Nick:      m.Nick,
-	// 		Body:      m.Body,
-	// 	})
-	// }
-	// plays, err := s.db.Q().RecentPlays(ctx, db.RecentPlaysParams{
-	// 	StationID: station.ID,
-	// 	CreatedAt: pgtype.Timestamptz{Time: time.Now().Add(-time.Hour * 24), Valid: true},
-	// })
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-
-	// for _, p := range plays {
-	// 	chatMessages = append(chatMessages, ChatMessage{
-	// 		CreatedAt: p.CreatedAt.Time,
-	// 		SentAt:    p.CreatedAt.Time.Format(time.TimeOnly),
-	// 		Nick:      "",
-	// 		Body:      p.Artist + ": " + p.Title,
-	// 	})
-	// }
-
-	// slices.SortFunc(chatMessages, func(a, b ChatMessage) int {
-	// 	return b.CreatedAt.Compare(a.CreatedAt)
-	// })
-
-	// currentTrack, err := s.db.Q().CurrentTrack(ctx, station.ID)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-
 	err = tpl.ExecuteTemplate(w, "station", struct {
 		Station  db.Station
 		Messages []db.StationMessage
-		//		CurrentTrack db.CurrentTrackRow
 	}{
 		Station:  station,
 		Messages: messages,
-		//		CurrentTrack: currentTrack,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
