@@ -144,7 +144,7 @@
     <div class="flex flex-col gap-10">
       {{range .Results}}
         <div>
-          <h2>{{.Title}} {{.Duration}}</h2>
+          <h2>{{.Uploader}} - {{.Title}} - {{.Duration}}</h2>
           <button class="rounded border bg-blue-300"
                   hx-post="/{{$.Station.Slug}}/requests"
                   hx-vals='{"url":"{{.Url}}"}'
@@ -155,7 +155,9 @@
                src="https://www.youtube.com/embed/{{.ExternID}}"
                >
                </iframe> -->
-          <img width="300" src="{{.Thumbnail.String}}">
+          <a href="{{.Url}}">
+            <img width="300" src="{{.Thumbnail}}">
+          </a>
           <hr>
         </div>
       {{end}}

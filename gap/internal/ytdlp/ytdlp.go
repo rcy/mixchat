@@ -86,9 +86,10 @@ type Result struct {
 	ID         string
 	Thumbnail  string
 	Title      string
+	Uploader   string
 	WebpageURL string `json:"webpage_url"`
-	Duration   int32
-	ViewCount  int64 `json:"view_count"`
+	Duration   float64
+	ViewCount  float64 `json:"view_count"`
 }
 
 func Search(ctx context.Context, query string) ([]Result, error) {

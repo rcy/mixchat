@@ -22,10 +22,11 @@ type Result struct {
 	CreatedAt pgtype.Timestamptz
 	ExternID  string
 	Url       string
-	Thumbnail pgtype.Text
-	Title     pgtype.Text
-	Duration  pgtype.Int4
-	Views     pgtype.Int8
+	Thumbnail string
+	Title     string
+	Uploader  string
+	Duration  float64
+	Views     float64
 }
 
 type SchemaVersion struct {

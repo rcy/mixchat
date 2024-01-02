@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const activeStations = `-- name: ActiveStations :many
@@ -42,7 +40,7 @@ func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
 }
 
 const createResult = `-- name: CreateResult :exec
-insert into results(result_id, search_id, station_id, extern_id, url, thumbnail, title, duration, views) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+insert into results(result_id, search_id, station_id, extern_id, url, thumbnail, title, uploader, duration, views) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
 `
 
 type CreateResultParams struct {
@@ -51,10 +49,11 @@ type CreateResultParams struct {
 	StationID string
 	ExternID  string
 	Url       string
-	Thumbnail pgtype.Text
-	Title     pgtype.Text
-	Duration  pgtype.Int4
-	Views     pgtype.Int8
+	Thumbnail string
+	Title     string
+	Uploader  string
+	Duration  float64
+	Views     float64
 }
 
 func (q *Queries) CreateResult(ctx context.Context, arg CreateResultParams) error {
@@ -66,6 +65,7 @@ func (q *Queries) CreateResult(ctx context.Context, arg CreateResultParams) erro
 		arg.Url,
 		arg.Thumbnail,
 		arg.Title,
+		arg.Uploader,
 		arg.Duration,
 		arg.Views,
 	)
@@ -294,7 +294,7 @@ func (q *Queries) RandomTrack(ctx context.Context, stationID string) (Track, err
 }
 
 const results = `-- name: Results :many
-select result_id, search_id, station_id, created_at, extern_id, url, thumbnail, title, duration, views from results where search_id = $1
+select result_id, search_id, station_id, created_at, extern_id, url, thumbnail, title, uploader, duration, views from results where search_id = $1
 `
 
 func (q *Queries) Results(ctx context.Context, searchID string) ([]Result, error) {
@@ -315,6 +315,7 @@ func (q *Queries) Results(ctx context.Context, searchID string) ([]Result, error
 			&i.Url,
 			&i.Thumbnail,
 			&i.Title,
+			&i.Uploader,
 			&i.Duration,
 			&i.Views,
 		); err != nil {

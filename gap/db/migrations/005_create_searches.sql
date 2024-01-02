@@ -12,10 +12,11 @@ create table results(
        created_at timestamptz not null default now(),
        extern_id text not null,
        url text not null,
-       thumbnail text,
-       title text,
-       duration integer,
-       views bigint
+       thumbnail text not null,
+       title text not null,
+       uploader text not null,
+       duration float not null,
+       views float not null
 );
 
 ---- create above / drop below ----

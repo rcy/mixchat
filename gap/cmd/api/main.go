@@ -11,8 +11,6 @@ import (
 	"gap/internal/ytdlp"
 	"os"
 	"path/filepath"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func main() {
@@ -160,7 +158,16 @@ func process(ctx context.Context, database database.Service) {
 
 			results, err := ytdlp.Search(ctx, payload["Query"])
 			if err != nil {
-				panic(err)
+				err = database.CreateEvent(ctx, "SearchFailed", map[string]string{
+					"StationID": payload["StationID"],
+					"SearchID":  payload["SearchID"],
+					"Query":     payload["Query"],
+					"Error":     err.Error(),
+				})
+				if err != nil {
+					panic(err)
+				}
+				break
 			}
 
 			for _, result := range results {
@@ -170,10 +177,11 @@ func process(ctx context.Context, database database.Service) {
 					StationID: payload["StationID"],
 					ExternID:  result.ID,
 					Url:       result.WebpageURL,
-					Thumbnail: pgtype.Text{String: result.Thumbnail, Valid: true},
-					Title:     pgtype.Text{String: result.Title, Valid: true},
-					Duration:  pgtype.Int4{Int32: result.Duration, Valid: true},
-					Views:     pgtype.Int8{Int64: result.ViewCount, Valid: true},
+					Thumbnail: result.Thumbnail,
+					Title:     result.Title,
+					Uploader:  result.Uploader,
+					Duration:  result.Duration,
+					Views:     result.ViewCount,
 				})
 				if err != nil {
 					panic(err)

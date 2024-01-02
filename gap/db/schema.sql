@@ -45,10 +45,11 @@ CREATE TABLE public.results (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     extern_id text NOT NULL,
     url text NOT NULL,
-    thumbnail text,
-    title text,
-    duration integer,
-    views bigint
+    thumbnail text NOT NULL,
+    title text NOT NULL,
+    uploader text NOT NULL,
+    duration double precision NOT NULL,
+    views double precision NOT NULL
 );
 
 
