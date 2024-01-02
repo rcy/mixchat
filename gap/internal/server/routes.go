@@ -8,6 +8,7 @@ import (
 	"gap/internal/ids"
 	"html/template"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -237,6 +238,8 @@ func (s *Server) postSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//w.Write([]byte("searching..."))
+	time.Sleep(1 * time.Second)
 	http.Redirect(w, r, r.URL.Path+"/"+searchID, http.StatusSeeOther)
 }
 
@@ -267,10 +270,12 @@ func (s *Server) searchResults(w http.ResponseWriter, r *http.Request) {
 		Station db.Station
 		Search  db.Search
 		Results []db.Result
+		Refresh string
 	}{
 		Station: station,
 		Search:  search,
 		Results: results,
+		Refresh: r.URL.Path,
 	})
 
 	if err != nil {
