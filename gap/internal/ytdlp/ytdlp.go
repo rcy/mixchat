@@ -38,9 +38,9 @@ func AudioTrackFromURL(ctx context.Context, url string) (*AudioTrack, error) {
 	destination := fmt.Sprintf("%s/track", dir)
 
 	args := []string{
-		//"--keep-video",
+		"--keep-video",
 		"--extract-audio",
-		"--audio-quality=0",
+		//"--audio-quality=0",
 		"--audio-format=vorbis",
 		"--embed-metadata",
 		"--max-downloads=10",
