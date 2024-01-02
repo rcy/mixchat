@@ -107,15 +107,14 @@
        hx-select="#chat-container .message">
     {{range .Messages}}
       {{if .Nick}}
-        <div class="message text-blue-200 flex gap-2">
-          <div class="text-gray-500">{{ago .CreatedAt.Value}}</div>
-          <div>{{.Nick}}</div>
+        <div class="message flex items-center">
+          <div class="font-bold text-pink-500">{{.Nick}}</div>
+          <div class="pr-1">:</div>
           <div>{{.Body}}</div>
         </div>
       {{else}}
-        <div class="message playing flex gap-2">
-          <div class="text-gray-500">{{ago .CreatedAt.Value}}</div>
-          <div>{{.Body}}</div>
+        <div class="message playing flex gap-1 items-center text-xs text-gray-500 hover:text-white self-end">
+          <div>{{.Body}} {{ago .CreatedAt.Value}}</div>
         </div>
       {{end}}
     {{end}}
