@@ -24,15 +24,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 	})
 
 	r.Get("/health", s.healthHandler)
-	r.Get("/player", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`
-        <html>
-        <audio id="audio" controls>
-          <source src="http://localhost:8010/dummy.mp3" type="audio/mp3" />
-        </audio>
-        </html>
-`))
-	})
 
 	r.Post("/create-station", s.postCreateStation)
 
