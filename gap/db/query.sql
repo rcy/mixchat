@@ -24,6 +24,9 @@ insert into tracks(track_id, station_id, artist, title, raw_metadata, rotation)
 values($1,$2,$3,$4,$5, (coalesce((select min(rotation) from tracks where station_id = $2), 0)))
 returning *;
 
+-- name: Track :one
+select * from tracks where track_id = $1;
+
 -- name: OldestUnplayedTrack :one
 select * from tracks
 where tracks.station_id = $1

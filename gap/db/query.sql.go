@@ -394,3 +394,25 @@ func (q *Queries) StationMessages(ctx context.Context, stationID string) ([]Stat
 	}
 	return items, nil
 }
+
+const track = `-- name: Track :one
+select track_id, station_id, created_at, artist, title, raw_metadata, rotation, plays, skips, playing from tracks where track_id = $1
+`
+
+func (q *Queries) Track(ctx context.Context, trackID string) (Track, error) {
+	row := q.db.QueryRow(ctx, track, trackID)
+	var i Track
+	err := row.Scan(
+		&i.TrackID,
+		&i.StationID,
+		&i.CreatedAt,
+		&i.Artist,
+		&i.Title,
+		&i.RawMetadata,
+		&i.Rotation,
+		&i.Plays,
+		&i.Skips,
+		&i.Playing,
+	)
+	return i, err
+}

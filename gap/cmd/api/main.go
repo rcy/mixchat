@@ -136,12 +136,17 @@ func process(ctx context.Context, database database.Service) {
 				panic(err)
 			}
 		case "TrackStarted":
+			track, err := database.Q().Track(ctx, payload["TrackID"])
+			if err != nil {
+				panic(err)
+			}
+
 			_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
 				StationMessageID: ids.Make("sm"),
 				Type:             "station",
 				StationID:        payload["StationID"],
-				Body:             payload["TrackID"] + " is now playing",
-				ParentID:         payload["TrackID"],
+				Body:             fmt.Sprintf("%s, %s", track.Artist, track.Title),
+				ParentID:         track.TrackID,
 			})
 			if err != nil {
 				panic(err)
