@@ -13,6 +13,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5"
+	"github.com/rcy/durfmt"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -46,9 +47,19 @@ func (s *Server) RegisterRoutes() http.Handler {
 }
 
 var (
+	funcMap = template.FuncMap{
+		"ago": func(t time.Time) string {
+			dur := time.Now().Sub(t)
+			if dur < time.Minute {
+				return "just now"
+			}
+			return durfmt.Format(dur) + " ago"
+		},
+	}
+
 	//go:embed pages.gohtml
 	tplContent string
-	tpl        = template.Must(template.New("pages.gohtml").Parse(tplContent))
+	tpl        = template.Must(template.New("pages.gohtml").Funcs(funcMap).Parse(tplContent))
 )
 
 func (s *Server) stationsHandler(w http.ResponseWriter, r *http.Request) {

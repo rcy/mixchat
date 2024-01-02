@@ -108,13 +108,13 @@
     {{range .Messages}}
       {{if .Nick}}
         <div class="message text-blue-200 flex gap-2">
-          <div class="text-gray-500">{{.CreatedAt.Value}}</div>
+          <div class="text-gray-500">{{ago .CreatedAt.Value}}</div>
           <div>{{.Nick}}</div>
           <div>{{.Body}}</div>
         </div>
       {{else}}
         <div class="message playing flex gap-2">
-          <div class="text-gray-500">{{.CreatedAt.Value}}</div>
+          <div class="text-gray-500">{{ago .CreatedAt.Value}}</div>
           <div>{{.Body}}</div>
         </div>
       {{end}}
