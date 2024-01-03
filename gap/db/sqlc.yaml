@@ -8,4 +8,6 @@ sql:
         package: "db"
         out: "."
         sql_package: "pgx/v5"
+        rename:
+          background_image_url: "BackgroundImageURL"
         

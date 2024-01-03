@@ -42,12 +42,13 @@ type Search struct {
 }
 
 type Station struct {
-	StationID      string
-	CreatedAt      pgtype.Timestamptz
-	Slug           string
-	Name           string
-	Active         bool
-	CurrentTrackID pgtype.Text
+	StationID          string
+	CreatedAt          pgtype.Timestamptz
+	Slug               string
+	Name               string
+	Active             bool
+	CurrentTrackID     pgtype.Text
+	BackgroundImageURL string
 }
 
 type StationMessage struct {

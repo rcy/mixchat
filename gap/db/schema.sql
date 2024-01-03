@@ -108,7 +108,8 @@ CREATE TABLE public.stations (
     slug text NOT NULL,
     name text DEFAULT ''::text NOT NULL,
     active boolean NOT NULL,
-    current_track_id text
+    current_track_id text,
+    background_image_url text DEFAULT ''::text NOT NULL
 );
 
 

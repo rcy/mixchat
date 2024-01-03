@@ -12,7 +12,7 @@ import (
 )
 
 const activeStations = `-- name: ActiveStations :many
-select station_id, created_at, slug, name, active, current_track_id from stations where active = true
+select station_id, created_at, slug, name, active, current_track_id, background_image_url from stations where active = true
 `
 
 func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
@@ -31,6 +31,7 @@ func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
 			&i.Name,
 			&i.Active,
 			&i.CurrentTrackID,
+			&i.BackgroundImageURL,
 		); err != nil {
 			return nil, err
 		}
@@ -51,7 +52,7 @@ type CreateResultParams struct {
 	SearchID  string
 	StationID string
 	ExternID  string
-	Url       string
+	URL       string
 	Thumbnail string
 	Title     string
 	Uploader  string
@@ -65,7 +66,7 @@ func (q *Queries) CreateResult(ctx context.Context, arg CreateResultParams) erro
 		arg.SearchID,
 		arg.StationID,
 		arg.ExternID,
-		arg.Url,
+		arg.URL,
 		arg.Thumbnail,
 		arg.Title,
 		arg.Uploader,
@@ -91,7 +92,7 @@ func (q *Queries) CreateSearch(ctx context.Context, arg CreateSearchParams) erro
 }
 
 const createStation = `-- name: CreateStation :one
-insert into stations(station_id, slug, active) values($1, $2, $3) returning station_id, created_at, slug, name, active, current_track_id
+insert into stations(station_id, slug, active) values($1, $2, $3) returning station_id, created_at, slug, name, active, current_track_id, background_image_url
 `
 
 type CreateStationParams struct {
@@ -110,6 +111,7 @@ func (q *Queries) CreateStation(ctx context.Context, arg CreateStationParams) (S
 		&i.Name,
 		&i.Active,
 		&i.CurrentTrackID,
+		&i.BackgroundImageURL,
 	)
 	return i, err
 }
@@ -316,7 +318,7 @@ func (q *Queries) Results(ctx context.Context, searchID string) ([]Result, error
 			&i.StationID,
 			&i.CreatedAt,
 			&i.ExternID,
-			&i.Url,
+			&i.URL,
 			&i.Thumbnail,
 			&i.Title,
 			&i.Uploader,
@@ -365,7 +367,7 @@ func (q *Queries) SetStationCurrentTrack(ctx context.Context, arg SetStationCurr
 }
 
 const station = `-- name: Station :one
-select station_id, created_at, slug, name, active, current_track_id from stations where slug = $1
+select station_id, created_at, slug, name, active, current_track_id, background_image_url from stations where slug = $1
 `
 
 func (q *Queries) Station(ctx context.Context, slug string) (Station, error) {
@@ -378,6 +380,7 @@ func (q *Queries) Station(ctx context.Context, slug string) (Station, error) {
 		&i.Name,
 		&i.Active,
 		&i.CurrentTrackID,
+		&i.BackgroundImageURL,
 	)
 	return i, err
 }
