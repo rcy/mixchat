@@ -1,8 +1,10 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"gap/db"
 	"gap/internal/userservice"
 	"net/http"
 	"time"
@@ -54,4 +56,41 @@ func (s *Server) guestUserMiddleware(next http.Handler) http.Handler {
 	}
 
 	return http.HandlerFunc(fn)
+}
+
+type contextKey int
+
+const userContextKey contextKey = iota
+
+// Add current user from session to the context
+func (s *Server) userMiddleware(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		cookie, err := r.Cookie(sessionCookieName)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		user, err := s.db.Q().SessionUser(ctx, cookie.Value)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("error getting user: %s", err.Error()), http.StatusInternalServerError)
+			return
+		}
+
+		ctx = context.WithValue(ctx, userContextKey, user)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	}
+
+	return http.HandlerFunc(fn)
+}
+
+func (s *Server) userFromContext(ctx context.Context) db.User {
+	return ctx.Value(userContextKey).(db.User)
+}
+
+func (s *Server) requestUser(r *http.Request) db.User {
+	return s.userFromContext(r.Context())
 }

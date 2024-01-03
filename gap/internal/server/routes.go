@@ -30,6 +30,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	r.Group(func(r chi.Router) {
 		r.Use(s.guestUserMiddleware)
+		r.Use(s.userMiddleware)
 
 		r.Post("/create-station", s.postCreateStation)
 
@@ -150,9 +151,12 @@ type CreateStationEvent struct {
 }
 
 func (s *Server) postCreateStation(w http.ResponseWriter, r *http.Request) {
+	user := s.requestUser(r)
+
 	err := s.db.CreateEvent(r.Context(), "StationCreated", map[string]string{
 		"StationID": ids.Make("stn"),
 		"Slug":      r.FormValue("slug"),
+		"UserID":    user.UserID,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

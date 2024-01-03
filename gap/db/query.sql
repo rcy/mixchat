@@ -1,6 +1,12 @@
 -- name: CreateGuestUser :one
 insert into users(guest, user_id) values(true, $1) returning *;
 
+-- name: SessionUser :one
+select * from sessions
+join users on users.user_id = sessions.user_id
+where sessions.expires_at > now()
+and session_id = $1;
+
 -- name: CreateSession :one
 insert into sessions(session_id, user_id) values($1, $2) returning session_id;
 

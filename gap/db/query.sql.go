@@ -384,6 +384,40 @@ func (q *Queries) Search(ctx context.Context, searchID string) (Search, error) {
 	return i, err
 }
 
+const sessionUser = `-- name: SessionUser :one
+select session_id, sessions.created_at, expires_at, sessions.user_id, users.user_id, users.created_at, username, guest from sessions
+join users on users.user_id = sessions.user_id
+where sessions.expires_at > now()
+and session_id = $1
+`
+
+type SessionUserRow struct {
+	SessionID   string
+	CreatedAt   pgtype.Timestamptz
+	ExpiresAt   pgtype.Timestamptz
+	UserID      string
+	UserID_2    string
+	CreatedAt_2 pgtype.Timestamptz
+	Username    string
+	Guest       bool
+}
+
+func (q *Queries) SessionUser(ctx context.Context, sessionID string) (SessionUserRow, error) {
+	row := q.db.QueryRow(ctx, sessionUser, sessionID)
+	var i SessionUserRow
+	err := row.Scan(
+		&i.SessionID,
+		&i.CreatedAt,
+		&i.ExpiresAt,
+		&i.UserID,
+		&i.UserID_2,
+		&i.CreatedAt_2,
+		&i.Username,
+		&i.Guest,
+	)
+	return i, err
+}
+
 const setSearchStatusCompleted = `-- name: SetSearchStatusCompleted :exec
 update searches set status = 'completed' where search_id = $1
 `
