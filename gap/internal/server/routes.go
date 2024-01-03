@@ -229,17 +229,24 @@ func (s *Server) searchResults(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = tpl.ExecuteTemplate(w, "search-results", struct {
-		Station db.Station
-		Search  db.Search
-		Results []db.Result
-		Refresh string
+	data := struct {
+		Station   db.Station
+		Search    db.Search
+		Results   []db.Result
+		HXGet     string
+		HXTrigger string
 	}{
 		Station: station,
 		Search:  search,
 		Results: results,
-		Refresh: r.URL.Path,
-	})
+	}
+
+	if search.Status == "pending" {
+		data.HXGet = r.URL.Path
+		data.HXTrigger = "load delay:1s"
+	}
+
+	err = tpl.ExecuteTemplate(w, "search-results", data)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

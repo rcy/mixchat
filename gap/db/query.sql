@@ -58,6 +58,9 @@ update tracks set plays = plays + 1 where track_id = $1;
 -- name: CreateSearch :exec
 insert into searches(search_id, station_id, query) values($1,$2,$3);
 
+-- name: SetSearchStatusCompleted :exec
+update searches set status = 'completed' where search_id = $1;
+
 -- name: CreateResult :exec
 insert into results(result_id, search_id, station_id, extern_id, url, thumbnail, title, uploader, duration, views) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);
 

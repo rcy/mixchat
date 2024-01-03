@@ -352,6 +352,15 @@ func (q *Queries) Search(ctx context.Context, searchID string) (Search, error) {
 	return i, err
 }
 
+const setSearchStatusCompleted = `-- name: SetSearchStatusCompleted :exec
+update searches set status = 'completed' where search_id = $1
+`
+
+func (q *Queries) SetSearchStatusCompleted(ctx context.Context, searchID string) error {
+	_, err := q.db.Exec(ctx, setSearchStatusCompleted, searchID)
+	return err
+}
+
 const setStationCurrentTrack = `-- name: SetStationCurrentTrack :exec
 update stations set current_track_id = $1 where station_id = $2
 `

@@ -201,6 +201,11 @@ func process(ctx context.Context, database database.Service) {
 				}
 			}
 
+			err = database.Q().SetSearchStatusCompleted(ctx, payload["SearchID"])
+			if err != nil {
+				panic(err)
+			}
+
 			bytes, err := json.Marshal(results)
 			if err != nil {
 				panic(err)

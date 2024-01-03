@@ -174,8 +174,8 @@
 {{define "search-results"}}
   <div class="overflow-y-scroll ml-4 mt-4" style="height: 400px"
        x-show="open"
-       hx-get="{{.Refresh}}"
-       hx-trigger="every 10s"
+       {{if .HXGet}}hx-get="{{.HXGet}}"{{end}}
+       {{if .HXTrigger}}hx-trigger="{{.HXTrigger}}"{{end}}
        hx-swap="outerHTML"
   >
     <div class="flex flex-col gap-10">
