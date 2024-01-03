@@ -56,6 +56,7 @@ type Station struct {
 	Active             bool
 	CurrentTrackID     pgtype.Text
 	BackgroundImageURL string
+	UserID             string
 }
 
 type StationMessage struct {

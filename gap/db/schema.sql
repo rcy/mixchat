@@ -151,7 +151,8 @@ CREATE TABLE public.stations (
     name text DEFAULT ''::text NOT NULL,
     active boolean NOT NULL,
     current_track_id text,
-    background_image_url text DEFAULT ''::text NOT NULL
+    background_image_url text DEFAULT ''::text NOT NULL,
+    user_id text NOT NULL
 );
 
 
@@ -292,6 +293,14 @@ ALTER TABLE ONLY public.sessions
 
 ALTER TABLE ONLY public.stations
     ADD CONSTRAINT stations_current_track_id_fkey FOREIGN KEY (current_track_id) REFERENCES public.tracks(track_id);
+
+
+--
+-- Name: stations stations_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: app
+--
+
+ALTER TABLE ONLY public.stations
+    ADD CONSTRAINT stations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id);
 
 
 --

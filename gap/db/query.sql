@@ -2,7 +2,7 @@
 insert into users(guest, user_id) values(true, $1) returning *;
 
 -- name: SessionUser :one
-select * from sessions
+select users.* from sessions
 join users on users.user_id = sessions.user_id
 where sessions.expires_at > now()
 and session_id = $1;
@@ -23,7 +23,7 @@ select * from stations where active = true;
 select * from stations where slug = $1;
 
 -- name: CreateStation :one
-insert into stations(station_id, slug, active) values($1, $2, $3) returning *;
+insert into stations(station_id, slug, user_id, active) values($1, $2, $3, $4) returning *;
 
 -- name: SetStationCurrentTrack :exec
 update stations set current_track_id = $1 where station_id = $2;

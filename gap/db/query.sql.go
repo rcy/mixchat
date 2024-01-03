@@ -12,7 +12,7 @@ import (
 )
 
 const activeStations = `-- name: ActiveStations :many
-select station_id, created_at, slug, name, active, current_track_id, background_image_url from stations where active = true
+select station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id from stations where active = true
 `
 
 func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
@@ -32,6 +32,7 @@ func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
 			&i.Active,
 			&i.CurrentTrackID,
 			&i.BackgroundImageURL,
+			&i.UserID,
 		); err != nil {
 			return nil, err
 		}
@@ -124,17 +125,23 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (s
 }
 
 const createStation = `-- name: CreateStation :one
-insert into stations(station_id, slug, active) values($1, $2, $3) returning station_id, created_at, slug, name, active, current_track_id, background_image_url
+insert into stations(station_id, slug, user_id, active) values($1, $2, $3, $4) returning station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id
 `
 
 type CreateStationParams struct {
 	StationID string
 	Slug      string
+	UserID    string
 	Active    bool
 }
 
 func (q *Queries) CreateStation(ctx context.Context, arg CreateStationParams) (Station, error) {
-	row := q.db.QueryRow(ctx, createStation, arg.StationID, arg.Slug, arg.Active)
+	row := q.db.QueryRow(ctx, createStation,
+		arg.StationID,
+		arg.Slug,
+		arg.UserID,
+		arg.Active,
+	)
 	var i Station
 	err := row.Scan(
 		&i.StationID,
@@ -144,6 +151,7 @@ func (q *Queries) CreateStation(ctx context.Context, arg CreateStationParams) (S
 		&i.Active,
 		&i.CurrentTrackID,
 		&i.BackgroundImageURL,
+		&i.UserID,
 	)
 	return i, err
 }
@@ -385,33 +393,18 @@ func (q *Queries) Search(ctx context.Context, searchID string) (Search, error) {
 }
 
 const sessionUser = `-- name: SessionUser :one
-select session_id, sessions.created_at, expires_at, sessions.user_id, users.user_id, users.created_at, username, guest from sessions
+select users.user_id, users.created_at, users.username, users.guest from sessions
 join users on users.user_id = sessions.user_id
 where sessions.expires_at > now()
 and session_id = $1
 `
 
-type SessionUserRow struct {
-	SessionID   string
-	CreatedAt   pgtype.Timestamptz
-	ExpiresAt   pgtype.Timestamptz
-	UserID      string
-	UserID_2    string
-	CreatedAt_2 pgtype.Timestamptz
-	Username    string
-	Guest       bool
-}
-
-func (q *Queries) SessionUser(ctx context.Context, sessionID string) (SessionUserRow, error) {
+func (q *Queries) SessionUser(ctx context.Context, sessionID string) (User, error) {
 	row := q.db.QueryRow(ctx, sessionUser, sessionID)
-	var i SessionUserRow
+	var i User
 	err := row.Scan(
-		&i.SessionID,
-		&i.CreatedAt,
-		&i.ExpiresAt,
 		&i.UserID,
-		&i.UserID_2,
-		&i.CreatedAt_2,
+		&i.CreatedAt,
 		&i.Username,
 		&i.Guest,
 	)
@@ -442,7 +435,7 @@ func (q *Queries) SetStationCurrentTrack(ctx context.Context, arg SetStationCurr
 }
 
 const station = `-- name: Station :one
-select station_id, created_at, slug, name, active, current_track_id, background_image_url from stations where slug = $1
+select station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id from stations where slug = $1
 `
 
 func (q *Queries) Station(ctx context.Context, slug string) (Station, error) {
@@ -456,6 +449,7 @@ func (q *Queries) Station(ctx context.Context, slug string) (Station, error) {
 		&i.Active,
 		&i.CurrentTrackID,
 		&i.BackgroundImageURL,
+		&i.UserID,
 	)
 	return i, err
 }

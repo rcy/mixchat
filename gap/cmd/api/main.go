@@ -58,15 +58,6 @@ func process(ctx context.Context, database database.Service) {
 		fmt.Println("event", event.EventID, event.EventType, payload)
 
 		switch event.EventType {
-		case "StationCreated":
-			_, err = database.Q().CreateStation(ctx, db.CreateStationParams{
-				StationID: payload["StationID"],
-				Slug:      payload["Slug"],
-				Active:    true,
-			})
-			if err != nil {
-				panic(err)
-			}
 		case "ChatMessageSent":
 			_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
 				StationMessageID: ids.Make("sm"),
