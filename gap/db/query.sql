@@ -1,3 +1,9 @@
+-- name: CreateGuestUser :one
+insert into users(guest, user_id) values(true, $1) returning *;
+
+-- name: CreateSession :one
+insert into sessions(session_id, user_id) values($1, $2) returning session_id;
+
 -- name: InsertEvent :one
 insert into events(event_id, event_type, payload) values ($1, $2, $3) returning *;
 

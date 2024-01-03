@@ -43,6 +43,22 @@ func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
 	return items, nil
 }
 
+const createGuestUser = `-- name: CreateGuestUser :one
+insert into users(guest, user_id) values(true, $1) returning user_id, created_at, username, guest
+`
+
+func (q *Queries) CreateGuestUser(ctx context.Context, userID string) (User, error) {
+	row := q.db.QueryRow(ctx, createGuestUser, userID)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.CreatedAt,
+		&i.Username,
+		&i.Guest,
+	)
+	return i, err
+}
+
 const createResult = `-- name: CreateResult :exec
 insert into results(result_id, search_id, station_id, extern_id, url, thumbnail, title, uploader, duration, views) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
 `
@@ -89,6 +105,22 @@ type CreateSearchParams struct {
 func (q *Queries) CreateSearch(ctx context.Context, arg CreateSearchParams) error {
 	_, err := q.db.Exec(ctx, createSearch, arg.SearchID, arg.StationID, arg.Query)
 	return err
+}
+
+const createSession = `-- name: CreateSession :one
+insert into sessions(session_id, user_id) values($1, $2) returning session_id
+`
+
+type CreateSessionParams struct {
+	SessionID string
+	UserID    string
+}
+
+func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (string, error) {
+	row := q.db.QueryRow(ctx, createSession, arg.SessionID, arg.UserID)
+	var session_id string
+	err := row.Scan(&session_id)
+	return session_id, err
 }
 
 const createStation = `-- name: CreateStation :one

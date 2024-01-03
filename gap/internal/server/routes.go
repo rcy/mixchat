@@ -16,6 +16,8 @@ import (
 	"github.com/rcy/durfmt"
 )
 
+const sessionCookieName = "mixchat-session"
+
 func (s *Server) RegisterRoutes() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -26,17 +28,21 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	r.Get("/health", s.healthHandler)
 
-	r.Post("/create-station", s.postCreateStation)
+	r.Group(func(r chi.Router) {
+		r.Use(s.guestUserMiddleware)
 
-	r.Get("/", s.stationsHandler)
-	r.Get("/{slug}", s.stationHandler)
-	r.Get("/{slug}/chat", s.stationHandler)
-	r.Post("/{slug}/chat", s.postChatMessage)
-	r.Get("/{slug}/audio-test-1", s.audioTest1)
-	r.Get("/{slug}/audio-test-2", s.audioTest2)
-	r.Post("/{slug}/requests", s.postRequest)
-	r.Post("/{slug}/search", s.postSearch)
-	r.Get("/{slug}/search/{searchID}", s.searchResults)
+		r.Post("/create-station", s.postCreateStation)
+
+		r.Get("/", s.stationsHandler)
+		r.Get("/{slug}", s.stationHandler)
+		r.Get("/{slug}/chat", s.stationHandler)
+		r.Post("/{slug}/chat", s.postChatMessage)
+		r.Get("/{slug}/audio-test-1", s.audioTest1)
+		r.Get("/{slug}/audio-test-2", s.audioTest2)
+		r.Post("/{slug}/requests", s.postRequest)
+		r.Post("/{slug}/search", s.postSearch)
+		r.Get("/{slug}/search/{searchID}", s.searchResults)
+	})
 
 	// liquidsoap endpoints
 	r.Post("/{slug}/liq/pull", s.pullHandler)

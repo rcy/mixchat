@@ -41,6 +41,13 @@ type Search struct {
 	Status    string
 }
 
+type Session struct {
+	SessionID string
+	CreatedAt pgtype.Timestamptz
+	ExpiresAt pgtype.Timestamptz
+	UserID    string
+}
+
 type Station struct {
 	StationID          string
 	CreatedAt          pgtype.Timestamptz
@@ -72,4 +79,11 @@ type Track struct {
 	Plays       int32
 	Skips       int32
 	Playing     bool
+}
+
+type User struct {
+	UserID    string
+	CreatedAt pgtype.Timestamptz
+	Username  string
+	Guest     bool
 }

@@ -35,6 +35,34 @@ CREATE TABLE public.events (
 ALTER TABLE public.events OWNER TO app;
 
 --
+-- Name: foo; Type: SEQUENCE; Schema: public; Owner: app
+--
+
+CREATE SEQUENCE public.foo
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.foo OWNER TO app;
+
+--
+-- Name: guest_username_counter; Type: SEQUENCE; Schema: public; Owner: app
+--
+
+CREATE SEQUENCE public.guest_username_counter
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.guest_username_counter OWNER TO app;
+
+--
 -- Name: results; Type: TABLE; Schema: public; Owner: app
 --
 
@@ -80,6 +108,20 @@ CREATE TABLE public.searches (
 
 
 ALTER TABLE public.searches OWNER TO app;
+
+--
+-- Name: sessions; Type: TABLE; Schema: public; Owner: app
+--
+
+CREATE TABLE public.sessions (
+    session_id text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    expires_at timestamp with time zone DEFAULT (now() + '365 days'::interval) NOT NULL,
+    user_id text NOT NULL
+);
+
+
+ALTER TABLE public.sessions OWNER TO app;
 
 --
 -- Name: station_messages; Type: TABLE; Schema: public; Owner: app
@@ -136,6 +178,20 @@ CREATE TABLE public.tracks (
 ALTER TABLE public.tracks OWNER TO app;
 
 --
+-- Name: users; Type: TABLE; Schema: public; Owner: app
+--
+
+CREATE TABLE public.users (
+    user_id text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    username text DEFAULT ('FirstTimeCaller'::text || nextval('public.guest_username_counter'::regclass)) NOT NULL,
+    guest boolean DEFAULT true NOT NULL
+);
+
+
+ALTER TABLE public.users OWNER TO app;
+
+--
 -- Name: events events_pkey; Type: CONSTRAINT; Schema: public; Owner: app
 --
 
@@ -157,6 +213,14 @@ ALTER TABLE ONLY public.results
 
 ALTER TABLE ONLY public.searches
     ADD CONSTRAINT searches_pkey PRIMARY KEY (search_id);
+
+
+--
+-- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: app
+--
+
+ALTER TABLE ONLY public.sessions
+    ADD CONSTRAINT sessions_pkey PRIMARY KEY (session_id);
 
 
 --
@@ -192,10 +256,34 @@ ALTER TABLE ONLY public.tracks
 
 
 --
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: app
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: app
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_username_key UNIQUE (username);
+
+
+--
 -- Name: events events_after_insert; Type: TRIGGER; Schema: public; Owner: app
 --
 
 CREATE TRIGGER events_after_insert AFTER INSERT ON public.events FOR EACH ROW EXECUTE FUNCTION public.notify_event_insert();
+
+
+--
+-- Name: sessions sessions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: app
+--
+
+ALTER TABLE ONLY public.sessions
+    ADD CONSTRAINT sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id);
 
 
 --
