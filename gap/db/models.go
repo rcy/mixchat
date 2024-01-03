@@ -21,7 +21,7 @@ type Result struct {
 	StationID string
 	CreatedAt pgtype.Timestamptz
 	ExternID  string
-	Url       string
+	URL       string
 	Thumbnail string
 	Title     string
 	Uploader  string

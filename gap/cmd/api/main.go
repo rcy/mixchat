@@ -189,7 +189,7 @@ func process(ctx context.Context, database database.Service) {
 					SearchID:  payload["SearchID"],
 					StationID: payload["StationID"],
 					ExternID:  result.ID,
-					Url:       result.WebpageURL,
+					URL:       result.WebpageURL,
 					Thumbnail: result.Thumbnail,
 					Title:     result.Title,
 					Uploader:  result.Uploader,

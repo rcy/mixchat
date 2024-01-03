@@ -9,5 +9,6 @@ sql:
         out: "."
         sql_package: "pgx/v5"
         rename:
+          url: "URL"
           background_image_url: "BackgroundImageURL"
         
