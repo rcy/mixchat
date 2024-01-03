@@ -469,3 +469,45 @@ func (q *Queries) Track(ctx context.Context, trackID string) (Track, error) {
 	)
 	return i, err
 }
+
+const trackRequestStationMessage = `-- name: TrackRequestStationMessage :one
+select station_message_id, created_at, type, station_id, parent_id, nick, body from station_messages
+where station_id = $1
+and type = 'TrackRequested'
+and parent_id = $2
+`
+
+type TrackRequestStationMessageParams struct {
+	StationID string
+	ParentID  string
+}
+
+func (q *Queries) TrackRequestStationMessage(ctx context.Context, arg TrackRequestStationMessageParams) (StationMessage, error) {
+	row := q.db.QueryRow(ctx, trackRequestStationMessage, arg.StationID, arg.ParentID)
+	var i StationMessage
+	err := row.Scan(
+		&i.StationMessageID,
+		&i.CreatedAt,
+		&i.Type,
+		&i.StationID,
+		&i.ParentID,
+		&i.Nick,
+		&i.Body,
+	)
+	return i, err
+}
+
+const updateStationMessage = `-- name: UpdateStationMessage :exec
+update station_messages set type = $1, body = $2 where station_message_id = $3
+`
+
+type UpdateStationMessageParams struct {
+	Type             string
+	Body             string
+	StationMessageID string
+}
+
+func (q *Queries) UpdateStationMessage(ctx context.Context, arg UpdateStationMessageParams) error {
+	_, err := q.db.Exec(ctx, updateStationMessage, arg.Type, arg.Body, arg.StationMessageID)
+	return err
+}

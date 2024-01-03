@@ -147,17 +147,17 @@
       {{else if (eq .Type "TrackRequested")}}
         <div class="message flex gap-1 text-xs text-gray-500 hover:text-white self-end">
           <div class="text-pink-500">{{.Nick}}</div>
-          <div>requested a track...</div>
+          <div>requested a track (downloading...)</div>
           <div>{{ago .CreatedAt.Value}}</div>
         </div>
       {{else if (eq .Type "TrackDownloaded")}}
         <div class="message flex gap-1 text-xs text-gray-500 hover:text-white self-end">
           <div class="text-pink-500">{{.Nick}}</div>
-          <div>added {{.Body}}</div>
+          <div>requested {{.Body}}</div>
           <div>{{ago .CreatedAt.Value}}</div>
         </div>
       {{else}}
-        <div class="message bg-red-500">
+        <div class="message text-red-500">
           UNHANDLED {{.Type}} UNHANDLED
         </div>
       {{end}}

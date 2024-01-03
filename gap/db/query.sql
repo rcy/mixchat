@@ -25,6 +25,15 @@ insert into station_messages(station_message_id, type, station_id, nick, body, p
 -- name: StationMessages :many
 select * from station_messages where station_id = $1 order by station_message_id desc limit 500;
 
+-- name: UpdateStationMessage :exec
+update station_messages set type = $1, body = $2 where station_message_id = $3;
+
+-- name: TrackRequestStationMessage :one
+select * from station_messages
+where station_id = $1
+and type = 'TrackRequested'
+and parent_id = $2;
+
 -- name: CreateTrack :one
 insert into tracks(track_id, station_id, artist, title, raw_metadata, rotation)
 values($1,$2,$3,$4,$5, (coalesce((select min(rotation) from tracks where station_id = $2), 0)))

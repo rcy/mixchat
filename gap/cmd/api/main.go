@@ -116,17 +116,23 @@ func process(ctx context.Context, database database.Service) {
 				panic(err)
 			}
 		case "TrackDownloaded":
+			// Update the original TrackRequested message with a TrackDownloaded message
+			// that includes some track metadata
 			track, err := database.Q().Track(ctx, payload["TrackID"])
 			if err != nil {
 				panic(err)
 			}
-			_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
-				StationMessageID: ids.Make("sm"),
+			m, err := database.Q().TrackRequestStationMessage(ctx, db.TrackRequestStationMessageParams{
+				StationID: payload["StationID"],
+				ParentID:  track.TrackID,
+			})
+			if err != nil {
+				panic(err)
+			}
+			err = database.Q().UpdateStationMessage(ctx, db.UpdateStationMessageParams{
+				StationMessageID: m.StationMessageID,
 				Type:             "TrackDownloaded",
-				StationID:        payload["StationID"],
 				Body:             fmt.Sprintf("%s, %s", track.Artist, track.Title),
-				Nick:             payload["Nick"],
-				ParentID:         payload["TrackID"],
 			})
 			if err != nil {
 				panic(err)
