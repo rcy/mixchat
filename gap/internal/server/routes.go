@@ -41,7 +41,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// liquidsoap endpoints
 	r.Post("/{slug}/liq/pull", s.pullHandler)
 	r.Post("/{slug}/liq/trackchange", s.trackChangeHandler)
-	r.Get("/{slug}/add-track", s.addTrackHandler)
 
 	return r
 }
@@ -240,27 +239,6 @@ func (s *Server) searchResults(w http.ResponseWriter, r *http.Request) {
 		Search:  search,
 		Results: results,
 		Refresh: r.URL.Path,
-	})
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
-
-func (s *Server) addTrackHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	slug := chi.URLParam(r, "slug")
-
-	station, err := s.db.Q().Station(ctx, slug)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	err = tpl.ExecuteTemplate(w, "add-track", struct {
-		Station db.Station
-	}{
-		Station: station,
 	})
 
 	if err != nil {

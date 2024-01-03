@@ -3,7 +3,7 @@
   <head>
     <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script src="https://unpkg.com/idiomorph@0.3.0"></script>
+    <script src="//unpkg.com/alpinejs"></script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="data:,">
@@ -51,7 +51,7 @@
     </style>
   {{end}}
 
-  <body class="text-white h-screen">
+  <body class="text-white h-screen" x-data="{ open: false }">
     <div class="container mx-auto flex flex-col h-full p-2" style="background: rgba(0,0,0,.8);">
       <div class="flex sm:flex-row flex-col justify-between content-center mb-4 items-center h-10">
         <h1 class="text-4xl">
@@ -72,13 +72,7 @@
               Now Playing: {{.CurrentTrack.Artist}}, {{.CurrentTrack.Title}}
             </div>
             <div>
-              <button class="text-white bg-blue-500 border rounded p-1"
-                      hx-get="{{.Station.Slug}}/add-track"
-                      xhx-target="#add-track-target"
-                      hx-swap="outerHTML"
-              >
-                Add Track
-              </button>
+              {{template "add-track-button" .}}
             </div>
           </div>
           <div id="results" class=""></div>
@@ -103,14 +97,27 @@
   </body>
 {{end}}
 
-{{define "add-track"}}
-  <div class="w-full px-5">
-    <form hx-post="/{{.Station.Slug}}/search"
-          hx-target="#results">
-      <input class="text-black" type="text" name="query" placeholder="Artist, title..." autofocus>
-      <button class="text-white bg-blue-500 border rounded px-1 my-1">Submit</button>
-      <button hx-get="foo" class="rounded border bg-white px-1 my-1">Cancel</button>
-    </form>
+{{define "add-track-button"}}
+  <div>
+    <button class="text-white bg-blue-500 rounded p-1"
+            x-show="!open"
+            xhx-get="{{.Station.Slug}}/add-track"
+            xhx-target="#add-track-target"
+            xhx-swap="outerHTML"
+            @click="open = true">Add Track</button>
+
+    <div class="w-full" x-show="open">
+      <form class="flex gap-1 items-center" hx-post="/{{.Station.Slug}}/search" hx-target="#results">
+        <input class="bg-black text-white border border-gray-500 rounded h-8 p-1"
+               type="text"
+               name="query"
+               placeholder="Look up artist, title..."
+               autofocus
+               required>
+        <button class="text-white bg-blue-500 rounded p-1">Search</button>
+        <button class="rounded bg-red-500 p-1" type="button" @click="open = false">Close</button>
+      </form>
+    </div>
   </div>
 {{end}}
 
@@ -166,6 +173,7 @@
 
 {{define "search-results"}}
   <div class="overflow-y-scroll ml-4 mt-4" style="height: 400px"
+       x-show="open"
        hx-get="{{.Refresh}}"
        hx-trigger="every 10s"
        hx-swap="outerHTML"
