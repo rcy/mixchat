@@ -76,19 +76,24 @@ func process(ctx context.Context, database database.Service) {
 				panic(err)
 			}
 		case "TrackRequested":
+			user, err := database.Q().User(ctx, payload["UserID"])
+			if err != nil {
+				panic(err)
+			}
+
 			_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
 				StationMessageID: ids.Make("sm"),
 				Type:             "TrackRequested",
 				StationID:        payload["StationID"],
 				Body:             payload["URL"],
-				Nick:             payload["Nick"],
+				Nick:             user.Username,
 				ParentID:         payload["TrackID"],
 			})
 			if err != nil {
 				panic(err)
 			}
 
-			err := processTrackRequested(ctx, payload)
+			err = processTrackRequested(ctx, payload)
 			if err != nil {
 				err = database.CreateEvent(ctx, "TrackDownloadFailed", map[string]string{
 					"StationID": payload["StationID"],

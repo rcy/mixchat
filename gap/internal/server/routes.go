@@ -196,6 +196,7 @@ func (s *Server) postRequest(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	slug := chi.URLParam(r, "slug")
 	url := r.FormValue("url")
+	user := s.requestUser(r)
 
 	station, err := s.db.Q().Station(ctx, slug)
 	if err != nil {
@@ -207,7 +208,7 @@ func (s *Server) postRequest(w http.ResponseWriter, r *http.Request) {
 		"StationID": station.StationID,
 		"TrackID":   ids.Make("trk"),
 		"URL":       url,
-		"Nick":      "Todo",
+		"UserID":    user.UserID,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
