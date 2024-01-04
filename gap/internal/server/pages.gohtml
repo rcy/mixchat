@@ -83,18 +83,22 @@
         </div>
 
         <div class="h-10">
-          <form class="m-0"
-                hx-post="/{{.Station.Slug}}/chat"
-                hx-swap="none">
-            <input class="bg-black text-white w-full border rounded border-white"
-                   type="text"
-                   name="body">
-          </form>
+          {{template "chat-form" .}}
         </div>
       </main>
 
     </div>
   </body>
+{{end}}
+
+{{define "chat-form"}}
+  <form hx-post="/{{.Station.Slug}}/chat"
+        hex-swap="outerHTML">
+    <input class="bg-black text-white w-full border rounded border-white pl-1"
+           type="text"
+           name="body"
+           autofocus>
+  </form>
 {{end}}
 
 {{define "add-track-button"}}

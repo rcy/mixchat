@@ -145,6 +145,16 @@ func (s *Server) postChatMessage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	err = tpl.ExecuteTemplate(w, "chat-form", struct {
+		Station db.Station
+	}{
+		Station: station,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 type CreateStationEvent struct {
