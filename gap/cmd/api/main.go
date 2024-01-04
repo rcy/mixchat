@@ -59,11 +59,16 @@ func process(ctx context.Context, database database.Service) {
 
 		switch event.EventType {
 		case "ChatMessageSent":
+			user, err := database.Q().User(ctx, payload["UserID"])
+			if err != nil {
+				panic(err)
+			}
+
 			_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
 				StationMessageID: ids.Make("sm"),
 				Type:             "ChatMessageSent",
 				StationID:        payload["StationID"],
-				Nick:             payload["Nick"],
+				Nick:             user.Username,
 				Body:             payload["Body"],
 				ParentID:         payload["ChatID"],
 			})

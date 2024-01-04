@@ -571,3 +571,19 @@ func (q *Queries) UpdateStationMessage(ctx context.Context, arg UpdateStationMes
 	_, err := q.db.Exec(ctx, updateStationMessage, arg.Type, arg.Body, arg.StationMessageID)
 	return err
 }
+
+const user = `-- name: User :one
+select user_id, created_at, username, guest from users where user_id = $1
+`
+
+func (q *Queries) User(ctx context.Context, userID string) (User, error) {
+	row := q.db.QueryRow(ctx, user, userID)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.CreatedAt,
+		&i.Username,
+		&i.Guest,
+	)
+	return i, err
+}

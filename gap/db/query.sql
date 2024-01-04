@@ -7,6 +7,9 @@ join users on users.user_id = sessions.user_id
 where sessions.expires_at > now()
 and session_id = $1;
 
+-- name: User :one
+select * from users where user_id = $1;
+
 -- name: CreateSession :one
 insert into sessions(session_id, user_id) values($1, $2) returning session_id;
 

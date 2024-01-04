@@ -128,6 +128,7 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) postChatMessage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	slug := chi.URLParam(r, "slug")
+	user := s.requestUser(r)
 
 	station, err := s.db.Q().Station(ctx, slug)
 	if err != nil {
@@ -138,7 +139,7 @@ func (s *Server) postChatMessage(w http.ResponseWriter, r *http.Request) {
 	err = s.db.CreateEvent(ctx, "ChatMessageSent", map[string]string{
 		"StationID": station.StationID,
 		"ChatID":    ids.Make("chat"),
-		"Nick":      "Todo",
+		"UserID":    user.UserID,
 		"Body":      r.FormValue("body"),
 	})
 	if err != nil {
