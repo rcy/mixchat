@@ -69,11 +69,16 @@ func (s *Server) userMiddleware(next http.Handler) http.Handler {
 
 		cookie, err := r.Cookie(sessionCookieName)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
 
-		user, err := s.db.Q().SessionUser(ctx, cookie.Value)
+		var user db.User
+		user, err = s.db.Q().SessionUser(ctx, cookie.Value)
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error getting user: %s", err.Error()), http.StatusInternalServerError)
 			return

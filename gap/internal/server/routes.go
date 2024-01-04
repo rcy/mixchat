@@ -28,6 +28,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	})
 
 	r.Get("/health", s.healthHandler)
+	r.Get("/login", s.loginHandler)
 
 	r.Group(func(r chi.Router) {
 		r.Use(s.guestUserMiddleware)
