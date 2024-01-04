@@ -30,3 +30,6 @@ deploy:
 
 psql:
 	psql postgres://app:app@localhost:54322/mixchat_development
+
+pglog:
+	docker compose logs --follow postgres
