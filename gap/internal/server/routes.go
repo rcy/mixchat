@@ -99,7 +99,7 @@ func (s *Server) stationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	currentTrack, err := s.db.Q().StationCurrentTrack(ctx, station.StationID)
-	if err != nil {
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
