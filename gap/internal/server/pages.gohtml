@@ -24,7 +24,8 @@
       <div class="flex gap-2">
         {{range .Stations}}
           <a href="{{.Slug}}" class="flex items-center gap-2 hover:bg-green-900 p-2">
-            <img height="32" width="32" src="https://api.dicebear.com/7.x/rings/svg?seed={{.StationID}}">
+            <img height="32" width="32"
+                 src="https://api.dicebear.com/7.x/rings/svg?seed={{.StationID}}">
             {{.Slug}}
           </a>
         {{end}}
