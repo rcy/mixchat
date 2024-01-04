@@ -45,7 +45,7 @@ func (s *Server) guestUserMiddleware(next http.Handler) http.Handler {
 				})
 
 				// redirect back to same path so user middleware can read the cookie
-				http.Redirect(w, r, "", http.StatusSeeOther)
+				http.Redirect(w, r, r.URL.Path, http.StatusSeeOther)
 			} else {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
