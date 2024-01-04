@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"gap/db"
 	"gap/internal/ids"
 	"html/template"
@@ -151,19 +152,32 @@ type CreateStationEvent struct {
 }
 
 func (s *Server) postCreateStation(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	user := s.requestUser(r)
 
-	err := s.db.CreateEvent(r.Context(), "StationCreated", map[string]string{
-		"StationID": ids.Make("stn"),
-		"Slug":      r.FormValue("slug"),
-		"UserID":    user.UserID,
+	stn, err := s.db.Q().CreateStation(ctx, db.CreateStationParams{
+		StationID: ids.Make("stn"),
+		Slug:      r.FormValue("slug"),
+		UserID:    user.UserID,
+		Active:    true,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	err = s.db.CreateEvent(r.Context(), "StationCreated", map[string]string{
+		"StationID": stn.StationID,
+		"Slug":      stn.Slug,
+		"UserID":    stn.UserID,
+		"Active":    fmt.Sprint(stn.Active),
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/"+stn.Slug, http.StatusSeeOther)
 }
 
 func (s *Server) postRequest(w http.ResponseWriter, r *http.Request) {
