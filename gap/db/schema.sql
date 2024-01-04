@@ -35,20 +35,6 @@ CREATE TABLE public.events (
 ALTER TABLE public.events OWNER TO app;
 
 --
--- Name: foo; Type: SEQUENCE; Schema: public; Owner: app
---
-
-CREATE SEQUENCE public.foo
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.foo OWNER TO app;
-
---
 -- Name: guest_username_counter; Type: SEQUENCE; Schema: public; Owner: app
 --
 

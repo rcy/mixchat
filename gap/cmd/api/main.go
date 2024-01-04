@@ -49,184 +49,186 @@ func process(ctx context.Context, database database.Service) {
 			continue
 		}
 
-		event, err := database.Q().Event(ctx, notification.Payload)
-		var payload map[string]string
-		err = json.Unmarshal(event.Payload, &payload)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println("event", event.EventID, event.EventType, payload)
-
-		switch event.EventType {
-		case "ChatMessageSent":
-			user, err := database.Q().User(ctx, payload["UserID"])
+		go func() {
+			event, err := database.Q().Event(ctx, notification.Payload)
+			var payload map[string]string
+			err = json.Unmarshal(event.Payload, &payload)
 			if err != nil {
 				panic(err)
 			}
+			fmt.Println("event", event.EventID, event.EventType, payload)
 
-			_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
-				StationMessageID: ids.Make("sm"),
-				Type:             "ChatMessageSent",
-				StationID:        payload["StationID"],
-				Nick:             user.Username,
-				Body:             payload["Body"],
-				ParentID:         payload["ChatID"],
-			})
-			if err != nil {
-				panic(err)
-			}
-		case "TrackRequested":
-			user, err := database.Q().User(ctx, payload["UserID"])
-			if err != nil {
-				panic(err)
-			}
+			switch event.EventType {
+			case "ChatMessageSent":
+				user, err := database.Q().User(ctx, payload["UserID"])
+				if err != nil {
+					panic(err)
+				}
 
-			_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
-				StationMessageID: ids.Make("sm"),
-				Type:             "TrackRequested",
-				StationID:        payload["StationID"],
-				Body:             payload["URL"],
-				Nick:             user.Username,
-				ParentID:         payload["TrackID"],
-			})
-			if err != nil {
-				panic(err)
-			}
+				_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
+					StationMessageID: ids.Make("sm"),
+					Type:             "ChatMessageSent",
+					StationID:        payload["StationID"],
+					Nick:             user.Username,
+					Body:             payload["Body"],
+					ParentID:         payload["ChatID"],
+				})
+				if err != nil {
+					panic(err)
+				}
+			case "TrackRequested":
+				user, err := database.Q().User(ctx, payload["UserID"])
+				if err != nil {
+					panic(err)
+				}
 
-			err = processTrackRequested(ctx, payload)
-			if err != nil {
-				err = database.CreateEvent(ctx, "TrackDownloadFailed", map[string]string{
+				_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
+					StationMessageID: ids.Make("sm"),
+					Type:             "TrackRequested",
+					StationID:        payload["StationID"],
+					Body:             payload["URL"],
+					Nick:             user.Username,
+					ParentID:         payload["TrackID"],
+				})
+				if err != nil {
+					panic(err)
+				}
+
+				err = processTrackRequested(ctx, payload)
+				if err != nil {
+					err = database.CreateEvent(ctx, "TrackDownloadFailed", map[string]string{
+						"StationID": payload["StationID"],
+						"TrackID":   payload["TrackID"],
+						"URL":       payload["URL"],
+						"Error":     err.Error(),
+					})
+					if err != nil {
+						panic(err)
+					}
+					break
+				}
+
+				err = database.CreateEvent(ctx, "TrackDownloaded", map[string]string{
 					"StationID": payload["StationID"],
 					"TrackID":   payload["TrackID"],
 					"URL":       payload["URL"],
-					"Error":     err.Error(),
+					"Nick":      payload["Nick"],
 				})
 				if err != nil {
 					panic(err)
 				}
-				break
-			}
+			case "TrackDownloaded":
+				// Update the original TrackRequested message with a TrackDownloaded message
+				// that includes some track metadata
+				track, err := database.Q().Track(ctx, payload["TrackID"])
+				if err != nil {
+					panic(err)
+				}
+				m, err := database.Q().TrackRequestStationMessage(ctx, db.TrackRequestStationMessageParams{
+					StationID: payload["StationID"],
+					ParentID:  track.TrackID,
+				})
+				if err != nil {
+					panic(err)
+				}
+				err = database.Q().UpdateStationMessage(ctx, db.UpdateStationMessageParams{
+					StationMessageID: m.StationMessageID,
+					Type:             "TrackDownloaded",
+					Body:             fmt.Sprintf("%s, %s", track.Artist, track.Title),
+				})
+				if err != nil {
+					panic(err)
+				}
+			case "TrackDownloadFailed":
+				_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
+					StationMessageID: ids.Make("sm"),
+					Type:             "TrackDownloadFailed",
+					StationID:        payload["StationID"],
+					Body:             fmt.Sprintf("Error adding %s (%s)", payload["URL"], event.EventID),
+					Nick:             payload["Nick"],
+					ParentID:         payload["TrackID"],
+				})
+				if err != nil {
+					panic(err)
+				}
+			case "TrackStarted":
+				track, err := database.Q().Track(ctx, payload["TrackID"])
+				if err != nil {
+					panic(err)
+				}
 
-			err = database.CreateEvent(ctx, "TrackDownloaded", map[string]string{
-				"StationID": payload["StationID"],
-				"TrackID":   payload["TrackID"],
-				"URL":       payload["URL"],
-				"Nick":      payload["Nick"],
-			})
-			if err != nil {
-				panic(err)
-			}
-		case "TrackDownloaded":
-			// Update the original TrackRequested message with a TrackDownloaded message
-			// that includes some track metadata
-			track, err := database.Q().Track(ctx, payload["TrackID"])
-			if err != nil {
-				panic(err)
-			}
-			m, err := database.Q().TrackRequestStationMessage(ctx, db.TrackRequestStationMessageParams{
-				StationID: payload["StationID"],
-				ParentID:  track.TrackID,
-			})
-			if err != nil {
-				panic(err)
-			}
-			err = database.Q().UpdateStationMessage(ctx, db.UpdateStationMessageParams{
-				StationMessageID: m.StationMessageID,
-				Type:             "TrackDownloaded",
-				Body:             fmt.Sprintf("%s, %s", track.Artist, track.Title),
-			})
-			if err != nil {
-				panic(err)
-			}
-		case "TrackDownloadFailed":
-			_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
-				StationMessageID: ids.Make("sm"),
-				Type:             "TrackDownloadFailed",
-				StationID:        payload["StationID"],
-				Body:             fmt.Sprintf("Error adding %s (%s)", payload["URL"], event.EventID),
-				Nick:             payload["Nick"],
-				ParentID:         payload["TrackID"],
-			})
-			if err != nil {
-				panic(err)
-			}
-		case "TrackStarted":
-			track, err := database.Q().Track(ctx, payload["TrackID"])
-			if err != nil {
-				panic(err)
-			}
+				_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
+					StationMessageID: ids.Make("sm"),
+					Type:             "TrackStarted",
+					StationID:        payload["StationID"],
+					Body:             fmt.Sprintf("%s, %s", track.Artist, track.Title),
+					ParentID:         track.TrackID,
+				})
+				if err != nil {
+					panic(err)
+				}
+			case "SearchSubmitted":
+				err = database.Q().CreateSearch(ctx, db.CreateSearchParams{
+					SearchID:  payload["SearchID"],
+					StationID: payload["StationID"],
+					Query:     payload["Query"],
+				})
+				if err != nil {
+					panic(err)
+				}
 
-			_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
-				StationMessageID: ids.Make("sm"),
-				Type:             "TrackStarted",
-				StationID:        payload["StationID"],
-				Body:             fmt.Sprintf("%s, %s", track.Artist, track.Title),
-				ParentID:         track.TrackID,
-			})
-			if err != nil {
-				panic(err)
-			}
-		case "SearchSubmitted":
-			err = database.Q().CreateSearch(ctx, db.CreateSearchParams{
-				SearchID:  payload["SearchID"],
-				StationID: payload["StationID"],
-				Query:     payload["Query"],
-			})
-			if err != nil {
-				panic(err)
-			}
+				results, err := ytdlp.Search(ctx, payload["Query"])
+				if err != nil {
+					err = database.CreateEvent(ctx, "SearchFailed", map[string]string{
+						"StationID": payload["StationID"],
+						"SearchID":  payload["SearchID"],
+						"Query":     payload["Query"],
+						"Error":     err.Error(),
+					})
+					if err != nil {
+						panic(err)
+					}
+					break
+				}
 
-			results, err := ytdlp.Search(ctx, payload["Query"])
-			if err != nil {
-				err = database.CreateEvent(ctx, "SearchFailed", map[string]string{
+				for _, result := range results {
+					err = database.Q().CreateResult(ctx, db.CreateResultParams{
+						ResultID:  ids.Make("res"),
+						SearchID:  payload["SearchID"],
+						StationID: payload["StationID"],
+						ExternID:  result.ID,
+						URL:       result.WebpageURL,
+						Thumbnail: result.Thumbnail,
+						Title:     result.Title,
+						Uploader:  result.Uploader,
+						Duration:  result.Duration,
+						Views:     result.ViewCount,
+					})
+					if err != nil {
+						panic(err)
+					}
+				}
+
+				err = database.Q().SetSearchStatusCompleted(ctx, payload["SearchID"])
+				if err != nil {
+					panic(err)
+				}
+
+				bytes, err := json.Marshal(results)
+				if err != nil {
+					panic(err)
+				}
+				err = database.CreateEvent(ctx, "SearchCompleted", map[string]string{
 					"StationID": payload["StationID"],
 					"SearchID":  payload["SearchID"],
 					"Query":     payload["Query"],
-					"Error":     err.Error(),
-				})
-				if err != nil {
-					panic(err)
-				}
-				break
-			}
-
-			for _, result := range results {
-				err = database.Q().CreateResult(ctx, db.CreateResultParams{
-					ResultID:  ids.Make("res"),
-					SearchID:  payload["SearchID"],
-					StationID: payload["StationID"],
-					ExternID:  result.ID,
-					URL:       result.WebpageURL,
-					Thumbnail: result.Thumbnail,
-					Title:     result.Title,
-					Uploader:  result.Uploader,
-					Duration:  result.Duration,
-					Views:     result.ViewCount,
+					"Results":   string(bytes),
 				})
 				if err != nil {
 					panic(err)
 				}
 			}
-
-			err = database.Q().SetSearchStatusCompleted(ctx, payload["SearchID"])
-			if err != nil {
-				panic(err)
-			}
-
-			bytes, err := json.Marshal(results)
-			if err != nil {
-				panic(err)
-			}
-			err = database.CreateEvent(ctx, "SearchCompleted", map[string]string{
-				"StationID": payload["StationID"],
-				"SearchID":  payload["SearchID"],
-				"Query":     payload["Query"],
-				"Results":   string(bytes),
-			})
-			if err != nil {
-				panic(err)
-			}
-		}
+		}()
 	}
 }
 
