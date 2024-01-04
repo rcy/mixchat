@@ -128,7 +128,7 @@
 {{define "chat"}}
   <div id="chat-container"
        class="flex flex-col-reverse"
-       hx-trigger="every 10s"
+       hx-trigger="every 1s"
        hx-get="/{{.Station.Slug}}/chat"
        hx-select="#chat-container .message">
     {{range .Messages}}
