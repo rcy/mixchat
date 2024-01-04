@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"gap/db"
 	"gap/internal/ids"
+	"gap/internal/rndcolor"
 	"html/template"
 	"net/http"
 	"time"
@@ -63,6 +64,7 @@ var (
 			}
 			return durfmt.Format(dur) + " ago"
 		},
+		"color": rndcolor.FromString,
 	}
 
 	//go:embed pages.gohtml

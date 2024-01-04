@@ -135,7 +135,7 @@
     {{range .Messages}}
       {{if (eq .Type "ChatMessageSent")}}
         <div class="message flex items-center">
-          <div class="font-bold text-pink-500">{{.Nick}}</div>
+          <div class="font-bold {{color .Nick}}">{{.Nick}}</div>
           <div class="pr-1">:</div>
           <div>{{.Body}}</div>
         </div>
@@ -151,13 +151,13 @@
         {{end}}
       {{else if (eq .Type "TrackRequested")}}
         <div class="message flex gap-1 text-xs text-gray-500 self-end">
-          <div class="text-pink-500">{{.Nick}}</div>
+          <div class="{{color .Nick}}">{{.Nick}}</div>
           <div>requested a track (downloading...)</div>
           <div>{{ago .CreatedAt.Value}}</div>
         </div>
       {{else if (eq .Type "TrackDownloaded")}}
         <div class="message flex gap-1 text-xs text-gray-500 self-end">
-          <div class="text-pink-500">{{.Nick}}</div>
+          <div class="{{color .Nick}}">{{.Nick}}</div>
           <div>requested {{.Body}}</div>
           <div>{{ago .CreatedAt.Value}}</div>
         </div>
