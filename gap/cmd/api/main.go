@@ -168,15 +168,6 @@ func process(ctx context.Context, database database.Service) {
 					panic(err)
 				}
 			case "SearchSubmitted":
-				err = database.Q().CreateSearch(ctx, db.CreateSearchParams{
-					SearchID:  payload["SearchID"],
-					StationID: payload["StationID"],
-					Query:     payload["Query"],
-				})
-				if err != nil {
-					panic(err)
-				}
-
 				results, err := ytdlp.Search(ctx, payload["Query"])
 				if err != nil {
 					err = database.CreateEvent(ctx, "SearchFailed", map[string]string{

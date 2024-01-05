@@ -230,6 +230,17 @@ func (s *Server) postSearch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	searchID := ids.Make("srch")
+
+	err = s.db.Q().CreateSearch(ctx, db.CreateSearchParams{
+		SearchID:  searchID,
+		StationID: station.StationID,
+		Query:     query,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	err = s.db.CreateEvent(ctx, "SearchSubmitted", map[string]string{
 		"SearchID":  searchID,
 		"StationID": station.StationID,
@@ -240,8 +251,6 @@ func (s *Server) postSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//w.Write([]byte("searching..."))
-	time.Sleep(1 * time.Second)
 	http.Redirect(w, r, r.URL.Path+"/"+searchID, http.StatusSeeOther)
 }
 
