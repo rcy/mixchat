@@ -281,6 +281,7 @@ func (s *Server) searchResults(w http.ResponseWriter, r *http.Request) {
 		Station   db.Station
 		Search    db.Search
 		Results   []db.Result
+		Error     string
 		HXGet     string
 		HXTrigger string
 	}{
@@ -289,13 +290,15 @@ func (s *Server) searchResults(w http.ResponseWriter, r *http.Request) {
 		Results: results,
 	}
 
-	if search.Status == "pending" {
+	switch search.Status {
+	case "pending":
 		data.HXGet = r.URL.Path
 		data.HXTrigger = "load delay:1s"
+	case "failed":
+		data.Error = "something bad happened, try again"
 	}
 
 	err = tpl.ExecuteTemplate(w, "search-results", data)
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

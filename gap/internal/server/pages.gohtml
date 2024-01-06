@@ -183,6 +183,9 @@
        {{if .HXTrigger}}hx-trigger="{{.HXTrigger}}"{{end}}
        hx-swap="outerHTML"
   >
+    <div class="text-red-500">
+      {{.Error}}
+    </div>
     <div class="flex flex-col gap-10">
       {{range .Results}}
         <div class="flex gap-2">

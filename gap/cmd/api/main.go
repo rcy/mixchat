@@ -56,7 +56,7 @@ func process(ctx context.Context, database database.Service) {
 			if err != nil {
 				panic(err)
 			}
-			fmt.Println("event", event.EventID, event.EventType, payload)
+			fmt.Println(event.EventType, event.EventID, payload)
 
 			switch event.EventType {
 			case "ChatMessageSent":
@@ -170,11 +170,17 @@ func process(ctx context.Context, database database.Service) {
 			case "SearchSubmitted":
 				results, err := ytdlp.Search(ctx, payload["Query"])
 				if err != nil {
+					origErr := err
+					err = database.Q().SetSearchStatusFailed(ctx, payload["SearchID"])
+					if err != nil {
+						panic(err)
+					}
+
 					err = database.CreateEvent(ctx, "SearchFailed", map[string]string{
 						"StationID": payload["StationID"],
 						"SearchID":  payload["SearchID"],
 						"Query":     payload["Query"],
-						"Error":     err.Error(),
+						"Error":     origErr.Error(),
 					})
 					if err != nil {
 						panic(err)
