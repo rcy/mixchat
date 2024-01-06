@@ -11,7 +11,7 @@ start:
 	liquidsoap --force-start ./start.liq
 
 build:
-	docker build --tag quickiron6536/mixchat-liquidsoap .
+	docker build --tag quickiron6536/mixchat-liquidsoap:v2 .
 
 push:
-	docker push quickiron6536/mixchat-liquidsoap
+	docker push quickiron6536/mixchat-liquidsoap:v2
