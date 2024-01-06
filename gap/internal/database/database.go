@@ -27,16 +27,9 @@ type service struct {
 	queries *db.Queries
 }
 
-var (
-	database = os.Getenv("PGDATABASE")
-	password = os.Getenv("PGPASSWORD")
-	username = os.Getenv("PGUSER")
-	port     = os.Getenv("PGPORT")
-	host     = os.Getenv("PGHOST")
-)
-
 func New() Service {
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, port, database)
+	connStr := os.Getenv("DATABASE_URL")
+
 	pool, err := pgxpool.New(context.TODO(), connStr)
 	if err != nil {
 		log.Fatal(err)
