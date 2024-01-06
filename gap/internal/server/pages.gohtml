@@ -161,9 +161,15 @@
           <div>requested {{.Body}}</div>
           <div>{{ago .CreatedAt.Value}}</div>
         </div>
+      {{else if (eq .Type "TrackDownloadFailed")}}
+        <div class="message flex gap-1 text-xs text-gray-500 self-end">
+          <div class="{{color .Nick}}">{{.Nick}}</div>
+          <div class="text-red-500">request failed</div>
+          <div>{{ago .CreatedAt.Value}}</div>
+        </div>
       {{else}}
-        <div class="message text-red-500">
-          UNHANDLED {{.Type}} UNHANDLED
+        <div class="message text-red-500 self-end">
+          {{.Type}} UNHANDLED
         </div>
       {{end}}
     {{end}}

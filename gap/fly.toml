@@ -6,10 +6,6 @@
 app = "mixchat"
 primary_region = "sea"
 
-[build]
-  builder = "paketobuildpacks/builder:base"
-  buildpacks = ["gcr.io/paketo-buildpacks/go"]
-
 [env]
   PORT = "8080"
 

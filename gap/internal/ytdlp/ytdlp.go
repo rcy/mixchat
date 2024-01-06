@@ -15,7 +15,8 @@ import (
 type format string
 
 const (
-	OGG format = "ogg"
+	OGG        format = "ogg"
+	executable        = "./vbin/yt-dlp"
 )
 
 type AudioTrack struct {
@@ -25,8 +26,6 @@ type AudioTrack struct {
 }
 
 func AudioTrackFromURL(ctx context.Context, url string) (*AudioTrack, error) {
-	executable := "./yt/yt-dlp"
-
 	dir, err := os.MkdirTemp("", "mixchat-")
 	if err != nil {
 		return nil, err
@@ -93,8 +92,6 @@ type Result struct {
 }
 
 func Search(ctx context.Context, query string) ([]Result, error) {
-	executable := "./yt/yt-dlp"
-
 	dir, err := os.MkdirTemp("", "mixchat-search-")
 	if err != nil {
 		return nil, err
