@@ -20,9 +20,14 @@ func (s *Server) guestUserMiddleware(next http.Handler) http.Handler {
 		_, err := r.Cookie(sessionCookieName)
 		if err != nil {
 			if errors.Is(err, http.ErrNoCookie) {
-				fmt.Println("Creating guest user", err)
+				fmt.Println("Creating guest user...")
 
 				tx, err := s.db.P().BeginTx(ctx, pgx.TxOptions{})
+				if err != nil {
+					fmt.Println("Error creating guest user...", err.Error())
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
 				defer tx.Rollback(ctx)
 
 				sessionKey, err := userservice.CreateGuestSession(ctx, s.db.Q().WithTx(tx))
@@ -43,6 +48,8 @@ func (s *Server) guestUserMiddleware(next http.Handler) http.Handler {
 					Path:    "/",
 					Expires: time.Now().Add(365 * 24 * time.Hour),
 				})
+
+				fmt.Println("Creating guest user...done")
 
 				// redirect back to same path so user middleware can read the cookie
 				http.Redirect(w, r, r.URL.Path, http.StatusSeeOther)
