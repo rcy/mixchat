@@ -282,6 +282,7 @@ func (s *Server) searchResults(w http.ResponseWriter, r *http.Request) {
 		Search    db.Search
 		Results   []db.Result
 		Error     string
+		Status    string
 		HXGet     string
 		HXTrigger string
 	}{
@@ -294,6 +295,7 @@ func (s *Server) searchResults(w http.ResponseWriter, r *http.Request) {
 	case "pending":
 		data.HXGet = r.URL.Path
 		data.HXTrigger = "load delay:1s"
+		data.Status = fmt.Sprintf("searching for %s...", search.Query)
 	case "failed":
 		data.Error = "something bad happened, try again"
 	}
