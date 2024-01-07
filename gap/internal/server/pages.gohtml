@@ -158,7 +158,7 @@
       {{else if (eq .Type "TrackDownloaded")}}
         <div class="message flex gap-1 text-xs text-gray-500 self-end">
           <div class="{{color .Nick}}">{{.Nick}}</div>
-          <div>requested {{.Body}}</div>
+          <div>added {{.Body}}</div>
           <div>{{ago .CreatedAt.Value}}</div>
         </div>
       {{else if (eq .Type "TrackDownloadFailed")}}
