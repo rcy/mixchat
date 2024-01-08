@@ -1,7 +1,7 @@
 # Simple Makefile for a Go project
 
 # Build the application
-all: build
+all: watch
 
 build:
 	@echo "Building..."
@@ -57,3 +57,4 @@ watch:
 	fi
 
 .PHONY: all build run test clean
+

@@ -59,3 +59,4 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     restart: on-failure
+#    command: "-c log_statement=all"
