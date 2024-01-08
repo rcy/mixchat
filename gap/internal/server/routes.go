@@ -10,6 +10,7 @@ import (
 	"gap/internal/rndcolor"
 	"html/template"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -108,13 +109,15 @@ func (s *Server) stationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = tpl.ExecuteTemplate(w, "station", struct {
-		Station      db.Station
-		Messages     []db.StationMessage
-		CurrentTrack db.Track
+		Station         db.Station
+		Messages        []db.StationMessage
+		CurrentTrack    db.Track
+		AudioSourceURLs []string
 	}{
-		Station:      station,
-		Messages:     messages,
-		CurrentTrack: currentTrack,
+		Station:         station,
+		Messages:        messages,
+		CurrentTrack:    currentTrack,
+		AudioSourceURLs: []string{fmt.Sprintf("%s/%s.mp3", os.Getenv("ICECAST_URL"), station.Slug)},
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

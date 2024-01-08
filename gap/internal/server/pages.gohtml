@@ -59,7 +59,7 @@
           {{or .Station.Name .Station.Slug}}
         </h1>
         <div>
-          {{template "player" .Station}}
+          {{template "player" .AudioSourceURLs}}
         </div>
       </div>
 
@@ -178,7 +178,9 @@
 
 {{define "player"}}
   <audio controls xclass="w-full">
-    <source src="http://localhost:8010/{{.Slug}}.mp3" type="audio/mp3" />
+    {{range .}}
+      <source src="{{.}}" type="audio/mp3" />
+    {{end}}
   </audio>
 {{end}}
 
