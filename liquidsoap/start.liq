@@ -4,7 +4,6 @@ icecast_host = getenv("ICECAST_HOST")
 icecast_source_password = getenv("ICECAST_SOURCE_PASSWORD")
 liquidsoap_broadcast_password = getenv("LIQUIDSOAP_BROADCAST_PASSWORD")
 station_slug = getenv("STATION_SLUG")
-telnet_port = getenv("TELNET_PORT")
 
 print("API_BASE: " ^ api_base)
 print("ICECAST_HOST: " ^ icecast_host)
@@ -12,12 +11,11 @@ print("ICECAST_PORT: " ^ string_of(icecast_port))
 print("ICECAST_SOURCE_PASSWORD: " ^ icecast_source_password)
 print("LIQUIDSOAP_BROADCAST_PASSWORD: " ^ liquidsoap_broadcast_password)
 print("STATION_SLUG: " ^ station_slug)
-print("TELNET_PORT: " ^ telnet_port)
 
 set("init.allow_root",true)
 
 set("server.telnet", true)
-set("server.telnet.port", telnet_port)
+set("server.telnet.port", 1234)
 set("server.telnet.bind_addr", "0.0.0.0")
 set("harbor.bind_addr","0.0.0.0")
 
