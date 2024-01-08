@@ -52,8 +52,9 @@ func (s *Server) pullHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filename := fmt.Sprintf("/tmp/%s/%s/%s.ogg", track.StationID, track.TrackID, track.TrackID)
-	w.Write([]byte(filename))
+	key := fmt.Sprintf("%s/%s/%s.ogg", track.StationID, track.TrackID, track.TrackID)
+	uri := s.storage.URI(key)
+	w.Write([]byte(uri))
 }
 
 func (s *Server) trackChangeHandler(w http.ResponseWriter, r *http.Request) {

@@ -8,17 +8,26 @@ import (
 	"gap/internal/database"
 	"gap/internal/ids"
 	"gap/internal/server"
+	"gap/internal/store"
+	"gap/internal/store/space"
 	"gap/internal/ytdlp"
 	"os"
-	"path/filepath"
 )
 
 func main() {
-	server := server.NewServer()
+	storage := space.MustInit(space.InitParams{
+		S3Key:       os.Getenv("S3_ACCESS_KEY"),
+		S3Secret:    os.Getenv("S3_SECRET_KEY"),
+		Endpoint:    os.Getenv("S3_ENDPOINT"),
+		URIEndpoint: os.Getenv("S3_URI_ENDPOINT"),
+		Bucket:      os.Getenv("S3_BUCKET"),
+	})
+
+	server := server.NewServer(storage)
 
 	ctx := context.Background()
 
-	go process(ctx, database.New())
+	go process(ctx, storage, database.New())
 
 	fmt.Println("listening on", server.Addr)
 	err := server.ListenAndServe()
@@ -27,7 +36,7 @@ func main() {
 	}
 }
 
-func process(ctx context.Context, database database.Service) {
+func process(ctx context.Context, str store.Store, database database.Service) {
 	conn, err := database.P().Acquire(ctx)
 	if err != nil {
 		panic(err)
@@ -94,7 +103,7 @@ func process(ctx context.Context, database database.Service) {
 					panic(err)
 				}
 
-				err = processTrackRequested(ctx, payload)
+				err = processTrackRequested(ctx, str, payload)
 				if err != nil {
 					err = database.CreateEvent(ctx, "TrackDownloadFailed", map[string]string{
 						"StationID": payload["StationID"],
@@ -234,7 +243,7 @@ func process(ctx context.Context, database database.Service) {
 	}
 }
 
-func processTrackRequested(ctx context.Context, payload map[string]string) error {
+func processTrackRequested(ctx context.Context, storage store.Store, payload map[string]string) error {
 	stationID := payload["StationID"]
 	trackID := payload["TrackID"]
 	url := payload["URL"]
@@ -249,11 +258,8 @@ func processTrackRequested(ctx context.Context, payload map[string]string) error
 		return err
 	}
 
-	destination := fmt.Sprintf("/tmp/%s/%s/%s.%s", stationID, trackID, trackID, track.Format)
-	if err = os.MkdirAll(filepath.Dir(destination), os.ModePerm); err != nil {
-		return err
-	}
-	if err = os.WriteFile(destination, track.Data, os.ModePerm); err != nil {
+	key := fmt.Sprintf("%s/%s/%s.%s", stationID, trackID, trackID, track.Format)
+	if err = storage.Put(ctx, key, track.Data); err != nil {
 		return err
 	}
 

@@ -54,8 +54,8 @@ def make_station(slug) =
   end
 
   def track_change(m) =
-    print("track_change: " ^ m["filename"] ^ " -- " ^ m["replaygain_track_gain"])
-    result = http.post(api_base ^ "/" ^ slug ^ "/liq/trackchange", data="filename=" ^ m["filename"], headers=[("Content-Type","application/x-www-form-urlencoded")])
+    # print("track_change: " ^ m["filename"] ^ " -- " ^ m["replaygain_track_gain"] ^ " -- " ^ json_of(m))
+    result = http.post(api_base ^ "/" ^ slug ^ "/liq/trackchange", data="filename=" ^ m["initial_uri"], headers=[("Content-Type","application/x-www-form-urlencoded")])
   end
 
   live = input.harbor("live/" ^ slug, port=8000, password=liquidsoap_broadcast_password)
