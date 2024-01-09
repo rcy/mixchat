@@ -5,3 +5,6 @@ build:
 
 run:
 	go run cmd/api/main.go
+
+deploy:
+	fly deploy
