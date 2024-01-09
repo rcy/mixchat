@@ -69,8 +69,11 @@
 
         <div class="bg-gray-800 border rounded">
           <div id="add-track-target" class="p-2 text-gray-300 flex justify-between items-center">
-            <div>
-              Now Playing: {{.CurrentTrack.Artist}}, {{.CurrentTrack.Title}}
+            <div class="flex gap-2">
+              Now Playing:
+              <div hx-get="{{.Station.Slug}}/now-playing" hx-trigger="every 1s" class="font-bold">
+                {{.CurrentTrack.Artist}}, {{.CurrentTrack.Title}}
+              </div>
             </div>
             <div>
               {{template "add-track-button" .}}

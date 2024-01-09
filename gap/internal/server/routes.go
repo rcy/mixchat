@@ -40,6 +40,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 		r.Get("/", s.stationsHandler)
 		r.Get("/{slug}", s.stationHandler)
+		r.Get("/{slug}/now-playing", s.nowPlayingHandler)
 		r.Get("/{slug}/chat", s.stationHandler)
 		r.Post("/{slug}/chat", s.postChatMessage)
 		r.Get("/{slug}/audio-test-1", s.audioTest1)
@@ -123,6 +124,29 @@ func (s *Server) stationHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func (s *Server) nowPlayingHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	station, err := s.db.Q().Station(ctx, chi.URLParam(r, "slug"))
+	if errors.Is(err, pgx.ErrNoRows) {
+		http.NotFound(w, r)
+		return
+	}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	currentTrack, err := s.db.Q().StationCurrentTrack(ctx, station.StationID)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	t, _ := template.New("").Parse("{{.Artist}}, {{.Title}}")
+	_ = t.Execute(w, currentTrack)
 }
 
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
