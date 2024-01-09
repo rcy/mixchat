@@ -143,15 +143,9 @@
           <div>{{.Body}}</div>
         </div>
       {{else if (eq .Type "TrackStarted")}}
-        {{if (eq $.Station.CurrentTrackID.String .ParentID)}}
-          <div class="message text-xs text-white self-end">
-            <div>🎵 {{.Body}} 🎵</div>
-          </div>
-        {{else}}
-          <div class="message flex gap-1 items-center text-xs text-gray-500 self-end">
-            <div>{{.Body}}</div>
-          </div>
-        {{end}}
+        <div class="message flex gap-1 items-center text-xs text-gray-500 self-end">
+          <div>{{.Body}}</div>
+        </div>
       {{else if (eq .Type "TrackRequested")}}
         <div class="message flex gap-1 text-xs text-gray-500 self-end">
           <div class="{{color .Nick}}">{{.Nick}}</div>
