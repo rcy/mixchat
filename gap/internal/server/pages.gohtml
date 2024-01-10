@@ -86,7 +86,7 @@
           {{template "chat" .}}
         </div>
 
-        <div class="h-10">
+        <div>
           {{template "chat-form" .}}
         </div>
       </main>
@@ -97,11 +97,15 @@
 
 {{define "chat-form"}}
   <form hx-post="/{{.Station.Slug}}/chat"
-        hex-swap="outerHTML">
+        hx-swap="outerHTML"
+        class="flex gap-2">
     <input class="bg-black text-white w-full border rounded border-white pl-1"
            type="text"
            name="body"
-           autofocus>
+           autofocus
+           required
+           placeholder="Send chat message">
+    <button class="bg-blue-500 rounded px-4" type="submit">➤</button>
   </form>
 {{end}}
 
