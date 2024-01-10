@@ -68,18 +68,21 @@
         </div>
 
         <div class="bg-gray-800 border rounded">
-          <div id="add-track-target" class="p-2 text-gray-300 flex justify-between items-center">
+          <div class="p-2 text-gray-300 flex justify-between items-center">
             <div class="flex gap-2">
               Now Playing:
               <div hx-get="{{.Station.Slug}}/now-playing" hx-trigger="every 1s" class="font-bold">
                 {{.CurrentTrack.Artist}}, {{.CurrentTrack.Title}}
               </div>
             </div>
-            <div>
-              {{template "add-track-button" .}}
-            </div>
           </div>
-          <div id="results" class=""></div>
+        </div>
+
+        <div class="relative">
+          <div class="absolute top-0 right-0">
+            {{template "add-track-button" .}}
+          </div>
+          <div x-show="open" id="results"></div>
         </div>
 
         <div class="flex-1 h-full overflow-y-scroll flex flex-col-reverse pr-2">
@@ -110,24 +113,25 @@
 {{end}}
 
 {{define "add-track-button"}}
-  <div>
-    <button class="text-white bg-blue-500 rounded p-1"
-            x-show="!open"
-            xhx-get="{{.Station.Slug}}/add-track"
-            xhx-target="#add-track-target"
-            xhx-swap="outerHTML"
-            @click="open = true">Add Track</button>
-
-    <div class="w-full" x-show="open">
-      <form class="flex gap-1 items-center" hx-post="/{{.Station.Slug}}/search" hx-target="#results">
+  <div class="pr-3">
+    <div class="p-2 bg-black rounded"
+         x-show="!open">
+      <button class="text-white bg-orange-500 rounded py-1 px-2"
+              @click="open = true">
+        Add Track
+      </button>
+    </div>
+    <div class="w-full bg-black"
+         x-show="open">
+      <form class="flex gap-1 items-center p-2" hx-post="/{{.Station.Slug}}/search" hx-target="#results">
         <input class="bg-black text-white border border-gray-500 rounded h-8 p-1"
                type="text"
                name="query"
                placeholder="Look up artist, title..."
                autofocus
                required>
-        <button class="text-white bg-blue-500 rounded p-1">Search</button>
-        <button class="rounded bg-red-500 p-1" type="button" @click="open = false">Close</button>
+        <button class="text-white bg-orange-500 rounded p-1">Search</button>
+        <button class="rounded bg-black p-1" type="button" @click="open = false">Close</button>
       </form>
     </div>
   </div>
@@ -183,7 +187,7 @@
 {{end}}
 
 {{define "search-results"}}
-  <div class="overflow-y-scroll ml-4 mt-4" style="height: 400px"
+  <div class="overflow-y-scroll border-b bg-black" style="height: 400px"
        x-show="open"
        {{if .HXGet}}hx-get="{{.HXGet}}"{{end}}
        {{if .HXTrigger}}hx-trigger="{{.HXTrigger}}"{{end}}
