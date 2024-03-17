@@ -100,7 +100,7 @@ order by plays.created_at DESC limit 1
   },
   version: async function(_args, { insertResult }) {
     try {
-      const message = execSync('/usr/local/bin/yt-dlp -U').toString()
+      const message = execSync('/usr/local/bin/yt-dlp --version').toString()
       insertResult({ message })
     } catch(e) {
       insertResult({ status: 'error', message: e.message, error: e, code: e.code, detail: e.detail })
