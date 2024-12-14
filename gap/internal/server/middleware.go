@@ -7,7 +7,6 @@ import (
 	"gap/db"
 	"gap/internal/userservice"
 	"net/http"
-	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -17,7 +16,7 @@ func (s *Server) guestUserMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		_, err := r.Cookie(sessionCookieName)
+		_, err := r.Cookie(userservice.SessionCookieName)
 		if err != nil {
 			if errors.Is(err, http.ErrNoCookie) {
 				fmt.Println("Creating guest user...")
@@ -42,12 +41,7 @@ func (s *Server) guestUserMiddleware(next http.Handler) http.Handler {
 					return
 				}
 
-				http.SetCookie(w, &http.Cookie{
-					Name:    sessionCookieName,
-					Value:   sessionKey,
-					Path:    "/",
-					Expires: time.Now().Add(365 * 24 * time.Hour),
-				})
+				userservice.SetCookie(w, sessionKey)
 
 				fmt.Println("Creating guest user...done")
 
@@ -74,7 +68,7 @@ func (s *Server) userMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		cookie, err := r.Cookie(sessionCookieName)
+		cookie, err := r.Cookie(userservice.SessionCookieName)
 		if err != nil {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return

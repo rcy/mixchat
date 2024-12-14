@@ -1,16 +1,12 @@
-version: '3.8'
-
 services:
-  psql:
+  pg:
     image: postgres:latest
     environment:
-      POSTGRES_DB: ${PGDATABASE}
-      POSTGRES_USER: ${PGUSER}
-      POSTGRES_PASSWORD: ${PGPASSWORD}
+      POSTGRES_PASSWORD: postgres
     ports:
-      - "${PGPORT}:5432"
+      - 6543:5432
     volumes:
-      - psql_volume:/var/lib/postgresql/data
+      - ./etc/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
 
-volumes:
-  psql_volume:
+# volumes:
+#   pg_volume:

@@ -1,4 +1,4 @@
-include ../../.env
+#include ../../.env
 
 TERNCMD=`go env GOPATH`/bin/tern
 

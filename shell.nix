@@ -5,13 +5,15 @@ in
 with nixpkgs; mkShell {
   buildInputs = with pkgs; [
     air
-    unstable.go_1_21
-    unstable.gopls
+    go
+    gopls
     nodejs
     foreman
-    liquidsoap
+#    liquidsoap
     postgresql_13
     python3
     ffmpeg
+    wget
+    inetutils
   ];
 }

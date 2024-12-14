@@ -8,6 +8,7 @@ sql:
         package: "db"
         out: "."
         sql_package: "pgx/v5"
+        query_parameter_limit: 2
         rename:
           url: "URL"
           background_image_url: "BackgroundImageURL"

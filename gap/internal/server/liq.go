@@ -3,8 +3,8 @@ package server
 import (
 	"errors"
 	"fmt"
-	"gap/db"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -52,9 +52,26 @@ func (s *Server) pullHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	key := fmt.Sprintf("%s/%s/%s.ogg", track.StationID, track.TrackID, track.TrackID)
-	uri := s.storage.URI(key)
-	w.Write([]byte(uri))
+	// key := fmt.Sprintf("%s/%s/%s.ogg", track.StationID, track.TrackID, track.TrackID)
+	// uri := s.storage.URI(key)
+	//url := r.URL.RawPath
+	path := fmt.Sprintf("%s/%s/liq/%s", os.Getenv("API_BASE"), station.Slug, track.TrackID)
+	w.Write([]byte(path))
+}
+
+func (s *Server) trackHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	track, err := s.db.Q().Track(ctx, chi.URLParam(r, "trackID"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	bytes, err := os.ReadFile(fmt.Sprintf("/tmp/mixchat/%s/%s/%s.ogg", track.StationID, track.TrackID, track.TrackID))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	_, _ = w.Write(bytes)
 }
 
 func (s *Server) trackChangeHandler(w http.ResponseWriter, r *http.Request) {
@@ -79,10 +96,7 @@ func (s *Server) trackChangeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = s.db.Q().SetStationCurrentTrack(ctx, db.SetStationCurrentTrackParams{
-		StationID:      station.StationID,
-		CurrentTrackID: pgtype.Text{String: trackID, Valid: true},
-	})
+	err = s.db.Q().SetStationCurrentTrack(ctx, pgtype.Text{String: trackID, Valid: true}, station.StationID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

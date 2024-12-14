@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.3 (Debian 13.3-1.pgdg100+1)
--- Dumped by pg_dump version 13.3 (Debian 13.3-1.pgdg100+1)
+-- Dumped from database version 16.3 (Debian 16.3-1.pgdg120+1)
+-- Dumped by pg_dump version 16.3 (Debian 16.3-1.pgdg120+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -21,7 +21,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: events; Type: TABLE; Schema: public; Owner: app
+-- Name: events; Type: TABLE; Schema: public; Owner: appuser
 --
 
 CREATE TABLE public.events (
@@ -32,10 +32,10 @@ CREATE TABLE public.events (
 );
 
 
-ALTER TABLE public.events OWNER TO app;
+ALTER TABLE public.events OWNER TO appuser;
 
 --
--- Name: guest_username_counter; Type: SEQUENCE; Schema: public; Owner: app
+-- Name: guest_username_counter; Type: SEQUENCE; Schema: public; Owner: appuser
 --
 
 CREATE SEQUENCE public.guest_username_counter
@@ -46,10 +46,10 @@ CREATE SEQUENCE public.guest_username_counter
     CACHE 1;
 
 
-ALTER TABLE public.guest_username_counter OWNER TO app;
+ALTER SEQUENCE public.guest_username_counter OWNER TO appuser;
 
 --
--- Name: results; Type: TABLE; Schema: public; Owner: app
+-- Name: results; Type: TABLE; Schema: public; Owner: appuser
 --
 
 CREATE TABLE public.results (
@@ -67,10 +67,10 @@ CREATE TABLE public.results (
 );
 
 
-ALTER TABLE public.results OWNER TO app;
+ALTER TABLE public.results OWNER TO appuser;
 
 --
--- Name: schema_version; Type: TABLE; Schema: public; Owner: app
+-- Name: schema_version; Type: TABLE; Schema: public; Owner: appuser
 --
 
 CREATE TABLE public.schema_version (
@@ -78,10 +78,10 @@ CREATE TABLE public.schema_version (
 );
 
 
-ALTER TABLE public.schema_version OWNER TO app;
+ALTER TABLE public.schema_version OWNER TO appuser;
 
 --
--- Name: searches; Type: TABLE; Schema: public; Owner: app
+-- Name: searches; Type: TABLE; Schema: public; Owner: appuser
 --
 
 CREATE TABLE public.searches (
@@ -93,10 +93,10 @@ CREATE TABLE public.searches (
 );
 
 
-ALTER TABLE public.searches OWNER TO app;
+ALTER TABLE public.searches OWNER TO appuser;
 
 --
--- Name: sessions; Type: TABLE; Schema: public; Owner: app
+-- Name: sessions; Type: TABLE; Schema: public; Owner: appuser
 --
 
 CREATE TABLE public.sessions (
@@ -107,10 +107,10 @@ CREATE TABLE public.sessions (
 );
 
 
-ALTER TABLE public.sessions OWNER TO app;
+ALTER TABLE public.sessions OWNER TO appuser;
 
 --
--- Name: station_messages; Type: TABLE; Schema: public; Owner: app
+-- Name: station_messages; Type: TABLE; Schema: public; Owner: appuser
 --
 
 CREATE TABLE public.station_messages (
@@ -124,10 +124,10 @@ CREATE TABLE public.station_messages (
 );
 
 
-ALTER TABLE public.station_messages OWNER TO app;
+ALTER TABLE public.station_messages OWNER TO appuser;
 
 --
--- Name: stations; Type: TABLE; Schema: public; Owner: app
+-- Name: stations; Type: TABLE; Schema: public; Owner: appuser
 --
 
 CREATE TABLE public.stations (
@@ -142,10 +142,10 @@ CREATE TABLE public.stations (
 );
 
 
-ALTER TABLE public.stations OWNER TO app;
+ALTER TABLE public.stations OWNER TO appuser;
 
 --
--- Name: tracks; Type: TABLE; Schema: public; Owner: app
+-- Name: tracks; Type: TABLE; Schema: public; Owner: appuser
 --
 
 CREATE TABLE public.tracks (
@@ -162,10 +162,10 @@ CREATE TABLE public.tracks (
 );
 
 
-ALTER TABLE public.tracks OWNER TO app;
+ALTER TABLE public.tracks OWNER TO appuser;
 
 --
--- Name: users; Type: TABLE; Schema: public; Owner: app
+-- Name: users; Type: TABLE; Schema: public; Owner: appuser
 --
 
 CREATE TABLE public.users (
@@ -176,10 +176,10 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO app;
+ALTER TABLE public.users OWNER TO appuser;
 
 --
--- Name: events events_pkey; Type: CONSTRAINT; Schema: public; Owner: app
+-- Name: events events_pkey; Type: CONSTRAINT; Schema: public; Owner: appuser
 --
 
 ALTER TABLE ONLY public.events
@@ -187,7 +187,7 @@ ALTER TABLE ONLY public.events
 
 
 --
--- Name: results results_pkey; Type: CONSTRAINT; Schema: public; Owner: app
+-- Name: results results_pkey; Type: CONSTRAINT; Schema: public; Owner: appuser
 --
 
 ALTER TABLE ONLY public.results
@@ -195,7 +195,7 @@ ALTER TABLE ONLY public.results
 
 
 --
--- Name: searches searches_pkey; Type: CONSTRAINT; Schema: public; Owner: app
+-- Name: searches searches_pkey; Type: CONSTRAINT; Schema: public; Owner: appuser
 --
 
 ALTER TABLE ONLY public.searches
@@ -203,7 +203,7 @@ ALTER TABLE ONLY public.searches
 
 
 --
--- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: app
+-- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: appuser
 --
 
 ALTER TABLE ONLY public.sessions
@@ -211,7 +211,7 @@ ALTER TABLE ONLY public.sessions
 
 
 --
--- Name: station_messages station_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: app
+-- Name: station_messages station_messages_pkey; Type: CONSTRAINT; Schema: public; Owner: appuser
 --
 
 ALTER TABLE ONLY public.station_messages
@@ -219,7 +219,7 @@ ALTER TABLE ONLY public.station_messages
 
 
 --
--- Name: stations stations_pkey; Type: CONSTRAINT; Schema: public; Owner: app
+-- Name: stations stations_pkey; Type: CONSTRAINT; Schema: public; Owner: appuser
 --
 
 ALTER TABLE ONLY public.stations
@@ -227,7 +227,7 @@ ALTER TABLE ONLY public.stations
 
 
 --
--- Name: stations stations_slug_key; Type: CONSTRAINT; Schema: public; Owner: app
+-- Name: stations stations_slug_key; Type: CONSTRAINT; Schema: public; Owner: appuser
 --
 
 ALTER TABLE ONLY public.stations
@@ -235,7 +235,7 @@ ALTER TABLE ONLY public.stations
 
 
 --
--- Name: tracks tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: app
+-- Name: tracks tracks_pkey; Type: CONSTRAINT; Schema: public; Owner: appuser
 --
 
 ALTER TABLE ONLY public.tracks
@@ -243,7 +243,7 @@ ALTER TABLE ONLY public.tracks
 
 
 --
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: app
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: appuser
 --
 
 ALTER TABLE ONLY public.users
@@ -251,7 +251,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: app
+-- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: appuser
 --
 
 ALTER TABLE ONLY public.users
@@ -259,14 +259,14 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: events events_after_insert; Type: TRIGGER; Schema: public; Owner: app
+-- Name: events events_after_insert; Type: TRIGGER; Schema: public; Owner: appuser
 --
 
 CREATE TRIGGER events_after_insert AFTER INSERT ON public.events FOR EACH ROW EXECUTE FUNCTION public.notify_event_insert();
 
 
 --
--- Name: sessions sessions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: app
+-- Name: sessions sessions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: appuser
 --
 
 ALTER TABLE ONLY public.sessions
@@ -274,7 +274,7 @@ ALTER TABLE ONLY public.sessions
 
 
 --
--- Name: stations stations_current_track_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: app
+-- Name: stations stations_current_track_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: appuser
 --
 
 ALTER TABLE ONLY public.stations
@@ -282,7 +282,7 @@ ALTER TABLE ONLY public.stations
 
 
 --
--- Name: stations stations_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: app
+-- Name: stations stations_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: appuser
 --
 
 ALTER TABLE ONLY public.stations

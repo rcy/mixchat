@@ -19,7 +19,15 @@ import (
 	"github.com/rcy/durfmt"
 )
 
-const sessionCookieName = "mixchat-session"
+func mustGetEnv(key string) string {
+	val, ok := os.LookupEnv(key)
+	if !ok {
+		panic(fmt.Sprintf("%s not set!", key))
+	}
+	return val
+}
+
+var icecastURL = mustGetEnv("ICECAST_URL")
 
 func (s *Server) RegisterRoutes() http.Handler {
 	r := chi.NewRouter()
@@ -31,9 +39,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	r.Get("/health", s.healthHandler)
 	r.Get("/login", s.loginHandler)
+	r.Post("/login", s.loginPostHandler)
 
 	r.Group(func(r chi.Router) {
-		r.Use(s.guestUserMiddleware)
+		//r.Use(s.guestUserMiddleware)
 		r.Use(s.userMiddleware)
 
 		r.Post("/create-station", s.postCreateStation)
@@ -52,6 +61,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// liquidsoap endpoints
 	r.Post("/{slug}/liq/pull", s.pullHandler)
+	r.Get("/{slug}/liq/{trackID}", s.trackHandler)
 	r.Post("/{slug}/liq/trackchange", s.trackChangeHandler)
 
 	return r
@@ -118,7 +128,7 @@ func (s *Server) stationHandler(w http.ResponseWriter, r *http.Request) {
 		Station:         station,
 		Messages:        messages,
 		CurrentTrack:    currentTrack,
-		AudioSourceURLs: []string{fmt.Sprintf("%s/%s.mp3", os.Getenv("ICECAST_URL"), station.Slug)},
+		AudioSourceURLs: []string{fmt.Sprintf("%s/%s.mp3", icecastURL, station.Slug)},
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

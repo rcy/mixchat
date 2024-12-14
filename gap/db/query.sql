@@ -1,6 +1,9 @@
 -- name: CreateGuestUser :one
 insert into users(guest, user_id) values(true, $1) returning *;
 
+-- name: CreateUser :one
+insert into users(user_id, username) values(@user_id, @username) returning *;
+
 -- name: SessionUser :one
 select users.* from sessions
 join users on users.user_id = sessions.user_id

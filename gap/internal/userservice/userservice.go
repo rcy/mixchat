@@ -5,21 +5,17 @@ import (
 	"encoding/json"
 	"gap/db"
 	"gap/internal/ids"
+	"net/http"
+	"time"
 )
 
-type GuestUserSessionCreator interface {
-	CreateGuestUser(context.Context, string) (db.User, error)
-	CreateSession(context.Context, db.CreateSessionParams) (string, error)
-	InsertEvent(context.Context, db.InsertEventParams) (db.Event, error)
-}
-
 // Create a guest user and return a session id
-func CreateGuestSession(ctx context.Context, q GuestUserSessionCreator) (string, error) {
+func CreateGuestSession(ctx context.Context, q *db.Queries) (string, error) {
 	user, err := q.CreateGuestUser(ctx, ids.Make("user"))
 	if err != nil {
 		return "", err
 	}
-	id, err := q.CreateSession(ctx, db.CreateSessionParams{SessionID: ids.Make("session"), UserID: user.UserID})
+	id, err := q.CreateSession(ctx, ids.Make("session"), user.UserID)
 	if err != nil {
 		return "", err
 	}
@@ -41,4 +37,44 @@ func CreateGuestSession(ctx context.Context, q GuestUserSessionCreator) (string,
 	}
 
 	return id, nil
+}
+
+func CreateUserSession(ctx context.Context, q *db.Queries, username string) (string, error) {
+	user, err := q.CreateUser(ctx, ids.Make("user"), username)
+	if err != nil {
+		return "", err
+	}
+	id, err := q.CreateSession(ctx, ids.Make("session"), user.UserID)
+	if err != nil {
+		return "", err
+	}
+
+	payload, err := json.Marshal(map[string]string{
+		"UserID":   user.UserID,
+		"Username": user.Username,
+	})
+	if err != nil {
+		return "", err
+	}
+	_, err = q.InsertEvent(ctx, db.InsertEventParams{
+		EventID:   ids.Make("evt"),
+		EventType: "UserCreated",
+		Payload:   payload,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return id, nil
+}
+
+const SessionCookieName = "mixchat-session"
+
+func SetCookie(w http.ResponseWriter, sessionKey string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:    SessionCookieName,
+		Value:   sessionKey,
+		Path:    "/",
+		Expires: time.Now().Add(365 * 24 * time.Hour),
+	})
 }

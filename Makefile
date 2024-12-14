@@ -9,7 +9,7 @@ install:
 	cd app && npm install
 	cd db && npm install
 
-up: SERVICES=icecast postgres
+up: SERVICES=icecast #postgres liquidsoap
 up:
 	${DC} --env-file .env.dev build ${SERVICES}
 	${DC} --env-file .env.dev up -d ${SERVICES}

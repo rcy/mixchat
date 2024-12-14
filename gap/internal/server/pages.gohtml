@@ -1,101 +1,107 @@
 {{define "head"}}
-  <!DOCTYPE html>
-  <head>
-    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script src="//unpkg.com/alpinejs"></script>
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="data:,">
-  </head>
+  <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <script src="//unpkg.com/alpinejs"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:,">
 {{end}}
 
 {{define "stations"}}
-  {{template "head"}}
-  <body class="bg-black text-white">
-    <div class="container mx-auto">
-      <h1 class="text-4xl">Stations</h1>
+  <!DOCTYPE html>
+  <html>
+    <head>
+      {{template "head"}}
+    </head>
 
-      <form action="create-station" method="post">
-        <input class="text-black" type="text" name="slug" required>
-        <button class="border rounded bg-blue-500" type="submit">create</button>
-      </form>
+    <body class="bg-black text-white">
+      <div class="container mx-auto">
+        <h1 class="text-4xl">Stations</h1>
 
-      <div class="flex gap-2">
-        {{range .Stations}}
-          <a href="{{.Slug}}" class="flex items-center gap-2 hover:bg-green-900 p-2">
-            <img height="32" width="32"
-                 src="https://api.dicebear.com/7.x/rings/svg?seed={{.StationID}}">
-            {{.Slug}}
-          </a>
-        {{end}}
+        <form action="create-station" method="post">
+          <input class="text-black" type="text" name="slug" required>
+          <button class="border rounded bg-blue-500" type="submit">create</button>
+        </form>
+
+        <div class="flex gap-2">
+          {{range .Stations}}
+            <a href="{{.Slug}}" class="flex items-center gap-2 hover:bg-green-900 p-2">
+              <img height="32" width="32"
+                   src="https://api.dicebear.com/7.x/rings/svg?seed={{.StationID}}">
+              {{.Slug}}
+            </a>
+          {{end}}
+        </div>
       </div>
-    </div>
-  </body>
+    </body>
+  </html>
 {{end}}
 
-
 {{define "station"}}
-  {{template "head" .}}
-  {{if .Station.BackgroundImageURL}}
-    <style>
-     body {
-         background-image: url({{.Station.BackgroundImageURL}});
-         background-size: cover;
-     }
-    </style>
-  {{else}}
-    <style>
-     body {
-         background: #ddd;
-     }
-    </style>
-  {{end}}
+  <!DOCTYPE html>
+  <html>
+    <head>
+      {{template "head"}}
 
-  <body class="text-white h-screen" x-data="{ open: false }">
-    <div class="container mx-auto flex flex-col h-full p-2" style="background: rgba(0,0,0,.8);">
-      <div class="flex sm:flex-row flex-col justify-between content-center mb-4 items-center h-10">
-        <h1 class="text-4xl">
-          {{or .Station.Name .Station.Slug}}
-        </h1>
-        <div>
-          {{template "player" .AudioSourceURLs}}
+      {{if .Station.BackgroundImageURL}}
+        <style>
+         body {
+             background-image: url({{.Station.BackgroundImageURL}});
+             background-size: cover;
+         }
+        </style>
+      {{else}}
+        <style>
+         body {
+             background: #ddd;
+         }
+        </style>
+      {{end}}
+    </head>
+    <body class="text-white h-screen" x-data="{ open: false }">
+      <div class="container mx-auto flex flex-col h-full p-2" style="background: rgba(0,0,0,.8);">
+        <div class="flex sm:flex-row flex-col justify-between content-center mb-4 items-center h-10">
+          <h1 class="text-4xl">
+            {{or .Station.Name .Station.Slug}}
+          </h1>
+          <div>
+            {{template "player" .AudioSourceURLs}}
+          </div>
         </div>
-      </div>
 
-      <main class="h-10 flex-1 flex flex-col">
-        <div class="bg-orange-500">
-        </div>
+        <main class="h-10 flex-1 flex flex-col">
+          <div class="bg-orange-500">
+          </div>
 
-        <div class="bg-gray-800 border rounded">
-          <div class="p-2 text-gray-300 flex justify-between items-center">
-            <div class="flex gap-2">
-              Now Playing:
-              <div hx-get="{{.Station.Slug}}/now-playing" hx-trigger="every 1s" class="font-bold">
-                {{.CurrentTrack.Artist}}, {{.CurrentTrack.Title}}
+          <div class="bg-gray-800 border rounded">
+            <div class="p-2 text-gray-300 flex justify-between items-center">
+              <div class="flex gap-2">
+                Now Playing:
+                <div hx-get="{{.Station.Slug}}/now-playing" hx-trigger="every 1s" class="font-bold">
+                  {{.CurrentTrack.Artist}}, {{.CurrentTrack.Title}}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="relative">
-          <div class="absolute top-0 right-0">
-            {{template "add-track-button" .}}
+          <div class="relative">
+            <div class="absolute top-0 right-0">
+              {{template "add-track-button" .}}
+            </div>
+            <div x-show="open" id="results"></div>
           </div>
-          <div x-show="open" id="results"></div>
-        </div>
 
-        <div class="flex-1 h-full overflow-y-scroll flex flex-col-reverse pr-2">
-          {{template "chat" .}}
-        </div>
+          <div class="flex-1 h-full overflow-y-scroll flex flex-col-reverse pr-2">
+            {{template "chat" .}}
+          </div>
 
-        <div>
-          {{template "chat-form" .}}
-        </div>
-      </main>
+          <div>
+            {{template "chat-form" .}}
+          </div>
+        </main>
 
-    </div>
-  </body>
+      </div>
+    </body>
+  </html>
 {{end}}
 
 {{define "chat-form"}}
@@ -221,4 +227,24 @@
       {{end}}
     </div>
   </div>
+{{end}}
+
+{{define "login"}}
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="icon" href="data:,">
+      <link rel="stylesheet" href="https://unpkg.com/mvp.css"> 
+    </head>
+
+    <body>
+      <form method="post">
+        <label>
+          username
+          <input type="text" name="username" />
+        </label>
+      </form>
+    </body>
+  </html>
 {{end}}

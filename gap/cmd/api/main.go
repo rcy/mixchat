@@ -9,19 +9,32 @@ import (
 	"gap/internal/ids"
 	"gap/internal/server"
 	"gap/internal/store"
-	"gap/internal/store/space"
+	"gap/internal/store/files"
 	"gap/internal/ytdlp"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
-	storage := space.MustInit(space.InitParams{
-		S3Key:       os.Getenv("S3_ACCESS_KEY"),
-		S3Secret:    os.Getenv("S3_SECRET_KEY"),
-		Endpoint:    os.Getenv("S3_ENDPOINT"),
-		URIEndpoint: os.Getenv("S3_URI_ENDPOINT"),
-		Bucket:      os.Getenv("S3_BUCKET"),
-	})
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		sig := <-sigs
+		fmt.Println("main caught signal", sig)
+
+		os.Exit(1)
+	}()
+
+	storage := files.MustInit("/tmp/mixchat")
+	// storage := space.MustInit(space.InitParams{
+	// 	S3Key:       os.Getenv("S3_ACCESS_KEY"),
+	// 	S3Secret:    os.Getenv("S3_SECRET_KEY"),
+	// 	Endpoint:    os.Getenv("S3_ENDPOINT"),
+	// 	URIEndpoint: os.Getenv("S3_URI_ENDPOINT"),
+	// 	Bucket:      os.Getenv("S3_BUCKET"),
+	// })
 
 	server := server.NewServer(storage)
 
@@ -133,10 +146,7 @@ func process(ctx context.Context, str store.Store, database database.Service) {
 				if err != nil {
 					panic(err)
 				}
-				m, err := database.Q().TrackRequestStationMessage(ctx, db.TrackRequestStationMessageParams{
-					StationID: payload["StationID"],
-					ParentID:  track.TrackID,
-				})
+				m, err := database.Q().TrackRequestStationMessage(ctx, payload["StationID"], track.TrackID)
 				if err != nil {
 					panic(err)
 				}
@@ -150,10 +160,7 @@ func process(ctx context.Context, str store.Store, database database.Service) {
 				}
 			case "TrackDownloadFailed":
 				// Update the original TrackRequested message with a TrackDownloadFailed message
-				m, err := database.Q().TrackRequestStationMessage(ctx, db.TrackRequestStationMessageParams{
-					StationID: payload["StationID"],
-					ParentID:  payload["TrackID"],
-				})
+				m, err := database.Q().TrackRequestStationMessage(ctx, payload["StationID"], payload["TrackID"])
 				if err != nil {
 					panic(err)
 				}

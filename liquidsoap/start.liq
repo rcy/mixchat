@@ -1,9 +1,9 @@
-api_base = getenv("API_BASE")
-icecast_port = int_of_string(getenv("ICECAST_PORT"))
-icecast_host = getenv("ICECAST_HOST")
-icecast_source_password = getenv("ICECAST_SOURCE_PASSWORD")
-liquidsoap_broadcast_password = getenv("LIQUIDSOAP_BROADCAST_PASSWORD")
-station_slug = getenv("STATION_SLUG")
+api_base = environment.get("API_BASE")
+icecast_port = int_of_string(environment.get("ICECAST_PORT"))
+icecast_host = environment.get("ICECAST_HOST")
+icecast_source_password = environment.get("ICECAST_SOURCE_PASSWORD")
+liquidsoap_broadcast_password = environment.get("LIQUIDSOAP_BROADCAST_PASSWORD")
+station_slug = environment.get("STATION_SLUG")
 
 print("API_BASE: " ^ api_base)
 print("ICECAST_HOST: " ^ icecast_host)
@@ -57,7 +57,7 @@ def make_station(slug) =
   end
 
   live = input.harbor("live/" ^ slug, port=8000, password=liquidsoap_broadcast_password)
-  src = request.dynamic.list(my_request_function, id="dynlist_" ^ slug)
+  src = request.dynamic.list(my_request_function)
   src.on_track(track_change)
   radio = fallback(track_sensitive=false, [live, crossfade(blank.eat(replaygain(src))), emergency])
 
