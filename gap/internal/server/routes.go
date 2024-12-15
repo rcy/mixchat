@@ -59,6 +59,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 		r.Post("/{slug}/requests", s.postRequest)
 		r.Post("/{slug}/search", s.postSearch)
 		r.Get("/{slug}/search/{searchID}", s.searchResults)
+
+		r.Route("/admin", s.adminRoute)
 	})
 
 	// liquidsoap endpoints
