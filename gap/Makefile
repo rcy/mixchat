@@ -21,3 +21,6 @@ down:
 
 sql:
 	psql postgres://postgres:postgres@localhost:6543/mixchat_development
+
+generate:
+	${MAKE} -C db gen

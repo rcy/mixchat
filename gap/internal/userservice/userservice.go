@@ -3,10 +3,13 @@ package userservice
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"gap/db"
 	"gap/internal/ids"
 	"net/http"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // Create a guest user and return a session id
@@ -40,10 +43,18 @@ func CreateGuestSession(ctx context.Context, q *db.Queries) (string, error) {
 }
 
 func CreateUserSession(ctx context.Context, q *db.Queries, username string) (string, error) {
-	user, err := q.CreateUser(ctx, ids.Make("user"), username)
+	user, err := q.UserByUsername(ctx, username)
 	if err != nil {
-		return "", err
+		if errors.Is(err, pgx.ErrNoRows) {
+			user, err = q.CreateUser(ctx, ids.Make("user"), username)
+			if err != nil {
+				return "", err
+			}
+		} else {
+			return "", err
+		}
 	}
+
 	id, err := q.CreateSession(ctx, ids.Make("session"), user.UserID)
 	if err != nil {
 		return "", err

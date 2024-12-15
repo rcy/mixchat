@@ -597,3 +597,19 @@ func (q *Queries) User(ctx context.Context, userID string) (User, error) {
 	)
 	return i, err
 }
+
+const userByUsername = `-- name: UserByUsername :one
+select user_id, created_at, username, guest from users where username = $1
+`
+
+func (q *Queries) UserByUsername(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRow(ctx, userByUsername, username)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.CreatedAt,
+		&i.Username,
+		&i.Guest,
+	)
+	return i, err
+}
