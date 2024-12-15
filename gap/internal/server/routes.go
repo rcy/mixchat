@@ -9,6 +9,7 @@ import (
 	"gap/internal/ids"
 	"gap/internal/rndcolor"
 	"html/template"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -52,6 +53,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 		r.Get("/{slug}/now-playing", s.nowPlayingHandler)
 		r.Get("/{slug}/chat", s.stationHandler)
 		r.Post("/{slug}/chat", s.postChatMessage)
+		r.Post("/{slug}/skip", s.postSkip)
 		r.Get("/{slug}/audio-test-1", s.audioTest1)
 		r.Get("/{slug}/audio-test-2", s.audioTest2)
 		r.Post("/{slug}/requests", s.postRequest)
@@ -195,6 +197,24 @@ func (s *Server) postChatMessage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func (s *Server) postSkip(w http.ResponseWriter, r *http.Request) {
+	//slug := chi.URLParam(r, "slug")
+
+	conn, err := net.DialTimeout("tcp", "localhost:1234", 10*time.Second)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer conn.Close()
+
+	_, err = conn.Write([]byte("request.dynamic.2.skip\n"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write([]byte("skipx"))
 }
 
 type CreateStationEvent struct {

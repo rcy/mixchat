@@ -80,6 +80,8 @@
                   {{.CurrentTrack.Artist}}, {{.CurrentTrack.Title}}
                 </div>
               </div>
+              <button hx-post="{{.Station.Slug}}/skip"
+                      class="text-white bg-red-500 rounded py-1 px-2">skip</button>
             </div>
           </div>
 
