@@ -9,71 +9,28 @@ import (
 	"gap/internal/ids"
 	"gap/internal/server"
 	"gap/internal/store"
-	"gap/internal/store/files"
+	"gap/internal/store/space"
 	"gap/internal/ytdlp"
-	"io/fs"
 	"os"
-	"os/signal"
-	"syscall"
-
-	"github.com/jackc/tern/v2/migrate"
 )
 
 func main() {
-	ctx := context.Background()
-
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		sig := <-sigs
-		fmt.Println("main caught signal", sig)
-
-		os.Exit(1)
-	}()
-
-	storage := files.MustInit("/tmp/mixchat")
-	// storage := space.MustInit(space.InitParams{
-	// 	S3Key:       os.Getenv("S3_ACCESS_KEY"),
-	// 	S3Secret:    os.Getenv("S3_SECRET_KEY"),
-	// 	Endpoint:    os.Getenv("S3_ENDPOINT"),
-	// 	URIEndpoint: os.Getenv("S3_URI_ENDPOINT"),
-	// 	Bucket:      os.Getenv("S3_BUCKET"),
-	// })
+	storage := space.MustInit(space.InitParams{
+		S3Key:       os.Getenv("S3_ACCESS_KEY"),
+		S3Secret:    os.Getenv("S3_SECRET_KEY"),
+		Endpoint:    os.Getenv("S3_ENDPOINT"),
+		URIEndpoint: os.Getenv("S3_URI_ENDPOINT"),
+		Bucket:      os.Getenv("S3_BUCKET"),
+	})
 
 	server := server.NewServer(storage)
 
-	poolConn, err := database.New().P().Acquire(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	m, err := migrate.NewMigrator(ctx, poolConn.Conn(), "public.schema_version")
-	if err != nil {
-		panic(err)
-	}
-
-	migrationRoot, _ := fs.Sub(db.MigrationFiles, "migrations")
-	err = m.LoadMigrations(migrationRoot)
-	if err != nil {
-		panic(err)
-	}
-
-	version, err := m.GetCurrentVersion(ctx)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("schema_version: %d/%d\n", version, len(m.Migrations))
-
-	err = m.Migrate(ctx)
-	if err != nil {
-		panic(err)
-	}
+	ctx := context.Background()
 
 	go process(ctx, storage, database.New())
 
 	fmt.Println("listening on", server.Addr)
-	err = server.ListenAndServe()
+	err := server.ListenAndServe()
 	if err != nil {
 		panic(fmt.Sprintf("cannot start server: %s", err))
 	}
@@ -176,7 +133,10 @@ func process(ctx context.Context, str store.Store, database database.Service) {
 				if err != nil {
 					panic(err)
 				}
-				m, err := database.Q().TrackRequestStationMessage(ctx, payload["StationID"], track.TrackID)
+				m, err := database.Q().TrackRequestStationMessage(ctx, db.TrackRequestStationMessageParams{
+					StationID: payload["StationID"],
+					ParentID:  track.TrackID,
+				})
 				if err != nil {
 					panic(err)
 				}
@@ -190,7 +150,10 @@ func process(ctx context.Context, str store.Store, database database.Service) {
 				}
 			case "TrackDownloadFailed":
 				// Update the original TrackRequested message with a TrackDownloadFailed message
-				m, err := database.Q().TrackRequestStationMessage(ctx, payload["StationID"], payload["TrackID"])
+				m, err := database.Q().TrackRequestStationMessage(ctx, db.TrackRequestStationMessageParams{
+					StationID: payload["StationID"],
+					ParentID:  payload["TrackID"],
+				})
 				if err != nil {
 					panic(err)
 				}
