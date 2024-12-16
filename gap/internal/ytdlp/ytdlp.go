@@ -2,14 +2,15 @@ package ytdlp
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
-	"path/filepath"
+	"time"
 
 	"github.com/dhowden/tag"
+	"google.golang.org/api/option"
+	"google.golang.org/api/youtube/v3"
 )
 
 type format string
@@ -39,6 +40,7 @@ func AudioTrackFromURL(ctx context.Context, url string) (*AudioTrack, error) {
 	destination := fmt.Sprintf("%s/track", dir)
 
 	args := []string{
+		"--cookies=cookies.txt",
 		"--keep-video",
 		"--extract-audio",
 		//"--audio-quality=0",
@@ -91,53 +93,101 @@ type Result struct {
 	ViewCount  float64 `json:"view_count"`
 }
 
+var apiKey = "AIzaSyBvDNHi7-wLxGjp1_dQcsxF5wzHFV7ubwc"
+
 func Search(ctx context.Context, query string) ([]Result, error) {
-	dir, err := os.MkdirTemp("", "mixchat-search-")
+	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(apiKey))
 	if err != nil {
-		return nil, err
-	}
-	if os.Getenv("KEEP_TEMP") != "true" {
-		defer os.RemoveAll(dir)
+		return nil, fmt.Errorf("Error creating YouTube service: %w", err)
 	}
 
-	if err = os.MkdirAll(filepath.Join(dir, "tracks"), os.ModePerm); err != nil {
-		return nil, err
-	}
+	// Step 1: Search for videos
+	searchCall := youtubeService.Search.List([]string{"id", "snippet"}).
+		Q(query).      // Search query
+		MaxResults(10) // Number of results to retrieve
 
-	args := []string{
-		"--no-download",
-		"--write-info-json",
-		"--output=" + "infojson:" + dir + "/tracks/%(playlist_index)s",
-		"--output=" + "pl_infojson:" + dir + "/playlist",
-		fmt.Sprintf("ytsearch%d:%s", 5, query),
-	}
-
-	output, err := exec.CommandContext(ctx, executable, args...).CombinedOutput()
-	fmt.Println("searchoutput:", string(output))
+	searchResponse, err := searchCall.Do()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %s", err, string(output))
+		return nil, fmt.Errorf("Error making search API call: %w", err)
 	}
 
-	entries, err := os.ReadDir(filepath.Join(dir, "tracks"))
-	if err != nil {
-		return nil, err
-	}
-
-	results := []Result{}
-	for _, ent := range entries {
-		if ent.Type().IsRegular() {
-			b, err := os.ReadFile(filepath.Join(dir, "tracks", ent.Name()))
-			if err != nil {
-				return nil, err
-			}
-			var result Result
-			err = json.Unmarshal(b, &result)
-			if err != nil {
-				return nil, err
-			}
-			results = append(results, result)
+	// Collect video IDs
+	var videoIDs []string
+	for _, item := range searchResponse.Items {
+		if item.Id.Kind == "youtube#video" {
+			videoIDs = append(videoIDs, item.Id.VideoId)
 		}
 	}
 
+	// Step 2: Get video details including duration
+	videoCall := youtubeService.Videos.List([]string{"id", "contentDetails", "snippet", "statistics"}).
+		Id(videoIDs...) // Pass the video IDs
+
+	videoResponse, err := videoCall.Do()
+	if err != nil {
+		return nil, fmt.Errorf("Error making videos API call: %w", err)
+	}
+
+	results := []Result{}
+
+	// Parse and display results
+	fmt.Println("Video Details:")
+	for _, video := range videoResponse.Items {
+		duration := video.ContentDetails.Duration
+		parsedDuration, err := parseYouTubeDuration(duration)
+		if err != nil {
+			return nil, fmt.Errorf("Error parsing duration for video %s: %w", video.Id, err)
+		}
+
+		xduration, err := time.ParseDuration(parsedDuration)
+		if err != nil {
+			return nil, fmt.Errorf("Error parsing parsedDuration for video %s: %w", video.Id, err)
+		}
+
+		results = append(results, Result{
+			ID:         video.Id,
+			Thumbnail:  video.Snippet.Thumbnails.Medium.Url,
+			Title:      video.Snippet.Title,
+			WebpageURL: fmt.Sprintf("https://www.youtube.com/watch?v=%s", video.Id),
+			Duration:   xduration.Seconds(),
+			ViewCount:  float64(video.Statistics.ViewCount),
+			//LikeCount:  video.Statistics.LikeCount,
+			Uploader: video.Snippet.ChannelTitle,
+		})
+		// fmt.Printf("Title: %s\n", video.Snippet.Title)
+		// fmt.Printf("Video ID: %s\n", video.Id)
+		// fmt.Printf("Duration: %s\n", parsedDuration)
+		// fmt.Println("----")
+	}
 	return results, nil
+}
+
+// parseYouTubeDuration parses the ISO 8601 duration format returned by YouTube into a more readable format
+func parseYouTubeDuration(duration string) (string, error) {
+	parsed, err := time.ParseDuration(duration)
+	if err == nil {
+		return parsed.String(), nil
+	}
+
+	// Fallback: Handle ISO 8601 duration
+	// Example: "PT1H2M3S" -> "1h 2m 3s"
+	var hours, minutes, seconds int
+	_, err = fmt.Sscanf(duration, "PT%dH%dM%dS", &hours, &minutes, &seconds)
+	if err == nil {
+		return fmt.Sprintf("%dh%dm%ds", hours, minutes, seconds), nil
+	}
+	_, err = fmt.Sscanf(duration, "PT%dM%dS", &minutes, &seconds)
+	if err == nil {
+		return fmt.Sprintf("%dm%ds", minutes, seconds), nil
+	}
+	_, err = fmt.Sscanf(duration, "PT%dM", &minutes)
+	if err == nil {
+		return fmt.Sprintf("%dm", minutes), nil
+	}
+	_, err = fmt.Sscanf(duration, "PT%dS", &seconds)
+	if err == nil {
+		return fmt.Sprintf("%ds", seconds), nil
+	}
+
+	return "", fmt.Errorf("invalid duration format: %s", duration)
 }

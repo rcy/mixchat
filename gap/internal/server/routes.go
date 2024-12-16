@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"gap/db"
+	"gap/internal/env"
 	"gap/internal/ids"
 	"gap/internal/rndcolor"
 	"html/template"
 	"net"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -20,15 +20,7 @@ import (
 	"github.com/rcy/durfmt"
 )
 
-func mustGetEnv(key string) string {
-	val, ok := os.LookupEnv(key)
-	if !ok {
-		panic(fmt.Sprintf("%s not set!", key))
-	}
-	return val
-}
-
-var icecastURL = mustGetEnv("ICECAST_URL")
+var icecastURL = env.MustGet("ICECAST_URL")
 
 func (s *Server) RegisterRoutes() http.Handler {
 	r := chi.NewRouter()

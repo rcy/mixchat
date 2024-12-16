@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"fmt"
+	"gap/internal/env"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -13,6 +14,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+var apiBase = env.MustGet("API_BASE")
 
 func (s *Server) pullHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -55,7 +58,7 @@ func (s *Server) pullHandler(w http.ResponseWriter, r *http.Request) {
 	// key := fmt.Sprintf("%s/%s/%s.ogg", track.StationID, track.TrackID, track.TrackID)
 	// uri := s.storage.URI(key)
 	//url := r.URL.RawPath
-	path := fmt.Sprintf("%s/%s/liq/%s", os.Getenv("API_BASE"), station.Slug, track.TrackID)
+	path := fmt.Sprintf("%s/%s/liq/%s", apiBase, station.Slug, track.TrackID)
 	w.Write([]byte(path))
 }
 

@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"gap/db"
+	"gap/internal/env"
 	"gap/internal/ids"
 	"log"
-	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -27,10 +27,10 @@ type service struct {
 	queries *db.Queries
 }
 
-func New() Service {
-	connStr := os.Getenv("DATABASE_URL")
+var databaseURL = env.MustGet("DATABASE_URL")
 
-	pool, err := pgxpool.New(context.TODO(), connStr)
+func New() Service {
+	pool, err := pgxpool.New(context.TODO(), databaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
