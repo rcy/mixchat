@@ -3,6 +3,7 @@ package ytdlp
 import (
 	"context"
 	"fmt"
+	"gap/internal/env"
 	"io"
 	"os"
 	"os/exec"
@@ -95,7 +96,7 @@ type Result struct {
 	ViewCount  float64 `json:"view_count"`
 }
 
-var apiKey = "AIzaSyBvDNHi7-wLxGjp1_dQcsxF5wzHFV7ubwc"
+var apiKey = env.MustGet("YOUTUBE_API_KEY")
 
 func Search(ctx context.Context, query string) ([]Result, error) {
 	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(apiKey))
