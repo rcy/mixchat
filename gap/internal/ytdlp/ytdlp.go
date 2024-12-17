@@ -40,7 +40,7 @@ func AudioTrackFromURL(ctx context.Context, url string) (*AudioTrack, error) {
 	destination := fmt.Sprintf("%s/track", dir)
 
 	args := []string{
-		"--cookies=cookies.txt",
+		"--cookies=./cookies.txt",
 		"--keep-video",
 		"--extract-audio",
 		//"--audio-quality=0",
@@ -50,6 +50,8 @@ func AudioTrackFromURL(ctx context.Context, url string) (*AudioTrack, error) {
 		"--output=" + destination,
 		url,
 	}
+
+	fmt.Printf("args=%v\n", args)
 
 	output, err := exec.CommandContext(ctx, executable, args...).CombinedOutput()
 	fmt.Println("output:", string(output))
