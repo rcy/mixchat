@@ -37,7 +37,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Group(func(r chi.Router) {
 		r.Use(s.userMiddleware)
 		// TODO: admin!
-		r.Handle("/riverui", s.riverUIServer)
+		r.Mount("/riverui", s.riverUIServer)
 	})
 
 	r.Group(func(r chi.Router) {
@@ -263,16 +263,43 @@ func (s *Server) postRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = s.db.CreateEvent(ctx, "TrackRequested", map[string]string{
-		"StationID": station.StationID,
-		"TrackID":   ids.Make("trk"),
-		"URL":       url,
-		"UserID":    user.UserID,
+	trackID := ids.MakeTrackID()
+
+	// FIXME: use transaction!
+
+	_, err = s.db.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
+		StationMessageID: ids.Make("sm"),
+		Type:             "TrackRequested",
+		StationID:        station.StationID,
+		Body:             url,
+		Nick:             user.Username,
+		ParentID:         trackID,
 	})
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = s.riverClient.Insert(ctx, RequestTrackArgs{
+		User:    user,
+		Station: station,
+		URL:     url,
+		TrackID: trackID,
+	}, nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// err = s.db.CreateEvent(ctx, "TrackRequested", map[string]string{
+	// 	"StationID": station.StationID,
+	// 	"TrackID":   ids.Make("trk"),
+	// 	"URL":       url,
+	// 	"UserID":    user.UserID,
+	// })
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 }
 
 func (s *Server) postSearch(w http.ResponseWriter, r *http.Request) {

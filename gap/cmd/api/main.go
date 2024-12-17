@@ -8,7 +8,6 @@ import (
 	"gap/internal/database"
 	"gap/internal/ids"
 	"gap/internal/server"
-	"gap/internal/store"
 	"gap/internal/store/files"
 	"gap/internal/ytdlp"
 	"io/fs"
@@ -76,6 +75,7 @@ func main() {
 
 	workers := river.NewWorkers()
 	river.AddWorker(workers, &DummyWorker{})
+	river.AddWorker(workers, &server.RequestTrackWorker{Storage: storage, Database: dbService})
 
 	riverClient, err := river.NewClient(riverpgxv5.New(dbService.P()), &river.Config{
 		Queues: map[string]river.QueueConfig{
@@ -92,11 +92,11 @@ func main() {
 		panic(err)
 	}
 
-	go process(ctx, storage, dbService)
+	go process(ctx, dbService)
 
 	riverUIServer, err := riverui.NewServer(&riverui.ServerOpts{
 		Client: riverClient,
-		DB:     poolConn,
+		DB:     dbService.P(),
 		Logger: slog.Default(),
 		Prefix: "/riverui", // mount the UI and its APIs under /riverui
 		// ...
@@ -105,9 +105,12 @@ func main() {
 		panic(err)
 	}
 	// Start the server to initialize background processes for caching and periodic queries:
-	riverUIServer.Start(ctx)
+	err = riverUIServer.Start(ctx)
+	if err != nil {
+		panic(err)
+	}
 
-	webServer := server.NewServer(ctx, dbService, storage, riverUIServer)
+	webServer := server.NewServer(ctx, dbService, storage, riverClient, riverUIServer)
 
 	fmt.Println("listening on", webServer.Addr)
 	err = webServer.ListenAndServe()
@@ -116,7 +119,7 @@ func main() {
 	}
 }
 
-func process(ctx context.Context, str store.Store, database database.Service) {
+func process(ctx context.Context, database database.Service) {
 	conn, err := database.P().Acquire(ctx)
 	if err != nil {
 		panic(err)
@@ -165,47 +168,47 @@ func process(ctx context.Context, str store.Store, database database.Service) {
 				if err != nil {
 					panic(err)
 				}
-			case "TrackRequested":
-				user, err := database.Q().User(ctx, payload["UserID"])
-				if err != nil {
-					panic(err)
-				}
+			// case "TrackRequested":
+			// 	user, err := database.Q().User(ctx, payload["UserID"])
+			// 	if err != nil {
+			// 		panic(err)
+			// 	}
 
-				_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
-					StationMessageID: ids.Make("sm"),
-					Type:             "TrackRequested",
-					StationID:        payload["StationID"],
-					Body:             payload["URL"],
-					Nick:             user.Username,
-					ParentID:         payload["TrackID"],
-				})
-				if err != nil {
-					panic(err)
-				}
+			// 	_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
+			// 		StationMessageID: ids.Make("sm"),
+			// 		Type:             "TrackRequested",
+			// 		StationID:        payload["StationID"],
+			// 		Body:             payload["URL"],
+			// 		Nick:             user.Username,
+			// 		ParentID:         payload["TrackID"],
+			// 	})
+			// 	if err != nil {
+			// 		panic(err)
+			// 	}
 
-				err = processTrackRequested(ctx, str, payload)
-				if err != nil {
-					err = database.CreateEvent(ctx, "TrackDownloadFailed", map[string]string{
-						"StationID": payload["StationID"],
-						"TrackID":   payload["TrackID"],
-						"URL":       payload["URL"],
-						"Error":     err.Error(),
-					})
-					if err != nil {
-						panic(err)
-					}
-					break
-				}
+			// 	err = processTrackRequested(ctx, str, payload)
+			// 	if err != nil {
+			// 		err = database.CreateEvent(ctx, "TrackDownloadFailed", map[string]string{
+			// 			"StationID": payload["StationID"],
+			// 			"TrackID":   payload["TrackID"],
+			// 			"URL":       payload["URL"],
+			// 			"Error":     err.Error(),
+			// 		})
+			// 		if err != nil {
+			// 			panic(err)
+			// 		}
+			// 		break
+			// 	}
 
-				err = database.CreateEvent(ctx, "TrackDownloaded", map[string]string{
-					"StationID": payload["StationID"],
-					"TrackID":   payload["TrackID"],
-					"URL":       payload["URL"],
-					"Nick":      payload["Nick"],
-				})
-				if err != nil {
-					panic(err)
-				}
+			// 	err = database.CreateEvent(ctx, "TrackDownloaded", map[string]string{
+			// 		"StationID": payload["StationID"],
+			// 		"TrackID":   payload["TrackID"],
+			// 		"URL":       payload["URL"],
+			// 		"Nick":      payload["Nick"],
+			// 	})
+			// 	if err != nil {
+			// 		panic(err)
+			// 	}
 			case "TrackDownloaded":
 				// Update the original TrackRequested message with a TrackDownloaded message
 				// that includes some track metadata
@@ -317,36 +320,36 @@ func process(ctx context.Context, str store.Store, database database.Service) {
 	}
 }
 
-func processTrackRequested(ctx context.Context, storage store.Store, payload map[string]string) error {
-	stationID := payload["StationID"]
-	trackID := payload["TrackID"]
-	url := payload["URL"]
+// func processTrackRequested(ctx context.Context, storage store.Store, payload map[string]string) error {
+// 	stationID := payload["StationID"]
+// 	trackID := payload["TrackID"]
+// 	url := payload["URL"]
 
-	track, err := ytdlp.AudioTrackFromURL(ctx, url)
-	if err != nil {
-		return err
-	}
+// 	track, err := ytdlp.AudioTrackFromURL(ctx, url)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	rawMetadata, err := json.Marshal(track.Metadata.Raw())
-	if err != nil {
-		return err
-	}
+// 	rawMetadata, err := json.Marshal(track.Metadata.Raw())
+// 	if err != nil {
+// 		return err
+// 	}
 
-	key := fmt.Sprintf("%s/%s/%s.%s", stationID, trackID, trackID, track.Format)
-	if err = storage.Put(ctx, key, track.Data); err != nil {
-		return err
-	}
+// 	key := fmt.Sprintf("%s/%s/%s.%s", stationID, trackID, trackID, track.Format)
+// 	if err = storage.Put(ctx, key, track.Data); err != nil {
+// 		return err
+// 	}
 
-	_, err = database.New().Q().CreateTrack(ctx, db.CreateTrackParams{
-		TrackID:     trackID,
-		StationID:   stationID,
-		Artist:      track.Metadata.Artist(),
-		Title:       track.Metadata.Title(),
-		RawMetadata: rawMetadata,
-	})
-	if err != nil {
-		return err
-	}
+// 	_, err = database.New().Q().CreateTrack(ctx, db.CreateTrackParams{
+// 		TrackID:     trackID,
+// 		StationID:   stationID,
+// 		Artist:      track.Metadata.Artist(),
+// 		Title:       track.Metadata.Title(),
+// 		RawMetadata: rawMetadata,
+// 	})
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
