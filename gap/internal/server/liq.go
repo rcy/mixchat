@@ -23,7 +23,11 @@ func (s *Server) pullHandler(w http.ResponseWriter, r *http.Request) {
 
 	station, err := s.db.Q().Station(ctx, slug)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		if errors.Is(err, pgx.ErrNoRows) {
+			http.Error(w, err.Error(), http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 
