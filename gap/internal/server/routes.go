@@ -35,6 +35,12 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.Post("/login", s.loginPostHandler)
 
 	r.Group(func(r chi.Router) {
+		r.Use(s.userMiddleware)
+		// TODO: admin!
+		r.Handle("/riverui", s.riverUIServer)
+	})
+
+	r.Group(func(r chi.Router) {
 		//r.Use(s.guestUserMiddleware)
 		r.Use(s.userMiddleware)
 

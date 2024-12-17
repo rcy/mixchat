@@ -12,11 +12,15 @@ import (
 	"gap/internal/store/files"
 	"gap/internal/ytdlp"
 	"io/fs"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/jackc/tern/v2/migrate"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"riverqueue.com/riverui"
 )
 
 func main() {
@@ -41,9 +45,9 @@ func main() {
 	// 	Bucket:      os.Getenv("S3_BUCKET"),
 	// })
 
-	server := server.NewServer(storage)
+	dbService := database.New()
 
-	poolConn, err := database.New().P().Acquire(ctx)
+	poolConn, err := dbService.P().Acquire(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -70,10 +74,43 @@ func main() {
 		panic(err)
 	}
 
-	go process(ctx, storage, database.New())
+	workers := river.NewWorkers()
+	river.AddWorker(workers, &DummyWorker{})
 
-	fmt.Println("listening on", server.Addr)
-	err = server.ListenAndServe()
+	riverClient, err := river.NewClient(riverpgxv5.New(dbService.P()), &river.Config{
+		Queues: map[string]river.QueueConfig{
+			river.QueueDefault: {MaxWorkers: 100},
+		},
+		Workers: workers,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	// Run the client inline. All executed jobs will inherit from ctx:
+	if err := riverClient.Start(ctx); err != nil {
+		panic(err)
+	}
+
+	go process(ctx, storage, dbService)
+
+	riverUIServer, err := riverui.NewServer(&riverui.ServerOpts{
+		Client: riverClient,
+		DB:     poolConn,
+		Logger: slog.Default(),
+		Prefix: "/riverui", // mount the UI and its APIs under /riverui
+		// ...
+	})
+	if err != nil {
+		panic(err)
+	}
+	// Start the server to initialize background processes for caching and periodic queries:
+	riverUIServer.Start(ctx)
+
+	webServer := server.NewServer(ctx, dbService, storage, riverUIServer)
+
+	fmt.Println("listening on", webServer.Addr)
+	err = webServer.ListenAndServe()
 	if err != nil {
 		panic(fmt.Sprintf("cannot start server: %s", err))
 	}

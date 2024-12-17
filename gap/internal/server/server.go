@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -11,20 +12,23 @@ import (
 	"gap/internal/store"
 
 	_ "github.com/joho/godotenv/autoload"
+	"riverqueue.com/riverui"
 )
 
 type Server struct {
-	port    int
-	db      database.Service
-	storage store.Store
+	port          int
+	db            database.Service
+	storage       store.Store
+	riverUIServer *riverui.Server
 }
 
-func NewServer(storage store.Store) *http.Server {
+func NewServer(ctx context.Context, dbService database.Service, storage store.Store, riverUIServer *riverui.Server) *http.Server {
 	port, _ := strconv.Atoi(env.MustGet("PORT"))
 	NewServer := &Server{
-		port:    port,
-		db:      database.New(),
-		storage: storage,
+		port:          port,
+		db:            dbService,
+		storage:       storage,
+		riverUIServer: riverUIServer,
 	}
 
 	// Declare Server config
