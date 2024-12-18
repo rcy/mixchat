@@ -28,11 +28,34 @@ type RequestTrackWorker struct {
 }
 
 func (w *RequestTrackWorker) Work(ctx context.Context, job *river.Job[RequestTrackArgs]) error {
-	err := download(ctx, w.Storage, downloadParams{
-		StationID: job.Args.Station.StationID,
-		TrackID:   job.Args.TrackID,
-		URL:       job.Args.URL,
+	track, err := ytdlp.AudioTrackFromURL(ctx, job.Args.URL)
+	if err != nil {
+		return err
+	}
+
+	rawMetadata, err := json.Marshal(track.Metadata.Raw())
+	if err != nil {
+		return err
+	}
+
+	key := fmt.Sprintf("%s/%s/%s.%s", job.Args.Station.StationID, job.Args.TrackID, job.Args.TrackID, track.Format)
+	if err = w.Storage.Put(ctx, key, track.Data); err != nil {
+		return err
+	}
+
+	q := w.Database.Q()
+
+	_, err = q.CreateTrack(ctx, db.CreateTrackParams{
+		TrackID:     job.Args.TrackID,
+		StationID:   job.Args.Station.StationID,
+		Artist:      track.Metadata.Artist(),
+		Title:       track.Metadata.Title(),
+		RawMetadata: rawMetadata,
 	})
+	if err != nil {
+		return err
+	}
+
 	if err != nil {
 		panic(err)
 		// err = w.Database.CreateEvent(ctx, "TrackDownloadFailed", map[string]string{
@@ -51,42 +74,6 @@ func (w *RequestTrackWorker) Work(ctx context.Context, job *river.Job[RequestTra
 	})
 	if err != nil {
 		panic(err)
-	}
-
-	return nil
-}
-
-type downloadParams struct {
-	StationID string
-	TrackID   string
-	URL       string
-}
-
-func download(ctx context.Context, storage store.Store, params downloadParams) error {
-	track, err := ytdlp.AudioTrackFromURL(ctx, params.URL)
-	if err != nil {
-		return err
-	}
-
-	rawMetadata, err := json.Marshal(track.Metadata.Raw())
-	if err != nil {
-		return err
-	}
-
-	key := fmt.Sprintf("%s/%s/%s.%s", params.StationID, params.TrackID, params.TrackID, track.Format)
-	if err = storage.Put(ctx, key, track.Data); err != nil {
-		return err
-	}
-
-	_, err = database.New().Q().CreateTrack(ctx, db.CreateTrackParams{
-		TrackID:     params.TrackID,
-		StationID:   params.StationID,
-		Artist:      track.Metadata.Artist(),
-		Title:       track.Metadata.Title(),
-		RawMetadata: rawMetadata,
-	})
-	if err != nil {
-		return err
 	}
 
 	return nil

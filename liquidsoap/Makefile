@@ -10,11 +10,11 @@
 # start:
 # 	liquidsoap --force-start ./start.liq
 
-build:
-	docker build --tag quickiron6536/mixchat-liquidsoap:v3 .
+docker-build:
+	docker build --tag rcy0/mixchat-liquidsoap .
 
-push:
-	docker push quickiron6536/mixchat-liquidsoap:v3
+docker-push:
+	docker push rcy0/mixchat-liquidsoap
 
 dstart:
-	docker run -p 1234:1234 --env-file=../.env.dev quickiron6536/mixchat-liquidsoap:v3
+	docker run -p 1234:1234 --env-file=../.env.dev rcy0/mixchat-liquidsoap

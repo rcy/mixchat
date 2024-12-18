@@ -74,7 +74,6 @@ func main() {
 	}
 
 	workers := river.NewWorkers()
-	river.AddWorker(workers, &DummyWorker{})
 	river.AddWorker(workers, &server.RequestTrackWorker{Storage: storage, Database: dbService})
 
 	riverClient, err := river.NewClient(riverpgxv5.New(dbService.P()), &river.Config{

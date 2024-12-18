@@ -63,8 +63,13 @@
           <h1 class="text-4xl">
             {{or .Station.Name .Station.Slug}}
           </h1>
-          <div>
-            {{template "player" .AudioSourceURLs}}
+          <div class="flex items-center gap-2">
+            <div>
+              <button class="rounded bg-green-400 px-2 py-1" hx-post="/{{.Station.Slug}}/start-liq">do it</button>
+            </div>
+            <div>
+              {{template "player" .AudioSourceURLs}}
+            </div>
           </div>
         </div>
 

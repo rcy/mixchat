@@ -41,7 +41,7 @@ func AudioTrackFromURL(ctx context.Context, url string) (*AudioTrack, error) {
 	destination := fmt.Sprintf("%s/track", dir)
 
 	args := []string{
-		"--cookies=./cookies.txt",
+		"--cookies=./vbin/cookies.txt",
 		"--keep-video",
 		"--extract-audio",
 		//"--audio-quality=0",

@@ -10,10 +10,15 @@ import (
 	"gap/internal/ids"
 	"gap/internal/rndcolor"
 	"html/template"
+	"io"
 	"net"
 	"net/http"
 	"time"
 
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/client"
+	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jackc/pgx/v5"
@@ -48,6 +53,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 		r.Get("/", s.stationsHandler)
 		r.Get("/{slug}", s.stationHandler)
+		r.Post("/{slug}/start-liq", s.startLiq)
 		r.Get("/{slug}/now-playing", s.nowPlayingHandler)
 		r.Get("/{slug}/chat", s.stationHandler)
 		r.Post("/{slug}/chat", s.postChatMessage)
@@ -405,4 +411,92 @@ func (s *Server) audioTest2(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+func (s *Server) startLiq(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	slug := chi.URLParam(r, "slug")
+
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer cli.Close()
+
+	imageName := "rcy0/mixchat-liquidsoap"
+	reader, err := cli.ImagePull(ctx, imageName, image.PullOptions{})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer reader.Close()
+
+	fmt.Printf("Image %s pulling...\n", imageName)
+
+	// Wait for the image pull to complete
+	_, err = io.Copy(io.Discard, reader)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Printf("Image %s pulled successfully\n", imageName)
+
+	response, err := cli.ContainerCreate(ctx,
+		&container.Config{
+			Image: imageName,
+			Cmd:   []string{},
+			Env: []string{
+				"API_BASE=http://host.docker.internal:5500",
+				"ICECAST_HOST=host.docker.internal",
+				"ICECAST_PORT=8010",
+				"ICECAST_SOURCE_PASSWORD=hackme",
+				"LIQUIDSOAP_BROADCAST_PASSWORD=",
+				fmt.Sprintf("STATION_SLUG=%s", slug),
+			},
+			Tty:          true,
+			AttachStdout: true,
+			AttachStderr: true,
+			ExposedPorts: nat.PortSet{
+				"1234/tcp": struct{}{},
+			},
+		},
+		&container.HostConfig{
+			// use random port since we have multiple containers running
+			PortBindings: nat.PortMap{
+				"1234/tcp": []nat.PortBinding{
+					{
+						HostIP: "0.0.0.0",
+					},
+				},
+			},
+		},
+		nil,
+		nil,
+		fmt.Sprintf("liq-%s", slug),
+	)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = cli.ContainerStart(ctx, response.ID, container.StartOptions{})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	time.Sleep(5 * time.Second)
+
+	resp, err := cli.ContainerInspect(ctx, response.ID)
+	if err != nil {
+		panic(err)
+	}
+	for containerPort, bindings := range resp.NetworkSettings.Ports {
+		fmt.Println("containerPort", containerPort)
+		for _, binding := range bindings {
+			fmt.Printf("Container port %s is bound to host port %s\n", containerPort, binding.HostPort)
+		}
+	}
+
+	fmt.Printf("Container %s started successfully\n", response.ID)
 }
