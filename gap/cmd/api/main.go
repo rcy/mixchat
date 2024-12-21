@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"gap/db"
 	"gap/internal/database"
+	"gap/internal/env"
 	"gap/internal/ids"
 	"gap/internal/server"
-	"gap/internal/store/files"
+	"gap/internal/store/s3"
 	"gap/internal/ytdlp"
 	"io/fs"
 	"log/slog"
@@ -35,15 +36,15 @@ func main() {
 		os.Exit(1)
 	}()
 
-	storage := files.MustInit("/tmp/mixchat")
-	// storage := space.MustInit(space.InitParams{
-	// 	S3Key:       os.Getenv("S3_ACCESS_KEY"),
-	// 	S3Secret:    os.Getenv("S3_SECRET_KEY"),
-	// 	Endpoint:    os.Getenv("S3_ENDPOINT"),
-	// 	URIEndpoint: os.Getenv("S3_URI_ENDPOINT"),
-	// 	Bucket:      os.Getenv("S3_BUCKET"),
-	// })
-
+	storage, err := s3.New(
+		env.MustGet("S3_ENDPOINT"),
+		env.MustGet("S3_ACCESS_KEY"),
+		env.MustGet("S3_SECRET_KEY"),
+		env.MustGet("S3_BUCKET"),
+	)
+	if err != nil {
+		panic(err)
+	}
 	dbService := database.New()
 
 	poolConn, err := dbService.P().Acquire(ctx)

@@ -7,6 +7,15 @@ services:
       - 6543:5432
     volumes:
       - ./etc/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    restart: always
 
-# volumes:
-#   pg_volume:
+  minio:
+    image: docker.io/bitnami/minio:2024.5.7
+    ports:
+      - '9500:9000'
+      - '9501:9001'
+    environment:
+      - MINIO_SCHEME=http
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+      - MINIO_DEFAULT_BUCKETS=tracks

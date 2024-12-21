@@ -53,10 +53,6 @@ func (w *RequestTrackWorker) Work(ctx context.Context, job *river.Job[RequestTra
 		RawMetadata: rawMetadata,
 	})
 	if err != nil {
-		return err
-	}
-
-	if err != nil {
 		panic(err)
 		// err = w.Database.CreateEvent(ctx, "TrackDownloadFailed", map[string]string{
 		// 	"StationID": job.Args.Station.StationID,

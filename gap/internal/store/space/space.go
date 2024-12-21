@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -52,7 +53,7 @@ func MustInit(params InitParams) *Space {
 }
 
 func (s *Space) Put(ctx context.Context, key string, data []byte) error {
-	//log.Printf("Space.Put %s", key)
+	log.Printf("Space.Put key:%s bucket:%s", key, s.bucket)
 
 	object := s3.PutObjectInput{
 		ContentType: aws.String(http.DetectContentType(data)),

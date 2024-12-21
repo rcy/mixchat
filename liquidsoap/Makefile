@@ -11,7 +11,7 @@
 # 	liquidsoap --force-start ./start.liq
 
 docker-build:
-	docker build --tag rcy0/mixchat-liquidsoap .
+	docker buildx build --platform linux/amd64 --tag rcy0/mixchat-liquidsoap .
 
 docker-push:
 	docker push rcy0/mixchat-liquidsoap

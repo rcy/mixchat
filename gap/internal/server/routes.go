@@ -417,7 +417,7 @@ func (s *Server) startLiq(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	slug := chi.URLParam(r, "slug")
 
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -462,6 +462,10 @@ func (s *Server) startLiq(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 		&container.HostConfig{
+			RestartPolicy: container.RestartPolicy{
+				Name:              "always",
+				MaximumRetryCount: 0,
+			},
 			// use random port since we have multiple containers running
 			PortBindings: nat.PortMap{
 				"1234/tcp": []nat.PortBinding{
