@@ -22,5 +22,11 @@ func (s *Server) loginPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	userservice.SetCookie(w, sessionKey)
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	// return to the place we tried to go before login
+	from := r.FormValue("from")
+	if from == "" {
+		from = "/"
+	}
+
+	http.Redirect(w, r, from, http.StatusSeeOther)
 }

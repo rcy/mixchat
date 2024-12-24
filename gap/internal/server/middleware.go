@@ -68,16 +68,18 @@ func (s *Server) userMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
+		loginURL := fmt.Sprintf("/login?from=%s", r.URL.EscapedPath())
+
 		cookie, err := r.Cookie(userservice.SessionCookieName)
 		if err != nil {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			http.Redirect(w, r, loginURL, http.StatusSeeOther)
 			return
 		}
 
 		var user db.User
 		user, err = s.db.Q().SessionUser(ctx, cookie.Value)
 		if errors.Is(err, pgx.ErrNoRows) {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			http.Redirect(w, r, loginURL, http.StatusSeeOther)
 			return
 		}
 		if err != nil {
