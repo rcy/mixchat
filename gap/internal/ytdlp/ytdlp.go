@@ -179,6 +179,10 @@ func parseYouTubeDuration(duration string) (string, error) {
 	if err == nil {
 		return fmt.Sprintf("%dh%dm%ds", hours, minutes, seconds), nil
 	}
+	_, err = fmt.Sscanf(duration, "PT%dH", &hours)
+	if err == nil {
+		return fmt.Sprintf("%dh", hours), nil
+	}
 	_, err = fmt.Sscanf(duration, "PT%dM%dS", &minutes, &seconds)
 	if err == nil {
 		return fmt.Sprintf("%dm%ds", minutes, seconds), nil
