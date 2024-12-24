@@ -25,8 +25,8 @@ insert into events(event_id, event_type, payload) values ($1, $2, $3) returning 
 -- name: Event :one
 select * from events where event_id = $1;
 
--- name: ActiveStations :many
-select * from stations where active = true;
+-- name: PublicActiveStations :many
+select * from stations where active = true and is_public = true;
 
 -- name: Station :one
 select * from stations where slug = $1;

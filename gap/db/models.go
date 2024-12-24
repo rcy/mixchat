@@ -29,6 +29,61 @@ type Result struct {
 	Views     float64
 }
 
+type RiverClient struct {
+	ID        string
+	CreatedAt pgtype.Timestamptz
+	Metadata  []byte
+	PausedAt  pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
+type RiverClientQueue struct {
+	RiverClientID    string
+	Name             string
+	CreatedAt        pgtype.Timestamptz
+	MaxWorkers       int64
+	Metadata         []byte
+	NumJobsCompleted int64
+	NumJobsRunning   int64
+	UpdatedAt        pgtype.Timestamptz
+}
+
+type RiverJob struct {
+	ID           int64
+	State        interface{}
+	Attempt      int16
+	MaxAttempts  int16
+	AttemptedAt  pgtype.Timestamptz
+	CreatedAt    pgtype.Timestamptz
+	FinalizedAt  pgtype.Timestamptz
+	ScheduledAt  pgtype.Timestamptz
+	Priority     int16
+	Args         []byte
+	AttemptedBy  []string
+	Errors       [][]byte
+	Kind         string
+	Metadata     []byte
+	Queue        string
+	Tags         []string
+	UniqueKey    []byte
+	UniqueStates pgtype.Bits
+}
+
+type RiverLeader struct {
+	ElectedAt pgtype.Timestamptz
+	ExpiresAt pgtype.Timestamptz
+	LeaderID  string
+	Name      string
+}
+
+type RiverQueue struct {
+	Name      string
+	CreatedAt pgtype.Timestamptz
+	Metadata  []byte
+	PausedAt  pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
 type SchemaVersion struct {
 	Version int32
 }
@@ -57,6 +112,7 @@ type Station struct {
 	CurrentTrackID     pgtype.Text
 	BackgroundImageURL string
 	UserID             string
+	IsPublic           bool
 }
 
 type StationMessage struct {

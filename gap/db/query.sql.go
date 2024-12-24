@@ -11,39 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const activeStations = `-- name: ActiveStations :many
-select station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id from stations where active = true
-`
-
-func (q *Queries) ActiveStations(ctx context.Context) ([]Station, error) {
-	rows, err := q.db.Query(ctx, activeStations)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Station
-	for rows.Next() {
-		var i Station
-		if err := rows.Scan(
-			&i.StationID,
-			&i.CreatedAt,
-			&i.Slug,
-			&i.Name,
-			&i.Active,
-			&i.CurrentTrackID,
-			&i.BackgroundImageURL,
-			&i.UserID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const createGuestUser = `-- name: CreateGuestUser :one
 insert into users(guest, user_id) values(true, $1) returning user_id, created_at, username, guest
 `
@@ -120,7 +87,7 @@ func (q *Queries) CreateSession(ctx context.Context, sessionID string, userID st
 }
 
 const createStation = `-- name: CreateStation :one
-insert into stations(station_id, slug, user_id, active) values($1, $2, $3, $4) returning station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id
+insert into stations(station_id, slug, user_id, active) values($1, $2, $3, $4) returning station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id, is_public
 `
 
 type CreateStationParams struct {
@@ -147,6 +114,7 @@ func (q *Queries) CreateStation(ctx context.Context, arg CreateStationParams) (S
 		&i.CurrentTrackID,
 		&i.BackgroundImageURL,
 		&i.UserID,
+		&i.IsPublic,
 	)
 	return i, err
 }
@@ -323,6 +291,40 @@ func (q *Queries) OldestUnplayedTrack(ctx context.Context, stationID string) (Tr
 	return i, err
 }
 
+const publicActiveStations = `-- name: PublicActiveStations :many
+select station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id, is_public from stations where active = true and is_public = true
+`
+
+func (q *Queries) PublicActiveStations(ctx context.Context) ([]Station, error) {
+	rows, err := q.db.Query(ctx, publicActiveStations)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Station
+	for rows.Next() {
+		var i Station
+		if err := rows.Scan(
+			&i.StationID,
+			&i.CreatedAt,
+			&i.Slug,
+			&i.Name,
+			&i.Active,
+			&i.CurrentTrackID,
+			&i.BackgroundImageURL,
+			&i.UserID,
+			&i.IsPublic,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const randomTrack = `-- name: RandomTrack :one
 select track_id, station_id, created_at, artist, title, raw_metadata, rotation, plays, skips, playing from tracks
 where tracks.station_id = $1
@@ -450,7 +452,7 @@ func (q *Queries) SetStationCurrentTrack(ctx context.Context, currentTrackID pgt
 }
 
 const station = `-- name: Station :one
-select station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id from stations where slug = $1
+select station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id, is_public from stations where slug = $1
 `
 
 func (q *Queries) Station(ctx context.Context, slug string) (Station, error) {
@@ -465,6 +467,7 @@ func (q *Queries) Station(ctx context.Context, slug string) (Station, error) {
 		&i.CurrentTrackID,
 		&i.BackgroundImageURL,
 		&i.UserID,
+		&i.IsPublic,
 	)
 	return i, err
 }

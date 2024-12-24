@@ -93,7 +93,7 @@ var (
 )
 
 func (s *Server) stationsHandler(w http.ResponseWriter, r *http.Request) {
-	stations, err := s.db.Q().ActiveStations(r.Context())
+	stations, err := s.db.Q().PublicActiveStations(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
