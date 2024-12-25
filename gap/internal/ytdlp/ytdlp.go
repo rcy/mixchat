@@ -136,6 +136,10 @@ func Search(ctx context.Context, query string) ([]Result, error) {
 	// Parse and display results
 	fmt.Println("Video Details:")
 	for _, video := range videoResponse.Items {
+		if video.Snippet.LiveBroadcastContent != "none" {
+			continue
+		}
+
 		duration := video.ContentDetails.Duration
 		parsedDuration, err := parseYouTubeDuration(duration)
 		if err != nil {
