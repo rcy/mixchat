@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"gap/internal/env"
+	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -49,13 +49,13 @@ func (s *Server) pullHandler(w http.ResponseWriter, r *http.Request) {
 	// ensure the same track doesn't get queued twice
 	err = s.db.Q().IncrementTrackRotation(ctx, track.TrackID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "IncrementTrackRotation: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	err = s.db.CreateEvent(ctx, "TrackQueued", map[string]string{"StationID": station.StationID, "TrackID": track.TrackID})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "TrackQueued: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -70,11 +70,14 @@ func (s *Server) trackHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	track, err := s.db.Q().Track(ctx, chi.URLParam(r, "trackID"))
 	if err != nil {
+		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	bytes, err := os.ReadFile(fmt.Sprintf("/tmp/mixchat/%s/%s/%s.ogg", track.StationID, track.TrackID, track.TrackID))
+	// bytes, err := os.ReadFile(fmt.Sprintf("/tmp/mixchat/%s/%s/%s.ogg", track.StationID, track.TrackID, track.TrackID))
+	bytes, err := s.storage.Get(ctx, fmt.Sprintf("%s/%s/%s.ogg", track.StationID, track.TrackID, track.TrackID))
 	if err != nil {
+		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

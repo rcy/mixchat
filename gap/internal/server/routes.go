@@ -36,6 +36,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	})
 
 	r.Get("/health", s.healthHandler)
+	r.Get("/version", s.versionHandler)
 	r.Get("/login", s.loginHandler)
 	r.Post("/login", s.loginPostHandler)
 
@@ -167,6 +168,12 @@ func (s *Server) nowPlayingHandler(w http.ResponseWriter, r *http.Request) {
 	_ = t.Execute(w, currentTrack)
 }
 
+var buildTime time.Time = time.Now()
+
+func (s *Server) versionHandler(w http.ResponseWriter, r *http.Request) {
+	_, _ = w.Write([]byte(buildTime.Format(time.RFC1123)))
+}
+
 func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 	jsonResp, _ := json.Marshal(s.db.Health())
 	_, _ = w.Write(jsonResp)
@@ -208,7 +215,9 @@ func (s *Server) postChatMessage(w http.ResponseWriter, r *http.Request) {
 func (s *Server) postSkip(w http.ResponseWriter, r *http.Request) {
 	//slug := chi.URLParam(r, "slug")
 
-	conn, err := net.DialTimeout("tcp", "localhost:1234", 10*time.Second)
+	telnetPort := 32789
+
+	conn, err := net.DialTimeout("tcp", "localhost:"+fmt.Sprint(telnetPort), 10*time.Second)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -447,12 +456,12 @@ func (s *Server) startLiq(w http.ResponseWriter, r *http.Request) {
 			Image: imageName,
 			Cmd:   []string{},
 			Env: []string{
-				"API_BASE=http://host.docker.internal:5500",
-				"ICECAST_HOST=host.docker.internal",
+				"API_BASE=" + apiBase,
+				"ICECAST_HOST=10.0.0.1",
 				"ICECAST_PORT=8010",
 				"ICECAST_SOURCE_PASSWORD=hackme",
 				"LIQUIDSOAP_BROADCAST_PASSWORD=",
-				fmt.Sprintf("STATION_SLUG=%s", slug),
+				"STATION_SLUG=" + slug,
 			},
 			Tty:          true,
 			AttachStdout: true,
