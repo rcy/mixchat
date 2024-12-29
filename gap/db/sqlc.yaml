@@ -2,10 +2,14 @@ version: "2"
 sql:
   - engine: "postgresql"
     queries: "./query.sql"
-    schema: "../../data/schema.sql"
+    schema: "./schema.sql"
     gen:
       go:
         package: "db"
         out: "."
         sql_package: "pgx/v5"
+        query_parameter_limit: 2
+        rename:
+          url: "URL"
+          background_image_url: "BackgroundImageURL"
         

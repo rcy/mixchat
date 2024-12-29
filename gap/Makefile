@@ -1,59 +1,32 @@
-# Simple Makefile for a Go project
-
-# Build the application
-all: build
+watch:
+	DATABASE_URL=postgres://postgres:postgres@localhost:6543/mixchat_development PORT=5500 air
 
 build:
-	@echo "Building..."
-	@go build -o main cmd/api/main.go
+	go build -o main main.go
 
-# Run the application
 run:
-	@go run cmd/api/main.go
+	go run .
 
-# Create DB container
-docker-run:
-	@if docker compose up 2>/dev/null; then \
-		: ; \
-	else \
-		echo "Falling back to Docker Compose V1"; \
-		docker-compose up; \
-	fi
+up:
+	PGPORT=6543 docker compose up -d
 
-# Shutdown DB container
-docker-down:
-	@if docker compose down 2>/dev/null; then \
-		: ; \
-	else \
-		echo "Falling back to Docker Compose V1"; \
-		docker-compose down; \
-	fi
+stop:
+	docker compose stop
 
-# Test the application
-test:
-	@echo "Testing..."
-	@go test ./tests -v
+down:
+	docker compose down
 
-# Clean the binary
-clean:
-	@echo "Cleaning..."
-	@rm -f main
+sql:
+	psql postgres://postgres:postgres@localhost:6543/mixchat_development
 
-# Live Reload
-watch:
-	@if command -v air > /dev/null; then \
-	    air; \
-	    echo "Watching...";\
-	else \
-	    read -p "Go's 'air' is not installed on your machine. Do you want to install it? [Y/n] " choice; \
-	    if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
-	        go install github.com/cosmtrek/air@latest; \
-	        air; \
-	        echo "Watching...";\
-	    else \
-	        echo "You chose not to install air. Exiting..."; \
-	        exit 1; \
-	    fi; \
-	fi
+generate:
+	${MAKE} -C db gen
 
-.PHONY: all build run test clean
+docker-build:
+	docker buildx build --platform linux/amd64 . --tag rcy0/mixchat-gap
+
+docker-push:
+	docker push rcy0/mixchat-gap
+
+deploy: docker-build docker-push
+	curl -H"Authorization: Bearer ${TOKEN}" 'http://5.78.65.218:8000/api/v1/deploy?uuid=gcgks4skk44ow8400w0sgk84'

@@ -1,82 +1,190 @@
 {{define "head"}}
-  <head>
-    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- <style>
-         :nth-child(1 of .playing) {
-         background-color: blue;
-         }
-         </style> -->
-  </head>
+  <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <script src="//unpkg.com/alpinejs"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:,">
 {{end}}
 
 {{define "stations"}}
-  {{template "head"}}
-  <body class="bg-black text-white">
-    <div class="container mx-auto">
-      <h1 class="text-4xl">Stations</h1>
+  <!DOCTYPE html>
+  <html>
+    <head>
+      {{template "head"}}
+    </head>
 
-      <div class="flex gap-2">
-        {{range .Stations}}
-          <a href="{{.Slug}}" class="flex items-center gap-2 hover:bg-green-900 p-2">
-            <img height="32" width="32" src="https://api.dicebear.com/7.x/rings/svg?seed={{.ID}}">
-            {{.Slug}}
-          </a>
-        {{end}}
+    <body class="bg-black text-white">
+      <div class="container mx-auto">
+        <h1 class="text-4xl">Stations</h1>
+
+        <form action="create-station" method="post">
+          <input class="text-black" type="text" name="slug" required>
+          <button class="border rounded bg-blue-500" type="submit">create</button>
+        </form>
+
+        <div class="flex gap-2">
+          {{range .Stations}}
+            <a href="{{.Slug}}" class="flex items-center gap-2 hover:bg-green-900 p-2">
+              <img height="32" width="32"
+                   src="https://api.dicebear.com/7.x/rings/svg?seed={{.StationID}}">
+              {{.Slug}}
+            </a>
+          {{end}}
+        </div>
       </div>
-    </div>
-  </body>
+    </body>
+  </html>
 {{end}}
 
 {{define "station"}}
-  {{template "head"}}
-  <body class="bg-black text-white" style="height:100vh">
-    <div class="container mx-auto flex flex-col h-full">
-      <div class="flex sm:flex-row flex-col justify-between content-center mb-4">
-        <h1 class="text-4xl">
-          {{or .Station.Name.String .Station.Slug}}
-        </h1>
-        <div>
-          {{template "player" .Station}}
+  <!DOCTYPE html>
+  <html>
+    <head>
+      {{template "head"}}
+
+      {{if .Station.BackgroundImageURL}}
+        <style>
+         body {
+             background-image: url({{.Station.BackgroundImageURL}});
+             background-size: cover;
+         }
+        </style>
+      {{else}}
+        <style>
+         body {
+             background: #ddd;
+         }
+        </style>
+      {{end}}
+    </head>
+    <body class="text-white h-screen" x-data="{ open: false }">
+      <div class="container mx-auto flex flex-col h-full p-2" style="background: rgba(0,0,0,.8);">
+        <div class="flex sm:flex-row flex-col justify-between content-center mb-4 items-center h-10">
+          <h1 class="text-4xl">
+            {{or .Station.Name .Station.Slug}}
+          </h1>
+          <div class="flex items-center gap-2">
+            <div>
+              <button class="rounded bg-green-400 px-2 py-1" hx-post="/{{.Station.Slug}}/start-liq">do it</button>
+            </div>
+            <div>
+              {{template "player" .AudioSourceURLs}}
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div class="p-2 bg-red-500">
-        Live Show: 4th Annual David Bowie Tribute Show Jan 16th 5pm PT
-      </div>
+        <main class="h-10 flex-1 flex flex-col">
+          <div class="bg-orange-500">
+          </div>
 
-      <div class="p-2 bg-blue-200 text-black">
-        Now Playing: {{.CurrentTrack.Artist}} {{.CurrentTrack.Title}}
-      </div>
+          <div class="bg-gray-800 border rounded">
+            <div class="p-2 text-gray-300 flex justify-between items-center">
+              <div class="flex gap-2">
+                Now Playing:
+                <div hx-get="{{.Station.Slug}}/now-playing" hx-trigger="every 10s" class="font-bold">
+                  {{.CurrentTrack.Artist}}, {{.CurrentTrack.Title}}
+                </div>
+              </div>
+              <button hx-post="{{.Station.Slug}}/skip"
+                      class="text-white bg-red-500 rounded py-1 px-2">skip</button>
+            </div>
+          </div>
 
-      {{template "chat" .}}
+          <div class="relative">
+            <div class="absolute top-0 right-0">
+              {{template "add-track-button" .}}
+            </div>
+            <div x-show="open" id="results"></div>
+          </div>
 
-      <div>
-        <input class="bg-black text-white w-full my-2 border rounded border-white" type="text">
+          <div class="flex-1 h-full overflow-y-scroll flex flex-col-reverse pr-2">
+            {{template "chat" .}}
+          </div>
+
+          <div>
+            {{template "chat-form" .}}
+          </div>
+        </main>
+
       </div>
+    </body>
+  </html>
+{{end}}
+
+{{define "chat-form"}}
+  <form hx-post="/{{.Station.Slug}}/chat"
+        hx-swap="outerHTML"
+        class="flex gap-2">
+    <input class="bg-black text-white w-full border rounded border-white pl-1"
+           type="text"
+           name="body"
+           autofocus
+           required
+           placeholder="Send chat message">
+    <button class="bg-blue-500 rounded px-4" type="submit">➤</button>
+  </form>
+{{end}}
+
+{{define "add-track-button"}}
+  <div class="pr-3">
+    <div class="p-2 bg-black rounded"
+         x-show="!open">
+      <button class="text-white bg-orange-500 rounded py-1 px-2"
+              @click="open = true">
+        Add Track
+      </button>
     </div>
-  </body>
+    <div class="w-full bg-black"
+         x-show="open">
+      <form class="flex gap-1 items-center p-2" hx-post="/{{.Station.Slug}}/search" hx-target="#results">
+        <input class="bg-black text-white border border-gray-500 rounded h-8 p-1"
+               type="text"
+               name="query"
+               placeholder="Look up artist, title..."
+               autofocus
+               required>
+        <button class="text-white bg-orange-500 rounded p-1">Search</button>
+        <button class="rounded bg-black p-1" type="button" @click="open = false">Close</button>
+      </form>
+    </div>
+  </div>
 {{end}}
 
 {{define "chat"}}
   <div id="chat-container"
-       class="flex-1 flex flex-col-reverse"
+       class="flex flex-col-reverse"
        hx-trigger="every 1s"
        hx-get="/{{.Station.Slug}}/chat"
-       hx-select="#chat-container .message"
-       style="overflow-y: scroll">
-    {{range .ChatMessages}}
-      {{if .Nick}}
-        <div class="message text-blue-200 flex gap-2">
-          <div class="text-gray-500">{{.SentAt}}</div>
-          <div>{{.Nick}}</div>
+       hx-select="#chat-container .message">
+    {{range .Messages}}
+      {{if (eq .Type "ChatMessageSent")}}
+        <div class="message flex items-center">
+          <div class="font-bold {{color .Nick}}">{{.Nick}}</div>
+          <div class="pr-1">:</div>
           <div>{{.Body}}</div>
         </div>
-      {{else}}
-        <div class="message playing flex gap-2">
-          <div class="text-gray-500">{{.SentAt}}</div>
+      {{else if (eq .Type "TrackStarted")}}
+        <div class="message flex gap-1 items-center text-xs text-gray-500 self-end">
           <div>{{.Body}}</div>
+        </div>
+      {{else if (eq .Type "TrackRequested")}}
+        <div class="message flex gap-1 text-xs text-gray-500 self-end">
+          <div class="{{color .Nick}}">{{.Nick}}</div>
+          <div>requested a track (downloading...)</div>
+        </div>
+      {{else if (eq .Type "TrackDownloaded")}}
+        <div class="message flex gap-1 text-xs text-gray-500 self-end">
+          <div class="{{color .Nick}}">{{.Nick}}</div>
+          <div>added {{.Body}}</div>
+        </div>
+      {{else if (eq .Type "TrackDownloadFailed")}}
+        <div class="message flex gap-1 text-xs text-gray-500 self-end">
+          <div class="{{color .Nick}}">{{.Nick}}</div>
+          <div class="text-red-500">request failed</div>
+        </div>
+      {{else}}
+        <div class="message text-red-500 self-end">
+          {{.Type}} UNHANDLED
         </div>
       {{end}}
     {{end}}
@@ -84,11 +192,66 @@
 {{end}}
 
 {{define "player"}}
-  <audio controls autoplay xclass="w-full">
-    <source src="http://localhost:8010/{{.Slug}}.mp3" type="audio/mp3" />
+  <audio controls xclass="w-full">
+    {{range .}}
+      <source src="{{.}}" type="audio/mp3" />
+    {{end}}
   </audio>
 {{end}}
 
-{{define "recent"}}
-  recent
+{{define "search-results"}}
+  <div class="overflow-y-scroll border-b bg-black" style="height: 400px"
+       x-show="open"
+       {{if .HXGet}}hx-get="{{.HXGet}}"{{end}}
+       {{if .HXTrigger}}hx-trigger="{{.HXTrigger}}"{{end}}
+       hx-swap="outerHTML"
+  >
+    <div class="text-red-500">
+      {{.Error}}
+    </div>
+    <div class="text-white">
+      {{.Status}}
+    </div>
+    <div class="flex flex-col gap-10">
+      {{range .Results}}
+        <div class="flex gap-2">
+          <a href="{{.URL}}" target="_blank" rel="noreferrer">
+            <img style="width: 128; height: 72px;" src="{{.Thumbnail}}">
+          </a>
+          <div class="flex flex-col">
+            <div>{{.Title}} <code>{{.Duration}}</code></div>
+            <div>{{.Uploader}}</div>
+            <div>
+              <button class="rounded border bg-blue-300"
+                      hx-post="/{{$.Station.Slug}}/requests"
+                      hx-vals='{"url":"{{.URL}}"}'
+              >
+                Add To Jukebox
+              </button>
+            </div>
+          </div>
+        </div>
+      {{end}}
+    </div>
+  </div>
+{{end}}
+
+{{define "login"}}
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="icon" href="data:,">
+      <link rel="stylesheet" href="https://unpkg.com/mvp.css"> 
+    </head>
+
+    <body>
+      <form method="post">
+        <label>
+          pick anything you want for a username
+          <input type="text" name="username" />
+        </label>
+      </form>
+    </body>
+  </html>
 {{end}}
