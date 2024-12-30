@@ -1,4 +1,6 @@
 {{define "head"}}
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/nes.css/2.3.0/css/nes.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
   <script src="//unpkg.com/alpinejs"></script>
@@ -41,31 +43,16 @@
   <html>
     <head>
       {{template "head"}}
-
-      {{if .Station.BackgroundImageURL}}
-        <style>
-         body {
-             background-image: url({{.Station.BackgroundImageURL}});
-             background-size: cover;
-         }
-        </style>
-      {{else}}
-        <style>
-         body {
-             background: #ddd;
-         }
-        </style>
-      {{end}}
     </head>
-    <body class="text-white h-screen" x-data="{ open: false }">
+    <body class="text-white h-screen bg-black" x-data="{ open: false }">
       <div class="container mx-auto flex flex-col h-full p-2" style="background: rgba(0,0,0,.8);">
         <div class="flex sm:flex-row flex-col justify-between content-center mb-4 items-center h-10">
-          <h1 class="text-4xl">
-            {{or .Station.Name .Station.Slug}}
+          <h1 class="text-2xl text-purple-500">
+            radio.rcy.sh/{{or .Station.Name .Station.Slug}}
           </h1>
           <div class="flex items-center gap-2">
             <div>
-              <button class="rounded bg-green-400 px-2 py-1" hx-post="/{{.Station.Slug}}/start-liq">do it</button>
+              <button class="nes-btn" hx-post="/{{.Station.Slug}}/start-liq">power on</button>
             </div>
             <div>
               {{template "player" .AudioSourceURLs}}
@@ -75,19 +62,17 @@
 
         <main class="h-10 flex-1 flex flex-col">
           <div class="bg-orange-500">
+            <!-- announcments -->
           </div>
 
-          <div class="bg-gray-800 border rounded">
-            <div class="p-2 text-gray-300 flex justify-between items-center">
-              <div class="flex gap-2">
-                Now Playing:
-                <div hx-get="{{.Station.Slug}}/now-playing" hx-trigger="every 10s" class="font-bold">
-                  {{.CurrentTrack.Artist}}, {{.CurrentTrack.Title}}
-                </div>
+          <div class="nes-container is-dark flex p-1 justify-between items-center">
+            <div class="flex gap-2">
+              <div class="text-gray-500">Now&nbsp;Playing:</div>
+              <div hx-get="{{.Station.Slug}}/now-playing" hx-trigger="every 10s">
+                {{.CurrentTrack.Artist}}, {{.CurrentTrack.Title}}
               </div>
-              <button hx-post="{{.Station.Slug}}/skip"
-                      class="text-white bg-red-500 rounded py-1 px-2">skip</button>
             </div>
+            <!-- <button hx-post="{{.Station.Slug}}/skip" class="nes-btn is-warning">skip</button> -->
           </div>
 
           <div class="relative">
@@ -115,13 +100,13 @@
   <form hx-post="/{{.Station.Slug}}/chat"
         hx-swap="outerHTML"
         class="flex gap-2">
-    <input class="bg-black text-white w-full border rounded border-white pl-1"
+    <input class="nes-input is-dark" x=" bg-black text-white w-full border rounded border-white pl-1"
            type="text"
            name="body"
            autofocus
            required
            placeholder="Send chat message">
-    <button class="bg-blue-500 rounded px-4" type="submit">➤</button>
+    <button class="nes-btn is-primary" x="bg-blue-500 rounded px-4" type="submit">&gt;</button>
   </form>
 {{end}}
 
@@ -129,22 +114,21 @@
   <div class="pr-3">
     <div class="p-2 bg-black rounded"
          x-show="!open">
-      <button class="text-white bg-orange-500 rounded py-1 px-2"
-              @click="open = true">
+      <button class="nes-btn is-success" @click="open = true">
         Add Track
       </button>
     </div>
     <div class="w-full bg-black"
          x-show="open">
       <form class="flex gap-1 items-center p-2" hx-post="/{{.Station.Slug}}/search" hx-target="#results">
-        <input class="bg-black text-white border border-gray-500 rounded h-8 p-1"
+        <input class="nes-input is-dark" x="bg-black text-white border border-gray-500 rounded h-8 p-1"
                type="text"
                name="query"
-               placeholder="Look up artist, title..."
+               placeholder="Artist, title..."
                autofocus
                required>
-        <button class="text-white bg-orange-500 rounded p-1">Search</button>
-        <button class="rounded bg-black p-1" type="button" @click="open = false">Close</button>
+        <button class="nes-btn is-success">Search</button>
+        <button class="nes-btn" type="button" @click="open = false">Close</button>
       </form>
     </div>
   </div>
@@ -222,11 +206,11 @@
             <div>{{.Title}} <code>{{.Duration}}</code></div>
             <div>{{.Uploader}}</div>
             <div>
-              <button class="rounded border bg-blue-300"
+              <button class="nes-btn"
                       hx-post="/{{$.Station.Slug}}/requests"
                       hx-vals='{"url":"{{.URL}}"}'
               >
-                Add To Jukebox
+                Add Track
               </button>
             </div>
           </div>
