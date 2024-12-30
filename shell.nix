@@ -15,5 +15,6 @@ with nixpkgs; mkShell {
     ffmpeg
     wget
     inetutils
+    minio-client
   ];
 }
