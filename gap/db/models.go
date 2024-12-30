@@ -123,6 +123,7 @@ type StationMessage struct {
 	ParentID         string
 	Nick             string
 	Body             string
+	IsHidden         pgtype.Bool
 }
 
 type Track struct {

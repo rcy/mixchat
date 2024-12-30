@@ -120,7 +120,7 @@ func (q *Queries) CreateStation(ctx context.Context, arg CreateStationParams) (S
 }
 
 const createStationMessage = `-- name: CreateStationMessage :one
-insert into station_messages(station_message_id, type, station_id, nick, body, parent_id) values($1, $2, $3, $4, $5, $6) returning station_message_id, created_at, type, station_id, parent_id, nick, body
+insert into station_messages(station_message_id, type, station_id, nick, body, parent_id) values($1, $2, $3, $4, $5, $6) returning station_message_id, created_at, type, station_id, parent_id, nick, body, is_hidden
 `
 
 type CreateStationMessageParams struct {
@@ -150,6 +150,7 @@ func (q *Queries) CreateStationMessage(ctx context.Context, arg CreateStationMes
 		&i.ParentID,
 		&i.Nick,
 		&i.Body,
+		&i.IsHidden,
 	)
 	return i, err
 }
@@ -222,6 +223,35 @@ func (q *Queries) Event(ctx context.Context, eventID string) (Event, error) {
 		&i.Payload,
 	)
 	return i, err
+}
+
+const findLastStationMessage = `-- name: FindLastStationMessage :one
+select station_message_id, created_at, type, station_id, parent_id, nick, body, is_hidden from station_messages where station_id = $1 order by created_at desc limit 1
+`
+
+func (q *Queries) FindLastStationMessage(ctx context.Context, stationID string) (StationMessage, error) {
+	row := q.db.QueryRow(ctx, findLastStationMessage, stationID)
+	var i StationMessage
+	err := row.Scan(
+		&i.StationMessageID,
+		&i.CreatedAt,
+		&i.Type,
+		&i.StationID,
+		&i.ParentID,
+		&i.Nick,
+		&i.Body,
+		&i.IsHidden,
+	)
+	return i, err
+}
+
+const hideStationMessage = `-- name: HideStationMessage :exec
+update station_messages set is_hidden = true where station_message_id = $1
+`
+
+func (q *Queries) HideStationMessage(ctx context.Context, stationMessageID string) error {
+	_, err := q.db.Exec(ctx, hideStationMessage, stationMessageID)
+	return err
 }
 
 const incrementTrackPlays = `-- name: IncrementTrackPlays :exec
@@ -495,7 +525,7 @@ func (q *Queries) StationCurrentTrack(ctx context.Context, stationID string) (Tr
 }
 
 const stationMessages = `-- name: StationMessages :many
-select station_message_id, created_at, type, station_id, parent_id, nick, body from station_messages where station_id = $1 order by station_message_id desc limit 500
+select station_message_id, created_at, type, station_id, parent_id, nick, body, is_hidden from station_messages where station_id = $1 and is_hidden = false order by station_message_id desc limit 500
 `
 
 func (q *Queries) StationMessages(ctx context.Context, stationID string) ([]StationMessage, error) {
@@ -515,6 +545,7 @@ func (q *Queries) StationMessages(ctx context.Context, stationID string) ([]Stat
 			&i.ParentID,
 			&i.Nick,
 			&i.Body,
+			&i.IsHidden,
 		); err != nil {
 			return nil, err
 		}
@@ -549,7 +580,7 @@ func (q *Queries) Track(ctx context.Context, trackID string) (Track, error) {
 }
 
 const trackRequestStationMessage = `-- name: TrackRequestStationMessage :one
-select station_message_id, created_at, type, station_id, parent_id, nick, body from station_messages
+select station_message_id, created_at, type, station_id, parent_id, nick, body, is_hidden from station_messages
 where station_id = $1
 and type = 'TrackRequested'
 and parent_id = $2
@@ -566,6 +597,7 @@ func (q *Queries) TrackRequestStationMessage(ctx context.Context, stationID stri
 		&i.ParentID,
 		&i.Nick,
 		&i.Body,
+		&i.IsHidden,
 	)
 	return i, err
 }

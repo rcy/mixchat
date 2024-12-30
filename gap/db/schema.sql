@@ -243,7 +243,8 @@ CREATE TABLE public.station_messages (
     station_id text NOT NULL,
     parent_id text NOT NULL,
     nick text NOT NULL,
-    body text NOT NULL
+    body text NOT NULL,
+    is_hidden boolean DEFAULT false
 );
 
 
@@ -508,6 +509,13 @@ ALTER TABLE ONLY public.stations
 
 ALTER TABLE ONLY public.stations
     ADD CONSTRAINT stations_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id);
+
+
+--
+-- Name: TABLE schema_version; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.schema_version TO appuser;
 
 
 --

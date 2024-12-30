@@ -248,10 +248,25 @@ func process(ctx context.Context, database database.Service) {
 					panic(err)
 				}
 
+				stationID := payload["StationID"]
+
+				msg, err := database.Q().FindLastStationMessage(ctx, stationID)
+				if err != nil {
+					panic(err)
+				}
+
+				// don't print two consecutive track started messages
+				if msg.Type == "TrackStarted" {
+					err = database.Q().HideStationMessage(ctx, msg.StationMessageID)
+					if err != nil {
+						panic(err)
+					}
+				}
+
 				_, err = database.Q().CreateStationMessage(ctx, db.CreateStationMessageParams{
 					StationMessageID: ids.Make("sm"),
 					Type:             "TrackStarted",
-					StationID:        payload["StationID"],
+					StationID:        stationID,
 					Body:             fmt.Sprintf("%s, %s", track.Artist, track.Title),
 					ParentID:         track.TrackID,
 				})

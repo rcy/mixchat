@@ -44,10 +44,16 @@ select tracks.* from stations join tracks on stations.current_track_id = tracks.
 insert into station_messages(station_message_id, type, station_id, nick, body, parent_id) values($1, $2, $3, $4, $5, $6) returning *;
 
 -- name: StationMessages :many
-select * from station_messages where station_id = $1 order by station_message_id desc limit 500;
+select * from station_messages where station_id = $1 and is_hidden = false order by station_message_id desc limit 500;
 
 -- name: UpdateStationMessage :exec
 update station_messages set type = $1, body = $2 where station_message_id = $3;
+
+-- name: FindLastStationMessage :one
+select * from station_messages where station_id = $1 order by created_at desc limit 1;
+
+-- name: HideStationMessage :exec
+update station_messages set is_hidden = true where station_message_id = $1;
 
 -- name: TrackRequestStationMessage :one
 select * from station_messages
