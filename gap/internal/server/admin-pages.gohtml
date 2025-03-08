@@ -21,6 +21,11 @@
 
       {{if .IcecastStatus.Running}}
         Icecast Running!
+        <button class="border rounded bg-red-300 py-1 px-2"
+                hx-post="/admin/stop-icecast"
+                hx-swap="outerHTML">
+          stop
+        </button>
       {{else}}
         <p class="text-red-400">Icecast Down</p>
         <button class="border rounded bg-blue-300 py-1 px-2"

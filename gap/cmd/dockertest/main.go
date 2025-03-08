@@ -63,7 +63,7 @@ func main() {
 			Env: []string{
 				"API_BASE=http://host.docker.internal:5500",
 				"ICECAST_HOST=host.docker.internal",
-				"ICECAST_PORT=8010",
+				"ICECAST_PORT=8000",
 				"ICECAST_SOURCE_PASSWORD=hackme",
 				"LIQUIDSOAP_BROADCAST_PASSWORD=",
 				fmt.Sprintf("STATION_SLUG=%s", station),

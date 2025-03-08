@@ -9,6 +9,7 @@ import (
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
@@ -28,6 +29,7 @@ type icecastStatus struct {
 func (s *Server) adminRoute(r chi.Router) {
 	r.Get("/", s.admin)
 	r.Post("/start-icecast", s.startIcecast)
+	r.Post("/stop-icecast", s.stopIcecast)
 }
 
 func getIcecastStatus(url string) icecastStatus {
@@ -58,6 +60,11 @@ func (s *Server) admin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+const (
+	mixchatNetworkName   = "mixchat-radionet"
+	icecastContainerName = "mixchat-icecast-1"
+)
+
 func (s *Server) startIcecast(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -67,6 +74,31 @@ func (s *Server) startIcecast(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer cli.Close()
+
+	summary, err := cli.NetworkList(ctx, network.ListOptions{})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	networkFound := false
+	for _, ni := range summary {
+		if ni.Name == mixchatNetworkName {
+			networkFound = true
+			break
+		}
+	}
+
+	if !networkFound {
+		networkResp, err := cli.NetworkCreate(ctx, mixchatNetworkName, network.CreateOptions{
+			Driver: "bridge",
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		fmt.Println("Network Created:", networkResp.ID)
+	}
 
 	imageName := "moul/icecast"
 	reader, err := cli.ImagePull(ctx, imageName, image.PullOptions{})
@@ -86,13 +118,33 @@ func (s *Server) startIcecast(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Printf("Image %s pulled successfully\n", imageName)
 
+	// Remove existing container with the same name (if it exists)
+	containers, err := cli.ContainerList(ctx, container.ListOptions{All: true})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	for _, c := range containers {
+		if c.Names[0] == fmt.Sprintf("/%s", icecastContainerName) {
+			fmt.Println("Container with this name already exists, removing it.")
+			err := cli.ContainerRemove(ctx, c.ID, container.RemoveOptions{Force: true})
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			fmt.Println("Existing container removed.")
+			break
+		}
+	}
+
 	response, err := cli.ContainerCreate(ctx,
 		&container.Config{
 			Image: imageName,
 			Cmd:   []string{},
 			Env:   []string{
 				//"ICECAST_HOST=host.docker.internal",
-				//"ICECAST_PORT=8010",
+				//"ICECAST_PORT=8000",
 				//"ICECAST_SOURCE_PASSWORD=hackme",
 			},
 			Tty:          true,
@@ -107,14 +159,18 @@ func (s *Server) startIcecast(w http.ResponseWriter, r *http.Request) {
 				"8000/tcp": []nat.PortBinding{
 					{
 						HostIP:   "0.0.0.0",
-						HostPort: "8010",
+						HostPort: "8000",
 					},
 				},
 			},
 		},
+		&network.NetworkingConfig{
+			EndpointsConfig: map[string]*network.EndpointSettings{
+				mixchatNetworkName: {},
+			},
+		},
 		nil,
-		nil,
-		fmt.Sprintf("mixchat-icecast-1"),
+		icecastContainerName,
 	)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -122,6 +178,28 @@ func (s *Server) startIcecast(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = cli.ContainerStart(ctx, response.ID, container.StartOptions{})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (s *Server) stopIcecast(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer cli.Close()
+
+	err = cli.ContainerStop(ctx, icecastContainerName, container.StopOptions{})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = cli.ContainerRemove(ctx, icecastContainerName, container.RemoveOptions{})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

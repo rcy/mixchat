@@ -17,6 +17,7 @@ import (
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/go-chi/chi/v5"
@@ -457,8 +458,8 @@ func (s *Server) startLiq(w http.ResponseWriter, r *http.Request) {
 			Cmd:   []string{},
 			Env: []string{
 				"API_BASE=" + apiBase,
-				"ICECAST_HOST=10.0.0.1",
-				"ICECAST_PORT=8010",
+				"ICECAST_HOST=" + icecastContainerName,
+				"ICECAST_PORT=8000",
 				"ICECAST_SOURCE_PASSWORD=hackme",
 				"LIQUIDSOAP_BROADCAST_PASSWORD=",
 				"STATION_SLUG=" + slug,
@@ -484,7 +485,11 @@ func (s *Server) startLiq(w http.ResponseWriter, r *http.Request) {
 				},
 			},
 		},
-		nil,
+		&network.NetworkingConfig{
+			EndpointsConfig: map[string]*network.EndpointSettings{
+				mixchatNetworkName: {},
+			},
+		},
 		nil,
 		fmt.Sprintf("liq-%s", slug),
 	)

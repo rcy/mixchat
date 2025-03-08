@@ -1,4 +1,6 @@
-watch:
+-include env.development
+
+watch: up
 	DATABASE_URL=postgres://postgres:postgres@localhost:6543/mixchat_development PORT=5500 air
 
 build:
