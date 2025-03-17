@@ -6,6 +6,8 @@ import (
 	"html/template"
 	"io"
 	"net/http"
+	"os/exec"
+	"strings"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
@@ -30,6 +32,7 @@ func (s *Server) adminRoute(r chi.Router) {
 	r.Get("/", s.admin)
 	r.Post("/start-icecast", s.startIcecast)
 	r.Post("/stop-icecast", s.stopIcecast)
+	r.Post("/upgrade-ytdlp", s.upgradeYtDlp)
 }
 
 func getIcecastStatus(url string) icecastStatus {
@@ -46,13 +49,51 @@ func getIcecastStatus(url string) icecastStatus {
 	return status
 }
 
+func getYtDlpVersion() (string, error) {
+	cmd := exec.Command("./vbin/yt-dlp", "--version")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimSpace(string(output)), nil
+}
+
+func upgradeYtDlp() (string, error) {
+	cmd := exec.Command("./vbin/yt-dlp", "--update-to", "nightly")
+	output, err := cmd.Output()
+	fmt.Println("output", output, "err", err)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimSpace(string(output)), nil
+}
+
+func (s *Server) upgradeYtDlp(w http.ResponseWriter, r *http.Request) {
+	output, err := upgradeYtDlp()
+	if err != nil {
+		http.Error(w, "upgradeYtDlp: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write([]byte(output))
+}
+
 func (s *Server) admin(w http.ResponseWriter, r *http.Request) {
 	status := getIcecastStatus(icecastURL)
 
-	err := adminTpl.ExecuteTemplate(w, "home", struct {
+	ytdlpVersion, err := getYtDlpVersion()
+	if err != nil {
+		http.Error(w, "getYtDlpVersion: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = adminTpl.ExecuteTemplate(w, "home", struct {
 		IcecastStatus icecastStatus
+		YtDlpVersion  string
 	}{
 		IcecastStatus: status,
+		YtDlpVersion:  ytdlpVersion,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

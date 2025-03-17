@@ -34,6 +34,16 @@
           start
         </button>
       {{end}}
+
+      <hr>
+
+      <div>yt-dlp version: {{.YtDlpVersion}}</div>
+      <button class="border rounded bg-blue-300 py-1 px-2"
+              hx-post="/admin/upgrade-ytdlp"
+              hx-swap="outerHTML">
+        upgrade yt-dlp
+      </button>
+      
     </body>
   </html>
 {{end}}
