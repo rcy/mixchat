@@ -106,8 +106,9 @@ func Search(ctx context.Context, query string) ([]Result, error) {
 
 	// Step 1: Search for videos
 	searchCall := youtubeService.Search.List([]string{"id", "snippet"}).
-		Q(query).       // Search query
-		MaxResults(128) // Number of results to retrieve
+		Q(query).
+		MaxResults(10)
+		//SafeSearch("strict")
 
 	searchResponse, err := searchCall.Do()
 	if err != nil {
