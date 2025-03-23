@@ -13,9 +13,13 @@ jobs:
   build-goapi:
     runs-on: ubuntu-latest
     steps:
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u rcy0 --password-stdin
       - name: checkout
         uses: actions/checkout@v4
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u rcy0 --password-stdin
+      - name: docker-build
+        run: make -C gap docker-build
+      - name: docker-push
+        run: make -C gap docker-push
       - name: deploy
         run: make -C gap deploy

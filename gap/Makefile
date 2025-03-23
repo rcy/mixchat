@@ -30,5 +30,5 @@ docker-build:
 docker-push:
 	docker push rcy0/mixchat-gap
 
-deploy: docker-build docker-push
+deploy:
 	curl -H"Authorization: Bearer ${TOKEN}" 'http://5.78.65.218:8000/api/v1/deploy?uuid=gcgks4skk44ow8400w0sgk84'
