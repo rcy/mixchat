@@ -200,7 +200,7 @@ func (s *Server) startIcecast(w http.ResponseWriter, r *http.Request) {
 				"8000/tcp": []nat.PortBinding{
 					{
 						HostIP:   "0.0.0.0",
-						HostPort: "8000",
+						HostPort: "8888",
 					},
 				},
 			},
