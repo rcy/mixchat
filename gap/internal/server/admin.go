@@ -109,7 +109,7 @@ const (
 func (s *Server) startIcecast(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -228,7 +228,7 @@ func (s *Server) startIcecast(w http.ResponseWriter, r *http.Request) {
 func (s *Server) stopIcecast(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
