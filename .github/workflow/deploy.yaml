@@ -1,0 +1,21 @@
+name: deploy
+
+concurrency: production
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - deploy
+
+jobs:
+  build-goapi:
+    permissions:
+      contents: "read"
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: deploy
+        run: make -C gap deploy
