@@ -192,12 +192,12 @@ func (s *Server) startIcecast(w http.ResponseWriter, r *http.Request) {
 			AttachStdout: true,
 			AttachStderr: true,
 			ExposedPorts: nat.PortSet{
-				"8888/tcp": struct{}{},
+				"8000/tcp": struct{}{},
 			},
 		},
 		&container.HostConfig{
 			PortBindings: nat.PortMap{
-				"8888/tcp": []nat.PortBinding{
+				"8000/tcp": []nat.PortBinding{
 					{
 						HostIP:   "0.0.0.0",
 						HostPort: "8888",
