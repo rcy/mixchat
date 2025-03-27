@@ -467,7 +467,7 @@ func (s *Server) startLiq(w http.ResponseWriter, r *http.Request) {
 				"ICECAST_HOST=" + icecastContainerName,
 				"ICECAST_PORT=8000",
 				"ICECAST_SOURCE_PASSWORD=hackme",
-				"LIQUIDSOAP_BROADCAST_PASSWORD=",
+				"LIQUIDSOAP_BROADCAST_PASSWORD=r4d10",
 				"STATION_SLUG=" + slug,
 			},
 			Tty:          true,
