@@ -113,7 +113,8 @@ type Station struct {
 	BackgroundImageURL string
 	UserID             string
 	IsPublic           bool
-	HostPort           string
+	TelnetPort         string
+	BroadcastPort      string
 }
 
 type StationMessage struct {

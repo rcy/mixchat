@@ -475,6 +475,7 @@ func (s *Server) startLiq(w http.ResponseWriter, r *http.Request) {
 			AttachStderr: true,
 			ExposedPorts: nat.PortSet{
 				"1234/tcp": struct{}{},
+				"8000/tcp": struct{}{},
 			},
 		},
 		&container.HostConfig{
@@ -482,9 +483,14 @@ func (s *Server) startLiq(w http.ResponseWriter, r *http.Request) {
 				Name:              "always",
 				MaximumRetryCount: 0,
 			},
-			// use random port since we have multiple containers running
+			// use random host ports since we have multiple containers running
 			PortBindings: nat.PortMap{
 				"1234/tcp": []nat.PortBinding{
+					{
+						HostIP: "0.0.0.0",
+					},
+				},
+				"8000/tcp": []nat.PortBinding{
 					{
 						HostIP: "0.0.0.0",
 					},
@@ -517,18 +523,29 @@ func (s *Server) startLiq(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for containerPort, bindings := range resp.NetworkSettings.Ports {
-		fmt.Println("containerPort", containerPort)
-		if containerPort.Port() == "1234" {
+		if len(bindings) == 1 {
 			var hostPort string
-			if len(bindings) == 1 {
-				hostPort = bindings[0].HostPort
+			hostPort = bindings[0].HostPort
+			fmt.Println("containerPort", containerPort, "hostPort", hostPort)
+			switch containerPort.Port() {
+			case "1234":
+				err := s.db.Q().SetStationTelnetPort(ctx, hostPort, station.StationID)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				fmt.Printf("station %s host port=%s\n", station.Slug, hostPort)
+			case "8000":
+				err := s.db.Q().SetStationBroadcastPort(ctx, hostPort, station.StationID)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				fmt.Printf("station %s host port=%s\n", station.Slug, hostPort)
 			}
-			err := s.db.Q().SetStationHostPort(ctx, hostPort, station.StationID)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			fmt.Printf("station %s host port=%s\n", station.Slug, hostPort)
+		} else {
+			http.Error(w, "weird, len(bindings)!=1", http.StatusInternalServerError)
+			return
 		}
 	}
 

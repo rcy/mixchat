@@ -37,8 +37,11 @@ insert into stations(station_id, slug, user_id, active) values($1, $2, $3, $4) r
 -- name: SetStationCurrentTrack :exec
 update stations set current_track_id = $1 where station_id = $2;
 
--- name: SetStationHostPort :exec
-update stations set host_port = $1 where station_id = $2;
+-- name: SetStationTelnetPort :exec
+update stations set telnet_port = $1 where station_id = $2;
+
+-- name: SetStationBroadcastPort :exec
+update stations set broadcast_port = $1 where station_id = $2;
 
 -- name: StationCurrentTrack :one
 select tracks.* from stations join tracks on stations.current_track_id = tracks.track_id where stations.station_id = $1;
