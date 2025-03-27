@@ -427,6 +427,12 @@ func (s *Server) startLiq(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	slug := chi.URLParam(r, "slug")
 
+	station, err := s.db.Q().Station(ctx, slug)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -507,12 +513,22 @@ func (s *Server) startLiq(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := cli.ContainerInspect(ctx, response.ID)
 	if err != nil {
-		panic(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	for containerPort, bindings := range resp.NetworkSettings.Ports {
 		fmt.Println("containerPort", containerPort)
-		for _, binding := range bindings {
-			fmt.Printf("Container port %s is bound to host port %s\n", containerPort, binding.HostPort)
+		if containerPort.Port() == "1234" {
+			var hostPort string
+			if len(bindings) == 1 {
+				hostPort = bindings[0].HostPort
+			}
+			err := s.db.Q().SetStationHostPort(ctx, hostPort, station.StationID)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			fmt.Printf("station %s host port=%s\n", station.Slug, hostPort)
 		}
 	}
 

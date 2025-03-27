@@ -263,7 +263,8 @@ CREATE TABLE public.stations (
     current_track_id text,
     background_image_url text DEFAULT ''::text NOT NULL,
     user_id text NOT NULL,
-    is_public boolean DEFAULT false NOT NULL
+    is_public boolean DEFAULT false NOT NULL,
+    host_port text DEFAULT ''::text NOT NULL
 );
 
 

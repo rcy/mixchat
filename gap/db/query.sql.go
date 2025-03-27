@@ -87,7 +87,7 @@ func (q *Queries) CreateSession(ctx context.Context, sessionID string, userID st
 }
 
 const createStation = `-- name: CreateStation :one
-insert into stations(station_id, slug, user_id, active) values($1, $2, $3, $4) returning station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id, is_public
+insert into stations(station_id, slug, user_id, active) values($1, $2, $3, $4) returning station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id, is_public, host_port
 `
 
 type CreateStationParams struct {
@@ -115,6 +115,7 @@ func (q *Queries) CreateStation(ctx context.Context, arg CreateStationParams) (S
 		&i.BackgroundImageURL,
 		&i.UserID,
 		&i.IsPublic,
+		&i.HostPort,
 	)
 	return i, err
 }
@@ -322,7 +323,7 @@ func (q *Queries) OldestUnplayedTrack(ctx context.Context, stationID string) (Tr
 }
 
 const publicActiveStations = `-- name: PublicActiveStations :many
-select station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id, is_public from stations where active = true and is_public = true
+select station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id, is_public, host_port from stations where active = true and is_public = true
 `
 
 func (q *Queries) PublicActiveStations(ctx context.Context) ([]Station, error) {
@@ -344,6 +345,7 @@ func (q *Queries) PublicActiveStations(ctx context.Context) ([]Station, error) {
 			&i.BackgroundImageURL,
 			&i.UserID,
 			&i.IsPublic,
+			&i.HostPort,
 		); err != nil {
 			return nil, err
 		}
@@ -481,8 +483,17 @@ func (q *Queries) SetStationCurrentTrack(ctx context.Context, currentTrackID pgt
 	return err
 }
 
+const setStationHostPort = `-- name: SetStationHostPort :exec
+update stations set host_port = $1 where station_id = $2
+`
+
+func (q *Queries) SetStationHostPort(ctx context.Context, hostPort string, stationID string) error {
+	_, err := q.db.Exec(ctx, setStationHostPort, hostPort, stationID)
+	return err
+}
+
 const station = `-- name: Station :one
-select station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id, is_public from stations where slug = $1
+select station_id, created_at, slug, name, active, current_track_id, background_image_url, user_id, is_public, host_port from stations where slug = $1
 `
 
 func (q *Queries) Station(ctx context.Context, slug string) (Station, error) {
@@ -498,6 +509,7 @@ func (q *Queries) Station(ctx context.Context, slug string) (Station, error) {
 		&i.BackgroundImageURL,
 		&i.UserID,
 		&i.IsPublic,
+		&i.HostPort,
 	)
 	return i, err
 }
