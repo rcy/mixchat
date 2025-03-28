@@ -16,7 +16,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
       - name: Create secrets file
-        run: echo "${{ secrets.COOKIES }}" > ./vbin/cookies.txt
+        run: echo "${{ secrets.COOKIES }}" > ./gap/vbin/cookies.txt
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u rcy0 --password-stdin
       - name: docker-build
