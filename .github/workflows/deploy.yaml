@@ -10,7 +10,7 @@ on:
       - deploy
 
 jobs:
-  build-goapi:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
