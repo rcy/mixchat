@@ -25,7 +25,7 @@ generate:
 	${MAKE} -C db gen
 
 docker-build:
-	docker buildx build --platform linux/amd64 . --tag rcy0/mixchat-gap
+	docker buildx build --build-arg cookies_file=./vbin/cookies.txt --platform linux/amd64 . --tag rcy0/mixchat-gap
 
 docker-push:
 	docker push rcy0/mixchat-gap
