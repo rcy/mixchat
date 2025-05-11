@@ -53,7 +53,13 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 		r.Post("/create-station", s.postCreateStation)
 
-		r.Get("/", s.stationsHandler)
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			if r.Host == "kleindaleradio.ca" {
+				http.Redirect(w, r, "/tlm", http.StatusSeeOther)
+				return
+			}
+			s.stationsHandler(w, r)
+		})
 		r.Get("/{slug}", s.stationHandler)
 		r.Post("/{slug}/start-liq", s.startLiq)
 		r.Get("/{slug}/now-playing", s.nowPlayingHandler)
